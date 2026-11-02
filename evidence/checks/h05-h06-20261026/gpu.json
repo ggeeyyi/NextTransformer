@@ -1,0 +1,585 @@
+{
+  "full_size": {
+    "target-h05-burnin": {
+      "created_at": "2026-10-26T03:15:05.053068+00:00",
+      "source_hash": "793ed1de64efd71981055c0bcf38bcaff93587222e53800178568862d75fda06",
+      "torch": "2.9.1+cu128",
+      "device": "NVIDIA H100 80GB HBM3",
+      "dtype": "torch.bfloat16",
+      "world_size": 1,
+      "mode": "target",
+      "seed": 42,
+      "results": [
+        {
+          "method": "qsa_hybrid",
+          "status": "passed",
+          "mode": "target",
+          "model_hash": "02e93f56c35991d66acb43ea7f8efbb9302816a2027bcf8c3b5e4a81aa5bb7a8",
+          "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+          "configured_context": 2048,
+          "test_shape": [
+            1,
+            2048
+          ],
+          "width": 1536,
+          "physical_layers": 24,
+          "parameters": 1405174202,
+          "loss": 135.09329223632812,
+          "causal_max_abs": 0.0,
+          "elapsed_seconds": 116.77271587401628,
+          "peak_allocated_bytes": 11806961664,
+          "scope": "full-config-full-context",
+          "full_global_update": false,
+          "stage": "burnin",
+          "sparse_backend": "kernel"
+        }
+      ]
+    },
+    "target-h05-joint": {
+      "created_at": "2026-10-26T03:15:15.260220+00:00",
+      "source_hash": "793ed1de64efd71981055c0bcf38bcaff93587222e53800178568862d75fda06",
+      "torch": "2.9.1+cu128",
+      "device": "NVIDIA H100 80GB HBM3",
+      "dtype": "torch.bfloat16",
+      "world_size": 1,
+      "mode": "target",
+      "seed": 42,
+      "results": [
+        {
+          "method": "qsa_hybrid",
+          "status": "passed",
+          "mode": "target",
+          "model_hash": "02e93f56c35991d66acb43ea7f8efbb9302816a2027bcf8c3b5e4a81aa5bb7a8",
+          "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+          "configured_context": 2048,
+          "test_shape": [
+            1,
+            2048
+          ],
+          "width": 1536,
+          "physical_layers": 24,
+          "parameters": 1405174202,
+          "loss": 127.14886474609375,
+          "causal_max_abs": 0.0,
+          "elapsed_seconds": 5.224969483911991,
+          "peak_allocated_bytes": 11819675648,
+          "scope": "full-config-full-context",
+          "full_global_update": false,
+          "stage": "joint",
+          "sparse_backend": "kernel"
+        }
+      ]
+    },
+    "target-h06": {
+      "created_at": "2026-10-26T03:11:48.991343+00:00",
+      "source_hash": "793ed1de64efd71981055c0bcf38bcaff93587222e53800178568862d75fda06",
+      "torch": "2.9.1+cu128",
+      "device": "NVIDIA H100 80GB HBM3",
+      "dtype": "torch.bfloat16",
+      "world_size": 1,
+      "mode": "target",
+      "seed": 42,
+      "results": [
+        {
+          "method": "moba_hybrid",
+          "status": "passed",
+          "mode": "target",
+          "model_hash": "314131debc9e0d1aa7779d35fe94a29f935e1ba2a139315d81f8d1f624011b0f",
+          "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+          "configured_context": 2048,
+          "test_shape": [
+            1,
+            2048
+          ],
+          "width": 1536,
+          "physical_layers": 25,
+          "parameters": 1452935068,
+          "loss": 10.397253036499023,
+          "causal_max_abs": 0.0,
+          "elapsed_seconds": 7.592183664441109,
+          "peak_allocated_bytes": 10433854976,
+          "scope": "full-config-full-context",
+          "full_global_update": false,
+          "stage": "joint",
+          "sparse_backend": "kernel"
+        }
+      ]
+    }
+  },
+  "single_microbatch_optimizer": {
+    "status": "passed",
+    "science_hash": "b3055a9f825995ae53af01bfcaa7ceae8ad57f810aa56eee02a87efc8b259b19",
+    "source_hash": "793ed1de64efd71981055c0bcf38bcaff93587222e53800178568862d75fda06",
+    "torch": "2.9.1+cu128",
+    "device": "NVIDIA H100 80GB HBM3",
+    "dtype": "bfloat16",
+    "shape": [
+      1,
+      2048
+    ],
+    "synthetic_data": true,
+    "full_global_update": false,
+    "scope": "full dimensions; one microbatch optimizer check per stage; stages are independently selected tests, not a training trajectory",
+    "rows": [
+      {
+        "method": "qsa_hybrid",
+        "stage": "burnin",
+        "optimizer_step_for_schedule": 0,
+        "loss": 135.09466552734375,
+        "lm_loss": 10.398569107055664,
+        "aux_loss": 124.69609069824219,
+        "sparse_layers": [
+          {
+            "selected_edges": 25178112,
+            "teacher_dense_score_edges": 50331648,
+            "burnin": true,
+            "backend": "kernel",
+            "layer": 4,
+            "kind": "qsa",
+            "causal_edge_density": 1.0
+          },
+          {
+            "selected_edges": 25178112,
+            "teacher_dense_score_edges": 50331648,
+            "burnin": true,
+            "backend": "kernel",
+            "layer": 8,
+            "kind": "qsa",
+            "causal_edge_density": 1.0
+          },
+          {
+            "selected_edges": 25178112,
+            "teacher_dense_score_edges": 50331648,
+            "burnin": true,
+            "backend": "kernel",
+            "layer": 12,
+            "kind": "qsa",
+            "causal_edge_density": 1.0
+          },
+          {
+            "selected_edges": 25178112,
+            "teacher_dense_score_edges": 50331648,
+            "burnin": true,
+            "backend": "kernel",
+            "layer": 16,
+            "kind": "qsa",
+            "causal_edge_density": 1.0
+          },
+          {
+            "selected_edges": 25178112,
+            "teacher_dense_score_edges": 50331648,
+            "burnin": true,
+            "backend": "kernel",
+            "layer": 20,
+            "kind": "qsa",
+            "causal_edge_density": 1.0
+          },
+          {
+            "selected_edges": 25178112,
+            "teacher_dense_score_edges": 50331648,
+            "burnin": true,
+            "backend": "kernel",
+            "layer": 24,
+            "kind": "qsa",
+            "causal_edge_density": 1.0
+          }
+        ],
+        "parameter_parts": {
+          "gdn": 213335568,
+          "qsa": 62522208,
+          "ffn": 424673280,
+          "shell": 704643146
+        },
+        "seconds": 178.96589080430567,
+        "peak_bytes": 22526169088,
+        "all_gradients_finite": true,
+        "all_mixer_output_projections_updated": true
+      },
+      {
+        "method": "qsa_hybrid",
+        "stage": "joint",
+        "optimizer_step_for_schedule": 512,
+        "loss": 125.43718719482422,
+        "lm_loss": 10.109131813049316,
+        "aux_loss": 115.32805633544922,
+        "sparse_layers": [
+          {
+            "selected_edges": 5932032,
+            "teacher_dense_score_edges": 50331648,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 4,
+            "kind": "qsa",
+            "causal_edge_density": 0.23560273304050758
+          },
+          {
+            "selected_edges": 5932032,
+            "teacher_dense_score_edges": 50331648,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 8,
+            "kind": "qsa",
+            "causal_edge_density": 0.23560273304050758
+          },
+          {
+            "selected_edges": 5932032,
+            "teacher_dense_score_edges": 50331648,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 12,
+            "kind": "qsa",
+            "causal_edge_density": 0.23560273304050758
+          },
+          {
+            "selected_edges": 5932032,
+            "teacher_dense_score_edges": 50331648,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 16,
+            "kind": "qsa",
+            "causal_edge_density": 0.23560273304050758
+          },
+          {
+            "selected_edges": 5932032,
+            "teacher_dense_score_edges": 50331648,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 20,
+            "kind": "qsa",
+            "causal_edge_density": 0.23560273304050758
+          },
+          {
+            "selected_edges": 5932032,
+            "teacher_dense_score_edges": 50331648,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 24,
+            "kind": "qsa",
+            "causal_edge_density": 0.23560273304050758
+          }
+        ],
+        "parameter_parts": {
+          "gdn": 213335568,
+          "qsa": 62522208,
+          "ffn": 424673280,
+          "shell": 704643146
+        },
+        "seconds": 1.5208474453538656,
+        "peak_bytes": 22525120512,
+        "all_gradients_finite": true,
+        "all_mixer_output_projections_updated": true
+      },
+      {
+        "method": "moba_hybrid",
+        "stage": "joint",
+        "optimizer_step_for_schedule": 0,
+        "loss": 10.397981643676758,
+        "lm_loss": 10.397981643676758,
+        "aux_loss": 0.0,
+        "sparse_layers": [
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 1,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 2,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 3,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 4,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 5,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 6,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 7,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 8,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 9,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 10,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 11,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 12,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 13,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 14,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 15,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 16,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 17,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 18,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 19,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 20,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 21,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          },
+          {
+            "selected_edges": 4534272,
+            "teacher_dense_score_edges": 0,
+            "burnin": false,
+            "backend": "kernel",
+            "layer": 22,
+            "kind": "moba",
+            "causal_edge_density": 0.1800878477306003
+          }
+        ],
+        "parameter_parts": {
+          "attention": 28311840,
+          "moba": 207619632,
+          "ffn": 462028800,
+          "shell": 754974796
+        },
+        "seconds": 11.074403528124094,
+        "peak_bytes": 23292504064,
+        "all_gradients_finite": true,
+        "all_mixer_output_projections_updated": true
+      }
+    ]
+  },
+  "full_global_update": {
+    "four-gpu-joint": {
+      "created_at": "2026-10-26T03:29:35.477264+00:00",
+      "source_hash": "fa8572197b83ebd589f1a3b92027a92c61f81a3a2885c68e815af113b2c3ba17",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "torch": "2.9.1+cu128",
+      "dtype": "torch.bfloat16",
+      "device": "NVIDIA H100 80GB HBM3",
+      "seed": 42,
+      "results": [
+        {
+          "method": "qsa_hybrid",
+          "status": "passed",
+          "stage": "joint",
+          "trainable_stage": "joint",
+          "sparse_backend": "kernel",
+          "model_hash": "02e93f56c35991d66acb43ea7f8efbb9302816a2027bcf8c3b5e4a81aa5bb7a8",
+          "full_dimensions": true,
+          "input_shape": [
+            4,
+            2048
+          ],
+          "global_tokens": 1048576,
+          "world_size": 4,
+          "accumulation": 32,
+          "optimizer_updates": 1,
+          "loss": 128.0646209716797,
+          "seconds": 62.06972243823111,
+          "all_rank_parameters_equal": true,
+          "peak_allocated_bytes": 38277306880,
+          "synthetic_data": true,
+          "smoke": true
+        },
+        {
+          "method": "moba_hybrid",
+          "status": "passed",
+          "stage": "joint",
+          "trainable_stage": "joint",
+          "sparse_backend": "kernel",
+          "model_hash": "314131debc9e0d1aa7779d35fe94a29f935e1ba2a139315d81f8d1f624011b0f",
+          "full_dimensions": true,
+          "input_shape": [
+            4,
+            2048
+          ],
+          "global_tokens": 1048576,
+          "world_size": 4,
+          "accumulation": 32,
+          "optimizer_updates": 1,
+          "loss": 10.39747142791748,
+          "seconds": 20.055308962240815,
+          "all_rank_parameters_equal": true,
+          "peak_allocated_bytes": 32763594240,
+          "synthetic_data": true,
+          "smoke": true
+        }
+      ]
+    },
+    "four-gpu-burnin": {
+      "created_at": "2026-10-26T03:30:43.232617+00:00",
+      "source_hash": "fa8572197b83ebd589f1a3b92027a92c61f81a3a2885c68e815af113b2c3ba17",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "torch": "2.9.1+cu128",
+      "dtype": "torch.bfloat16",
+      "device": "NVIDIA H100 80GB HBM3",
+      "seed": 42,
+      "results": [
+        {
+          "method": "qsa_hybrid",
+          "status": "passed",
+          "stage": "burnin",
+          "trainable_stage": "joint",
+          "sparse_backend": "kernel",
+          "model_hash": "02e93f56c35991d66acb43ea7f8efbb9302816a2027bcf8c3b5e4a81aa5bb7a8",
+          "full_dimensions": true,
+          "input_shape": [
+            4,
+            2048
+          ],
+          "global_tokens": 1048576,
+          "world_size": 4,
+          "accumulation": 32,
+          "optimizer_updates": 1,
+          "loss": 135.42706298828125,
+          "seconds": 14.770103011280298,
+          "all_rank_parameters_equal": true,
+          "peak_allocated_bytes": 38260288000,
+          "synthetic_data": true,
+          "smoke": true
+        }
+      ]
+    }
+  }
+}

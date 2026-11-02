@@ -1,8 +1,8 @@
 {
- "id": "deltanet",
+ "id": "A01_deltanet",
  "methodId": "deltanet",
- "cohort": "frozen-replay-20261019",
- "name": "DeltaNet",
+ "cohort": "xiangyue-20261019",
+ "name": "A01 DeltaNet",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,7 +789,8 @@
    "value": 0.28335713678585184
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/deltanet.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/xiangyue-a01-a03-20261027/A01_deltanet-formal.json",
+ "hardware": "8 × H200",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -830,7 +831,7 @@
    "chunked": false,
    "activation_checkpointing": false
   },
-  "source_manifest": "evidence/audits/deltanet-gla-source-manifest.json"
+  "source_manifest": "evidence/checks/xiangyue-a01-a03-20261027/source-manifest.json"
  },
  "reportedAudit": "matched",
  "lastRecordedAt": 1792898488.0,
@@ -1151,9 +1152,9 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2-all-backends-replay",
-  "source": "Cumulative audit · evidence/audits/deltanet.json"
+  "source": "Cumulative audit · evidence/checks/xiangyue-a01-a03-20261027/A01_deltanet-formal.json"
  },
  "comparisonNote": "Frozen all-backends-replay accounting; original cumulative FLOPs and source fingerprints are retained.",
  "finalTrainBpb": 0.6782412804596556,
- "auditSha256": "b0ed0af27245899d00e2fbbddad5abc7a9534a302986588154d7b3ab557b4147"
+ "auditSha256": "1672ac7feb3a7887ce1301c65c31118fd440125ef197c2a41b42eb74dc0fc63c"
 }

@@ -1,0 +1,512 @@
+{
+  "date": "2026-10-13",
+  "status": "passed",
+  "scope": "single seed42; functional and short stability acceptance, not full pretraining convergence",
+  "source_base_commit": "0ea4cb1e4eb20d62cfc49d9187a8600c51bdd2f3",
+  "source_sha256": "20dfff8d26b7ba0060e8a60801a0d51ecbd20c58326d89647392f76ca319e7e6",
+  "upstream_commit": "92d63d4e8bb4df75c3b71618f31ddde2378b2bcd",
+  "acceptance_id": "native-core393-v3-20261013-r2",
+  "cpu": {
+    "passed": 116,
+    "skipped": 14,
+    "seconds": 17.5,
+    "skip_reasons": "10 upstream FlashAttention3 comparisons unavailable; 4 CUDA-only optimizer tests in CPU suite"
+  },
+  "launch_dry_runs": {
+    "passed": 8,
+    "a800_micro_batch": 8,
+    "a800_accumulation": 8,
+    "h200_micro_batch": 16,
+    "h200_accumulation": 4,
+    "global_batch_tokens": 1048576,
+    "h200_measured": false
+  },
+  "preflight": {
+    "mor": {
+      "micro_batch": 8,
+      "accumulation": 8,
+      "world_size": 8,
+      "warmup_steps": 2,
+      "measured_steps": 2,
+      "median_step_seconds": 9.449523033574224,
+      "tokens_per_second": 110966.02402834533,
+      "stress_full_path": true,
+      "validation_microbatch_check": {
+        "input_tokens": 131072,
+        "forward_flops_estimate": 300168089960448.0,
+        "mean_active_depth": 33.0,
+        "active_ratios": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "mean_recursions": 3.0,
+        "val_bpb": 3.0235412573736684,
+        "seconds": 0.5059081632643938,
+        "split": "val",
+        "protocol": "nanochat_bos_bestfit"
+      },
+      "torch": "2.9.1+cu128",
+      "cuda": "12.8",
+      "data_manifest_sha256": "69fa9df6810b6c5e89f41c53b5134353e7ddfb676b4af3d694d9aa8a34358cc2",
+      "source_sha256": "cb44fef03d875557ccd9d50218ab3c9989ebd4e426300240eacd7dd5ff28b9bd",
+      "source_base_commit": "0ea4cb1e4eb20d62cfc49d9187a8600c51bdd2f3",
+      "ranks": [
+        {
+          "rank": 0,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 73769175552,
+          "peak_reserved_bytes": 75812044800
+        },
+        {
+          "rank": 1,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 73769175552,
+          "peak_reserved_bytes": 75812044800
+        },
+        {
+          "rank": 2,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 73769175552,
+          "peak_reserved_bytes": 75812044800
+        },
+        {
+          "rank": 3,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 73769175552,
+          "peak_reserved_bytes": 75812044800
+        },
+        {
+          "rank": 4,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 73769175552,
+          "peak_reserved_bytes": 75812044800
+        },
+        {
+          "rank": 5,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 73770617344,
+          "peak_reserved_bytes": 75812044800
+        },
+        {
+          "rank": 6,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 73769175552,
+          "peak_reserved_bytes": 75812044800
+        },
+        {
+          "rank": 7,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 73771665920,
+          "peak_reserved_bytes": 75812044800
+        }
+      ]
+    },
+    "loopformer": {
+      "micro_batch": 8,
+      "accumulation": 8,
+      "world_size": 8,
+      "warmup_steps": 2,
+      "measured_steps": 2,
+      "median_step_seconds": 6.694209111854434,
+      "tokens_per_second": 156639.26574135997,
+      "stress_full_path": true,
+      "validation_microbatch_check": {
+        "input_tokens": 131072,
+        "forward_flops_estimate": 208655943204864.0,
+        "mean_active_depth": 24.0,
+        "active_ratios": [
+          1.0,
+          1.0
+        ],
+        "mean_recursions": 2.0,
+        "val_bpb": 3.0177256296947412,
+        "seconds": 0.3874634150415659,
+        "split": "val",
+        "protocol": "nanochat_bos_bestfit"
+      },
+      "torch": "2.9.1+cu128",
+      "cuda": "12.8",
+      "data_manifest_sha256": "69fa9df6810b6c5e89f41c53b5134353e7ddfb676b4af3d694d9aa8a34358cc2",
+      "source_sha256": "cb44fef03d875557ccd9d50218ab3c9989ebd4e426300240eacd7dd5ff28b9bd",
+      "source_base_commit": "0ea4cb1e4eb20d62cfc49d9187a8600c51bdd2f3",
+      "ranks": [
+        {
+          "rank": 0,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 62504539648,
+          "peak_reserved_bytes": 63638077440
+        },
+        {
+          "rank": 1,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 62505589248,
+          "peak_reserved_bytes": 63638077440
+        },
+        {
+          "rank": 2,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 62505589248,
+          "peak_reserved_bytes": 63638077440
+        },
+        {
+          "rank": 3,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 62505589248,
+          "peak_reserved_bytes": 63638077440
+        },
+        {
+          "rank": 4,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 62505589248,
+          "peak_reserved_bytes": 63638077440
+        },
+        {
+          "rank": 5,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 62505589248,
+          "peak_reserved_bytes": 63638077440
+        },
+        {
+          "rank": 6,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 62505589248,
+          "peak_reserved_bytes": 63638077440
+        },
+        {
+          "rank": 7,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 62502966784,
+          "peak_reserved_bytes": 63638077440
+        }
+      ]
+    },
+    "circle": {
+      "micro_batch": 8,
+      "accumulation": 8,
+      "world_size": 8,
+      "warmup_steps": 2,
+      "measured_steps": 2,
+      "median_step_seconds": 10.307179206050932,
+      "tokens_per_second": 101732.58648539097,
+      "stress_full_path": true,
+      "validation_microbatch_check": {
+        "input_tokens": 131072,
+        "forward_flops_estimate": 300174532411392.0,
+        "mean_active_depth": 33.0,
+        "active_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "mean_ring_steps": 27.0,
+        "exit_ratios": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "cap_ratio": 1.0,
+        "val_bpb": 3.0084782603932108,
+        "seconds": 0.5234994571655989,
+        "split": "val",
+        "protocol": "nanochat_bos_bestfit"
+      },
+      "torch": "2.9.1+cu128",
+      "cuda": "12.8",
+      "data_manifest_sha256": "69fa9df6810b6c5e89f41c53b5134353e7ddfb676b4af3d694d9aa8a34358cc2",
+      "source_sha256": "cb44fef03d875557ccd9d50218ab3c9989ebd4e426300240eacd7dd5ff28b9bd",
+      "source_base_commit": "0ea4cb1e4eb20d62cfc49d9187a8600c51bdd2f3",
+      "ranks": [
+        {
+          "rank": 0,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 81471365632,
+          "peak_reserved_bytes": 83399540736
+        },
+        {
+          "rank": 1,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 81471365632,
+          "peak_reserved_bytes": 83399540736
+        },
+        {
+          "rank": 2,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 81471371264,
+          "peak_reserved_bytes": 83399540736
+        },
+        {
+          "rank": 3,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 81471371264,
+          "peak_reserved_bytes": 83399540736
+        },
+        {
+          "rank": 4,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 81471365632,
+          "peak_reserved_bytes": 83399540736
+        },
+        {
+          "rank": 5,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 81471365632,
+          "peak_reserved_bytes": 83399540736
+        },
+        {
+          "rank": 6,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 81471371264,
+          "peak_reserved_bytes": 83399540736
+        },
+        {
+          "rank": 7,
+          "name": "NVIDIA A800-SXM4-80GB",
+          "total_memory_bytes": 85167243264,
+          "peak_allocated_bytes": 81473467392,
+          "peak_reserved_bytes": 83399540736
+        }
+      ]
+    }
+  },
+  "theory": {
+    "dense": {
+      "parameters": 1384122122,
+      "training_GFLOPs_per_input_token": 4.775225616
+    },
+    "mor": {
+      "parameters": 927994042,
+      "training_GFLOPs_per_input_token": 4.774790924928003
+    },
+    "loopformer": {
+      "parameters": 1018436792,
+      "training_GFLOPs_per_input_token": 4.775755536
+    },
+    "circle": {
+      "parameters": 927992523,
+      "training_GFLOPs_per_input_token": 4.779191647303093
+    }
+  },
+  "circle_algorithm_pilot": {
+    "scope": "single seed42 short functional/stability pilot; 8+24-step curriculum only in pilot; not convergence or quality evidence",
+    "tail_mean_depth": 17.77273588180542,
+    "tail_mean_cap": 0.2001498222351074,
+    "tail_depth_range": [
+      13.957419395446777,
+      19.589887619018555
+    ],
+    "max_grad_norm": 1.8527249097824097,
+    "max_halter_grad_norm": 0.14866654574871063,
+    "last_step_GFLOPs_per_token": 4.825337342436035,
+    "peak_allocated_GiB": 66.67923879623413,
+    "average_tokens_per_second": 137943.8160885031,
+    "source_sha256": "2ee99d633dd2f108bdd50195d501e4ac16956586c9ddc99d2e28f6810ba83782",
+    "train_steps": 128,
+    "resumed_step": 129,
+    "input_tokens": 135266304,
+    "random_warmup": 8,
+    "route_transition": 24,
+    "formal_curriculum": [
+      256,
+      768
+    ],
+    "core_tasks": 22,
+    "core_max_per_task": 64,
+    "bpb_tokens_per_split": 131072
+  },
+  "old_loopformer_diagnosis": {
+    "source_base_commit": "0ea4cb1",
+    "checkpoint_step": 5000,
+    "condition_rms_min": 1103.238525390625,
+    "condition_rms_max": 1151.5908203125,
+    "attention_gate_offset_min": -17273.20703125,
+    "attention_gate_offset_max": 11503.4453125,
+    "loss_step2700": 2.7246376760303974,
+    "loss_step2710": 23.84492379426956,
+    "val_bpb_step2500": 0.8691702798814355,
+    "val_bpb_step2750": 2.20915588703309,
+    "interpretation": "post-spike checkpoint identifies an unbounded amplification path, not a complete causal ablation"
+  },
+  "gpu_source_sha256": "cb44fef03d875557ccd9d50218ab3c9989ebd4e426300240eacd7dd5ff28b9bd",
+  "post_gpu_changes": {
+    "scope": "module docstrings and removal of unused imports only; no algorithm/config changes",
+    "files": [
+      "nanochat/experiment/__init__.py",
+      "nanochat/experiment/runtime.py",
+      "nanochat/native_experiment/__init__.py",
+      "nanochat/native_experiment/model.py",
+      "scripts/native_eval.py"
+    ],
+    "cpu_retest": {
+      "passed": 116,
+      "skipped": 14,
+      "seconds": 17.5
+    }
+  },
+  "packaging": {
+    "uv_lock_check": "passed",
+    "wheel_build": "passed"
+  },
+  "functional": {
+    "dense": {
+      "max_grad_norm": 0.4667743444442749,
+      "peak_rank0_allocated_GiB": 58.09641361236572,
+      "last32_mean_loss": 10.330996771653494,
+      "largest_loss_jump_after_step40": 0.0,
+      "initial_steps": 2,
+      "resumed_step": 3,
+      "input_tokens": 3145728,
+      "phase": "smoke_complete",
+      "train_bpb": 3.091523467314618,
+      "val_bpb": 3.098088361533982,
+      "bpb_tokens_per_split": 131072,
+      "core_tasks": 22,
+      "core_max_per_task": 64,
+      "full_core": false,
+      "core_metric": 0.019546424214789894,
+      "last_lm_loss": 10.246054500341415,
+      "last_step_training_GFLOPs_per_token": 4.775225616
+    },
+    "circle": {
+      "max_grad_norm": 1.2323259115219116,
+      "peak_rank0_allocated_GiB": 70.4856629371643,
+      "last32_mean_loss": 10.34605422616005,
+      "largest_loss_jump_after_step40": 0.0,
+      "initial_steps": 2,
+      "resumed_step": 3,
+      "input_tokens": 3145728,
+      "phase": "smoke_complete",
+      "train_bpb": 3.2966878196119187,
+      "val_bpb": 3.2684219988900867,
+      "bpb_tokens_per_split": 131072,
+      "core_tasks": 22,
+      "core_max_per_task": 64,
+      "full_core": false,
+      "core_metric": -0.006389331367347261,
+      "last_lm_loss": 10.288971781730652,
+      "last_step_training_GFLOPs_per_token": 5.384887142154785,
+      "smoke_curriculum_offset": 10000
+    },
+    "mor": {
+      "max_grad_norm": 5.764896869659424,
+      "peak_rank0_allocated_GiB": 62.999544620513916,
+      "last32_mean_loss": 5.154031792888418,
+      "largest_loss_jump_after_step40": 0.01145472377538681,
+      "initial_steps": 64,
+      "resumed_step": 65,
+      "input_tokens": 68157440,
+      "phase": "smoke_complete",
+      "train_bpb": 1.4859385533280278,
+      "val_bpb": 1.5008019706511462,
+      "bpb_tokens_per_split": 131072,
+      "core_tasks": 22,
+      "core_max_per_task": 64,
+      "full_core": false,
+      "core_metric": -0.002498656526836894,
+      "last_lm_loss": 4.719339035451412,
+      "last_step_training_GFLOPs_per_token": 4.908760887770508,
+      "actual_survival": [
+        0.6502666473388672,
+        0.31708812713623047
+      ],
+      "mean_recursions": 1.9673547744750977,
+      "budget_max_abs_error": 0.010266647338867174
+    },
+    "loopformer": {
+      "max_grad_norm": 5.2679443359375,
+      "peak_rank0_allocated_GiB": 58.215819358825684,
+      "last32_mean_loss": 3.2876379195367917,
+      "largest_loss_jump_after_step40": 0.06762176752090454,
+      "initial_steps": 256,
+      "resumed_step": 257,
+      "input_tokens": 269484032,
+      "phase": "smoke_complete",
+      "train_bpb": 1.0265167202655552,
+      "val_bpb": 1.0656554196699175,
+      "bpb_tokens_per_split": 131072,
+      "core_tasks": 22,
+      "core_max_per_task": 64,
+      "full_core": false,
+      "core_metric": 0.11318739809836247,
+      "last_lm_loss": 3.283226393163204,
+      "last_step_training_GFLOPs_per_token": 4.775755536,
+      "max_condition_grad_norm": 0.08036071062088013,
+      "max_modulation_saturation": 0.9185203313827515,
+      "peak_saturation_step": 128,
+      "last_modulation_saturation": 0.0013472945429384708,
+      "last_modulation_absmax": 0.4995885491371155
+    }
+  },
+  "gpu_tested_commit": "ad97628287174667616e8d5f40bd2269a86e629f"
+}

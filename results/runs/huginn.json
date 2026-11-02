@@ -1,8 +1,8 @@
 {
- "id": "huginn",
+ "id": "f1-huginn",
  "methodId": "huginn",
  "cohort": "reference-v1",
- "name": "Huginn · Recurrent-depth",
+ "name": "f1_huginn",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,8 +789,9 @@
    "value": 0.2725895925415958
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/huginn.json",
- "source": "Run records · exported 2026-10-24",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/results/runs/huginn.json",
+ "hardware": "H800 ×8",
+ "source": "H800 run records · exported 2026-10-24",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
   "protocol": "nextt-reference-50b-v1",
@@ -1128,7 +1129,7 @@
   "inputTokens": 49152000000,
   "step": 46875,
   "final": true,
-  "accounting": "Reported tracking estimate · reference protocol v1",
+  "accounting": "Reported tracking estimate · nextt-reference-50b-v1",
   "source": "Cumulative training summary"
  },
  "order": 15

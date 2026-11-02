@@ -1,0 +1,1371 @@
+--- /dev/null
++++ b/reference/benchmark.py
+@@ -0,0 +1,280 @@
++"""Bounded, admitted eight-GPU throughput check for A01/A02/A03.
++
++Uses synthetic rows and fresh random weights. It never saves a checkpoint or
++produces a model-quality result. Timing covers complete optimizer updates;
++parameter hashing and diagnostic collectives are outside the measured steps.
++"""
++from __future__ import annotations
++
++import argparse
++from contextlib import nullcontext
++from datetime import datetime, timedelta, timezone
++import gc
++import hashlib
++import json
++import math
++import os
++from pathlib import Path
++import statistics
++import time
++
++from .config import Protocol
++
++METHODS = ("deltanet", "gsa", "gla")
++
++
++def parse_args(argv=None):
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--methods", nargs="+", choices=METHODS, default=list(METHODS))
++    parser.add_argument("--steps", type=int, default=8,
++                        help="total synthetic optimizer updates, including warmup; bounded at 64")
++    parser.add_argument("--warmup", type=int, default=2,
++                        help="initial measured updates excluded from steady statistics")
++    parser.add_argument("--micro-batch", type=int, default=16)
++    parser.add_argument("--backend", choices=("fla_fused",), default="fla_fused")
++    parser.add_argument("--config-dir", type=Path, required=True,
++                        help="new target-environment admitted configs and cost proofs")
++    parser.add_argument("--output", type=Path, required=True)
++    args = parser.parse_args(argv)
++    if not 1 <= args.steps <= 64 or not 0 <= args.warmup < args.steps:
++        parser.error("require 1 <= steps <= 64 and 0 <= warmup < steps")
++    if len(args.methods) != len(set(args.methods)):
++        parser.error("methods must be unique")
++    try:
++        Protocol().accumulation(args.micro_batch, 8)
++    except ValueError as error:
++        parser.error(str(error))
++    return args
++
++
++def steady_summary(records, warmup):
++    steady = [float(row["seconds"]) for row in records[warmup:]]
++    if not steady or not all(math.isfinite(value) and value > 0 for value in steady):
++        raise ValueError("steady timings must be positive and finite")
++    mean = statistics.mean(steady)
++    median = statistics.median(steady)
++    return dict(warmup_updates=warmup, steady_updates=len(steady),
++                steady_mean_seconds=mean, steady_median_seconds=median,
++                steady_min_seconds=min(steady), steady_max_seconds=max(steady),
++                steady_global_tokens_per_second=Protocol().global_batch_tokens/mean,
++                projected_train_compute_hours=Protocol().steps*mean/3600,
++                estimate_scope="synthetic_compute_only_excludes_real_data_and_evaluation")
++
++
++def _json_hash(value):
++    return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
++
++
++def _save(path, value):
++    path.parent.mkdir(parents=True, exist_ok=True)
++    pending = path.with_name("."+path.name+"."+str(os.getpid())+".tmp")
++    pending.write_text(json.dumps(value, indent=2)+"\n")
++    pending.replace(path)
++
++
++def _parameter_digest(model):
++    import torch
++    result = hashlib.sha256()
++    for name, parameter in model.named_parameters():
++        result.update(name.encode())
++        result.update(parameter.detach().contiguous().view(torch.uint8).cpu().numpy().tobytes())
++    return result.hexdigest()
++
++
++def main(argv=None):
++    args = parse_args(argv)
++    # Imports stay below argument handling so --help and parser regression do
++    # not need CUDA, FLA, torch.distributed, tokenizer or prepared resources.
++    import torch
++    rank = int(os.environ["RANK"])
++    world = int(os.environ["WORLD_SIZE"])
++    local = int(os.environ["LOCAL_RANK"])
++    if world != Protocol().data_parallel_size:
++        raise ValueError("benchmark requires exactly eight data-parallel ranks")
++    if not torch.cuda.is_available():
++        raise RuntimeError("benchmark requires CUDA BF16; no CPU fallback")
++    torch.cuda.set_device(local)
++    # Match the formal trainer's native initialize() policy before any model
++    # or optimizer kernels compile; this is also part of the recorded evidence.
++    torch.backends.cuda.matmul.allow_tf32 = True
++    torch.backends.cudnn.allow_tf32 = True
++    device = torch.device("cuda", local)
++    import torch.distributed as dist
++    from torch.nn.parallel import DistributedDataParallel as DDP
++    from nanochat.common import COMPUTE_DTYPE
++    from nanochat.native_experiment.config import NativeTrainConfig
++    from .calibrate import science_hash
++    from .methods.linear_backend import configure_linear_backend
++    from .model import build_model
++    from .optimizer import build_optimizer, set_schedule
++    from .protocol import admit_config
++
++    p = Protocol()
++    accumulation = p.accumulation(args.micro_batch, world)
++    if not torch.cuda.is_bf16_supported():
++        raise RuntimeError("benchmark requires CUDA BF16; no CPU fallback")
++    if COMPUTE_DTYPE != torch.bfloat16:
++        raise ValueError("set NANOCHAT_DTYPE=bfloat16 before process startup")
++    dist.init_process_group("nccl", device_id=device, timeout=timedelta(minutes=10))
++    torch.set_num_threads(2)
++    initial_science_hash = science_hash()
++    result = dict(
++        created_at=datetime.now(timezone.utc).isoformat(), status="running",
++        scope="full_dimensions_synthetic_complete_global_updates",
++        synthetic_data=True, formal_training=False, reusable_weights=False,
++        checkpoints_written=False, science_hash=initial_science_hash,
++        protocol_hash=p.fingerprint, torch=torch.__version__, cuda=torch.version.cuda,
++        dtype=str(COMPUTE_DTYPE), world_size=world,
++        precision_policy=dict(
++            compute_dtype=str(COMPUTE_DTYPE), autocast_dtype="torch.bfloat16",
++            recurrent_state_dtype="torch.float32",
++            matmul_allow_tf32=torch.backends.cuda.matmul.allow_tf32,
++            cudnn_allow_tf32=torch.backends.cudnn.allow_tf32,
++            float32_matmul_precision=torch.get_float32_matmul_precision(),
++        ),
++        device=torch.cuda.get_device_name(device), seed=p.seed,
++        requested_optimizer_updates=args.steps, warmup_updates=args.warmup,
++        micro_batch=args.micro_batch, accumulation=accumulation,
++        global_batch_tokens=p.global_batch_tokens, sequence_len=p.sequence_len,
++        methods=[],
++    )
++    owns_output = False
++    try:
++        if args.output.exists():
++            raise FileExistsError("preserve the existing benchmark record; choose a new output path")
++        dist.barrier(device_ids=[local])
++        if rank == 0:
++            _save(args.output, result)
++            owns_output = True
++        for method in args.methods:
++            config_path = args.config_dir/(method+".json")
++            config, proof = admit_config(config_path)
++            if (config.method != method or config.scale != "formal"
++                    or config.backend != args.backend):
++                raise ValueError("benchmark requires admitted full dimensions and the explicit frozen backend")
++            if (config.sequence_len != p.sequence_len or config.vocab_size != p.vocab_size
++                    or config.width != 1536 or config.heads != 12):
++                raise ValueError("benchmark may not reduce the common formal dimensions")
++            raw = json.loads(config_path.read_text())
++            proof_path = (config_path.parent/raw["calibration"]["cost_record"]).resolve()
++            proof_sha256 = hashlib.sha256(proof_path.read_bytes()).hexdigest()
++            model = build_model(config, device, seed=p.seed)
++            model.set_training_stage(0)
++            backend = configure_linear_backend(model, args.backend)
++            wrapper = DDP(model, device_ids=[local], broadcast_buffers=False)
++            train_config = NativeTrainConfig()
++            optimizer = build_optimizer(model, train_config)
++            # Whole-parameter hashes are deliberately outside every step timer.
++            before_hash = _parameter_digest(model)
++            method_result = dict(
++                method=method, status="running", synthetic_data=True,
++                formal_training=False, reusable_weights=False,
++                config_file=config_path.name,
++                config_sha256=hashlib.sha256(config_path.read_bytes()).hexdigest(),
++                model_hash=config.fingerprint, proof_sha256=proof_sha256,
++                proof_json_hash=_json_hash(proof), cost_formula=proof["formula_version"],
++                cost_science_hash=proof["source_hash"], backend=backend,
++                parameters=sum(parameter.numel() for parameter in model.parameters()),
++                micro_batch=args.micro_batch, accumulation=accumulation,
++                global_batch_tokens=p.global_batch_tokens, world_size=world,
++                input_shape=[args.micro_batch, p.sequence_len],
++                optimizer_updates=0, actual_input_tokens=0, steps=[],
++            )
++            result["methods"].append(method_result)
++            rows_per_rank = p.global_batch_tokens//p.sequence_len//world
++            row_positions = torch.arange(p.sequence_len+1, device=device)[None, :]
++            torch.cuda.reset_peak_memory_stats(device)
++            for step in range(args.steps):
++                dist.barrier(device_ids=[local])
++                torch.cuda.synchronize(device)
++                started = time.monotonic()
++                optimizer.zero_grad(set_to_none=True)
++                model.set_step(step)
++                set_schedule(optimizer, step, train_config)
++                loss_sum = torch.zeros((), device=device, dtype=torch.float32)
++                local_tokens = 0
++                for micro in range(accumulation):
++                    row_offset = step*512+rank*rows_per_rank+micro*args.micro_batch
++                    model.set_row_offset(row_offset)
++                    row_ids = torch.arange(row_offset, row_offset+args.micro_batch,
++                                           device=device)[:, None]
++                    data = (row_positions+row_ids*17+p.seed).remainder(config.vocab_size)
++                    x, y = data[:, :-1].contiguous(), data[:, 1:].contiguous()
++                    sync = wrapper.no_sync() if micro < accumulation-1 else nullcontext()
++                    with sync, torch.autocast(device_type="cuda", dtype=torch.bfloat16):
++                        loss = wrapper(x, y)/accumulation
++                        loss.backward()
++                    loss_sum += loss.detach().float()
++                    local_tokens += x.numel()
++                optimizer.step()
++                torch.cuda.synchronize(device)
++                seconds = time.monotonic()-started
++                # Timing records the slowest rank. Metric reductions, memory
++                # diagnostics and JSON writes are excluded from step seconds.
++                timing = torch.tensor(seconds, dtype=torch.float64, device=device)
++                dist.all_reduce(timing, op=dist.ReduceOp.MAX)
++                tokens = torch.tensor(local_tokens, dtype=torch.int64, device=device)
++                dist.all_reduce(tokens, op=dist.ReduceOp.SUM)
++                dist.all_reduce(loss_sum, op=dist.ReduceOp.SUM)
++                global_tokens, mean_loss = int(tokens), float(loss_sum/world)
++                if global_tokens != p.global_batch_tokens:
++                    raise RuntimeError("synthetic update changed the fixed global input budget")
++                if not math.isfinite(mean_loss):
++                    raise RuntimeError("nonfinite synthetic loss")
++                memory = torch.tensor([torch.cuda.max_memory_allocated(device),
++                                       torch.cuda.max_memory_reserved(device)],
++                                      dtype=torch.int64, device=device)
++                dist.all_reduce(memory, op=dist.ReduceOp.MAX)
++                event = dict(optimizer_step=step+1, seconds=float(timing), loss=mean_loss,
++                             loss_finite=True, global_input_tokens=global_tokens,
++                             cumulative_input_tokens=(step+1)*p.global_batch_tokens,
++                             warmup=step < args.warmup,
++                             peak_allocated_bytes=int(memory[0]),
++                             peak_reserved_bytes=int(memory[1]))
++                method_result["steps"].append(event)
++                method_result["optimizer_updates"] = step+1
++                method_result["actual_input_tokens"] = event["cumulative_input_tokens"]
++                if rank == 0:
++                    _save(args.output, result)
++                    print(json.dumps(dict(method=method, **event)), flush=True)
++            # Verify complete parameters across ranks after the final update;
++            # no CPU transfer or hashing cost is folded into steady timings.
++            after_hash = _parameter_digest(model)
++            hashes = [None]*world
++            dist.all_gather_object(hashes, after_hash)
++            if len(set(hashes)) != 1 or before_hash == after_hash:
++                raise RuntimeError("parameters did not change or are not identical across all eight ranks")
++            method_result.update(
++                status="passed", all_rank_parameters_equal=True,
++                parameters_changed=True, final_parameter_sha256=after_hash,
++                peak_allocated_bytes=max(item["peak_allocated_bytes"] for item in method_result["steps"]),
++                peak_reserved_bytes=max(item["peak_reserved_bytes"] for item in method_result["steps"]),
++                **steady_summary(method_result["steps"], args.warmup),
++            )
++            if science_hash() != initial_science_hash:
++                raise RuntimeError("scientific sources changed during benchmark")
++            if rank == 0:
++                _save(args.output, result)
++                print(json.dumps(dict(event="method_complete", **method_result)), flush=True)
++            del optimizer, wrapper, model, loss, loss_sum, x, y, data
++            gc.collect()
++            torch.cuda.empty_cache()
++            dist.barrier(device_ids=[local])
++        result["status"] = "passed"
++        result["completed_at"] = datetime.now(timezone.utc).isoformat()
++        if rank == 0 and owns_output:
++            _save(args.output, result)
++            print(json.dumps(dict(event="benchmark_complete", status="passed",
++                                  synthetic_data=True, reusable_weights=False)), flush=True)
++    except BaseException as error:
++        if rank == 0 and owns_output:
++            result["status"] = "failed"
++            result["error"] = dict(type=type(error).__name__, message=str(error))
++            _save(args.output, result)
++        raise
++    finally:
++        dist.destroy_process_group()
++
++
++if __name__ == "__main__":
++    main()
+--- a/reference/calibrate.py
++++ b/reference/calibrate.py
+@@ -148,6 +148,8 @@
+     previous=args.reuse_configs/(method+".json") if args.reuse_configs else None
+     reuse=previous is not None and previous.exists()
+     c=load_config(previous) if reuse else candidate_config(method)
++    if method != "dense" and args.backend != "reference":
++        c=replace(c,backend=args.backend)
+     if method=="dense" and c!=candidate_config("dense"):raise ValueError("Dense d24 anchor is immutable")
+     selection_provenance=json.loads(previous.read_text())["calibration"] if reuse else None
+     initial=dense if method=="dense" else auditor.aggregate(c)
+@@ -185,6 +187,8 @@
+ def main():
+     p=argparse.ArgumentParser(description=__doc__)
+     p.add_argument("--methods",nargs="+",choices=METHODS,default=list(METHODS))
++    p.add_argument("--backend",choices=("reference","fla_fused"),default="reference",
++                   help="explicit audited backend; Dense remains the native reference")
+     p.add_argument("--cache",required=True,type=Path)
+     p.add_argument("--output",type=Path,default=Path("reference/configs"))
+     p.add_argument("--results",type=Path,default=Path("reference/results/costs"))
+--- a/reference/compute.py
++++ b/reference/compute.py
+@@ -22,7 +22,47 @@
+ from .methods import sparse
+ from .optimizer import parameter_groups
+ 
+-FORMULA_VERSION="reference-aten-math-v1"
++FORMULA_VERSION="reference-aten-math-v2-all-backends-replay"
++
++
++def fused_recurrent_flops(kind,batch,time,heads,key_dim,value_dim,slots=0):
++    """FLA c885377e mathematical recurrence, including backward state replay.
++
++    FMA=2; exp/reductions follow Ledger's shared unit-op policy. Training does
++    not request final-state loss or initial-state gradients. Kernel padding
++    and tile duplication are separate execution costs. External projections,
++    feature maps, log(decay) and optimizer are traced separately.
++    """
++    k,v,m=key_dim,value_dim,slots
++    if kind == "deltanet":
++        forward=6*k*v;backward=14*k*v+4*v-2*k-1
++    elif kind == "gla":
++        forward=5*k*v+k-v;backward=12*k*v+4*k-v
++    elif kind == "gsa":
++        if m <= 0:raise ValueError("GSA requires a positive slot dimension")
++        forward=5*m*(k+v)+6*m-v;backward=12*m*(k+v)+15*m-2*k-v-1
++    else:raise ValueError("uncovered fused recurrent method")
++    factor=batch*time*heads
++    return dict(forward=factor*forward,backward=factor*backward)
++
++
++class _FusedRecurrentCost(torch.autograd.Function):
++    @staticmethod
++    def forward(ctx,q,k,v,log_decay,beta,slots,kind,ledger):
++        b,t,h,d=q.shape
++        counts=fused_recurrent_flops(kind,b,t,h,d,v.shape[-1],0 if slots is None else slots.shape[-1])
++        ctx.counts,ctx.kind,ctx.ledger=counts,kind,ledger
++        ctx.save_for_backward(q,k,v,*[x for x in (log_decay,beta,slots) if x is not None])
++        ctx.optionals=(log_decay,beta,slots)
++        ledger.add("fla_recurrent_"+kind,counts["forward"])
++        return v.new_empty(b,t,h,v.shape[-1])
++
++    @staticmethod
++    def backward(ctx,dy):
++        q,k,v,*_=ctx.saved_tensors
++        ctx.ledger.add("fla_recurrent_"+ctx.kind,ctx.counts["backward"])
++        grads=[torch.empty_like(x) if x is not None else None for x in (q,k,v,*ctx.optionals)]
++        return (*grads,None,None)
+ 
+ 
+ def causal_edges(length, left):
+@@ -146,8 +186,10 @@
+ 
+ class _AttentionCost(torch.autograd.Function):
+     @staticmethod
+-    def forward(ctx,q,k,v,edges,padded,ledger,label):
+-        ctx.save_for_backward(q,k,v);ctx.cost=(edges,padded,ledger,label)
++    def forward(ctx,q,k,v,edges,padded,ledger,label,replay):
++        if replay not in ("flash_lse", "saved_probabilities"):
++            raise ValueError("attention backward storage/replay policy must be explicit")
++        ctx.save_for_backward(q,k,v);ctx.cost=(edges,padded,ledger,label,replay)
+         d=q.shape[-1];vd=v.shape[-1]
+         matrix=2*edges*(d+vd);total=matrix+6*edges
+         ledger.add(label,total,matrix,2*padded*(d+vd)+6*padded)
+@@ -155,14 +197,24 @@
+ 
+     @staticmethod
+     def backward(ctx,grad):
+-        q,k,v=ctx.saved_tensors;edges,padded,ledger,label=ctx.cost
++        q,k,v=ctx.saved_tensors;edges,padded,ledger,label,replay=ctx.cost
+         needq,needk,needv=ctx.needs_input_grad[:3]
+         d=q.shape[-1];vd=v.shape[-1]
+-        factor=2*d*(int(needq)+int(needk))+2*vd*(int(needq or needk)+int(needv))
+-        soft=5 if needq or needk else 0
++        # The registered Flash and eager indexed backward compute dQ/dK/dV
++        # whenever invoked; a frozen input discards its returned gradient, not
++        # the kernel's arithmetic. With all inputs frozen autograd never calls
++        # this backward. Do not claim an unimplemented per-input optimization.
++        factor=4*(d+vd)
++        soft=5  # shared softmax-backward unit convention (4) plus scale (1)
+         ledger.add(label,edges*(factor+soft),edges*factor,padded*(factor+soft))
++        if replay == "flash_lse":
++            # Flash saves row logsumexp, not the full score/probability matrix.
++            # Reconstruct QK (2d), scale (1), then exp(score-LSE) (2) per edge.
++            # A reference indexed backward saves P and must not be charged for
++            # this absent replay. Tiling/padding remains a separate envelope.
++            ledger.add(label+"_score_replay",edges*(2*d+3),edges*2*d,padded*(2*d+3))
+         return (torch.empty_like(q) if needq else None,torch.empty_like(k) if needk else None,
+-                torch.empty_like(v) if needv else None,None,None,None,None)
++                torch.empty_like(v) if needv else None,None,None,None,None,None)
+ 
+ 
+ @contextmanager
+@@ -170,6 +222,8 @@
+     """Replace only numerics in the shape-only cost run, restore on all exits."""
+     original=flash_attention.flash_attn.flash_attn_func
+     original_indexed=sparse.indexed_attention
++    from .methods import linear_backend
++    original_fused=linear_backend.fused_recurrent_attention
+     active={};handles=[]
+     def enter(module,args):
+         active.update(config=module.config,sequence=args[0].shape[1],calls=0)
+@@ -178,20 +232,33 @@
+     def native(q,k,v,causal=False,window_size=(-1,-1)):
+         b,t,h,d=q.shape
+         edges=b*h*(causal_edges(t,window_size[0]) if causal else t*t)
+-        # CPU SDPA mask/padding plus flash score recomputation are an envelope,
+-        # not a measured instruction count. Core theory excludes kernel replay.
++        # Canonical Flash training counts necessary score/LSE reconstruction in
++        # theory. Full-score padding is only an envelope, not measured execution.
+         return _AttentionCost.apply(q.transpose(1,2),k.transpose(1,2),v.transpose(1,2),
+-                 edges,b*h*t*t,ledger,"native_attention").transpose(1,2)
++                 edges,b*h*t*t,ledger,"native_attention","flash_lse").transpose(1,2)
+     def indexed(q,k,v,indices,valid):
+         c=active["config"];calls=active["calls"];active["calls"]+=1
+         branches=2 if c.method=="nsa" else 1
+         start=(calls//branches)*c.reference_chunk;stop=start+q.shape[-2]
+         edges=q.shape[0]*q.shape[1]*selected_edges(c,start,stop,stage,calls%branches)
+-        return _AttentionCost.apply(q,k,v,edges,indices.numel(),ledger,"indexed_attention")
++        # The current eager implementation stores P in ctx.save_for_backward.
++        return _AttentionCost.apply(q,k,v,edges,indices.numel(),ledger,"indexed_attention",
++                                    "saved_probabilities")
++    def fused(q,k,v,*,kind,decay=None,beta=None,slots=None,initial_state=None,
++              eps=1e-6,output_final_state=False):
++        if initial_state is not None or output_final_state:
++            raise ValueError("formal fused cost assumes reset rows and no final-state loss")
++        dtype=q.dtype
++        q,k,v=(x.float() for x in (q,k,v))
++        log_decay=decay.float().log() if decay is not None else None
++        output=_FusedRecurrentCost.apply(q,k,v,log_decay,beta,slots,kind,ledger)
++        return output.to(dtype),None
+     flash_attention.flash_attn.flash_attn_func=native;sparse.indexed_attention=indexed
++    linear_backend.fused_recurrent_attention=fused
+     try:yield
+     finally:
+         flash_attention.flash_attn.flash_attn_func=original;sparse.indexed_attention=original_indexed
++        linear_backend.fused_recurrent_attention=original_fused
+         for handle in handles:handle.remove()
+ 
+ 
+--- a/reference/config.py
++++ b/reference/config.py
+@@ -135,8 +135,10 @@
+             raise ValueError("invalid Huginn distribution/backprop depth")
+         if self.index_rope_dim % 2 or not 0 <= self.index_rope_dim <= self.index_dim:
+             raise ValueError("invalid partial RoPE size")
+-        if self.backend not in ("reference",):
++        if self.backend not in ("reference", "fla_fused"):
+             raise ValueError("this reference does not silently substitute an unavailable backend")
++        if self.backend == "fla_fused" and self.method not in ("deltanet", "gsa", "gla"):
++            raise ValueError("fla_fused is audited only for DeltaNet, GSA and GLA")
+         if self.scale not in ("formal", "debug"):
+             raise ValueError("scale must be formal or debug")
+         if self.scale == "formal":
+--- /dev/null
++++ b/reference/linear_backend_check.py
+@@ -0,0 +1,146 @@
++"""Bounded CUDA oracle for the optional A01/A02/A03 FLA backend.
++
++Run under the job's exclusive GPU allocation, before pilot or formal training.
++This tests the recurrent operator, not a full-model update or a quality result.
++"""
++import argparse
++import json
++from pathlib import Path
++import time
++
++import torch
++from torch.nn import functional as F
++
++from .methods.linear import recurrent_attention
++from .methods.linear_backend import (SUPPORTED_METHODS, fused_recurrent_attention,
++                                     linear_backend_provenance)
++
++
++def _error(actual, expected):
++    actual, expected = actual.double(), expected.double()
++    delta = actual - expected
++    return dict(
++        finite=bool(torch.isfinite(actual).all() and torch.isfinite(expected).all()),
++        max_abs=float(delta.abs().max()),
++        normalized_max=float(delta.abs().max() / expected.abs().max().clamp_min(1e-7)),
++        normalized_rms=float(delta.square().mean().sqrt()
++                             / expected.square().mean().sqrt().clamp_min(1e-7)),
++    )
++
++
++def _flatten_states(state):
++    return tuple(state) if isinstance(state, (tuple, list)) else (state,)
++
++
++def _inputs(kind, *, batch, length, heads, dim, slots, dtype, device):
++    shape = (batch, length, heads, dim)
++    q, k, v = (torch.randn(shape, device=device) * .3 for _ in range(3))
++    if kind == "deltanet":
++        q = F.normalize(q, dim=-1) * dim ** -.5
++        k = F.normalize(k, dim=-1)
++        beta = torch.randn(batch, length, heads, device=device).sigmoid()
++        return dict(q=q.to(dtype), k=k.to(dtype), v=v.to(dtype), beta=beta.to(dtype))
++    if kind == "gla":
++        q = q * dim ** -.5
++        decay = (F.logsigmoid(torch.randn(shape, device=device)) / 16).exp()
++        return dict(q=q.to(dtype), k=k.to(dtype), v=v.to(dtype), decay=decay)
++    q, k, v = (F.silu(x) for x in (q, k, v))
++    decay = (F.logsigmoid(torch.randn(batch, length, heads, slots, device=device)) / 8).exp()
++    return dict(q=q.to(dtype), k=k.to(dtype), v=v.to(dtype), decay=decay, slots=1-decay)
++
++
++def _clone(inputs):
++    return {key: value.detach().clone().requires_grad_(True) for key, value in inputs.items()}
++
++
++def check(kind, inputs):
++    source = _clone(inputs)
++    target = _clone(inputs)
++    started = time.monotonic()
++    expected, expected_state = recurrent_attention(**source, kind=kind)
++    actual, actual_state = fused_recurrent_attention(**target, kind=kind, output_final_state=True)
++    output_error = _error(actual, expected)
++    actual_states, expected_states = _flatten_states(actual_state), _flatten_states(expected_state)
++    if len(actual_states) != len(expected_states):
++        raise RuntimeError('fused/reference final-state counts differ')
++    state_errors = [_error(a, b) for a, b in zip(actual_states, expected_states)]
++    # Final state is checked numerically but is not part of the training loss.
++    upstream = torch.randn_like(actual)
++    (expected.float() * upstream.float()).sum().backward()
++    (actual.float() * upstream.float()).sum().backward()
++    grad_errors = {}
++    for key in source:
++        if source[key].grad is None or target[key].grad is None:
++            raise RuntimeError("missing gradient for " + key)
++        grad_errors[key] = _error(target[key].grad, source[key].grad)
++
++    # Carrying state between pieces must reproduce the whole row. Carry is
++    # solely an oracle exercise; the production model resets each packed row.
++    midpoint = inputs["q"].shape[1] // 2
++    with torch.no_grad():
++        left = {key: value[:, :midpoint].contiguous() for key, value in inputs.items()}
++        right = {key: value[:, midpoint:].contiguous() for key, value in inputs.items()}
++        first, state = fused_recurrent_attention(**left, kind=kind, output_final_state=True)
++        second, _ = fused_recurrent_attention(**right, kind=kind, initial_state=state,
++                                              output_final_state=True)
++        carried_error = _error(torch.cat((first, second), dim=1), actual.detach())
++        changed = {key: value.clone() for key, value in inputs.items()}
++        for key, value in changed.items():
++            value[:, midpoint:] = inputs[key][:, midpoint:].flip(1)
++        changed_output, _ = fused_recurrent_attention(**changed, kind=kind)
++        causal_error = float((changed_output[:, :midpoint] - actual.detach()[:, :midpoint]).abs().max())
++        separate, _ = fused_recurrent_attention(
++            **{key: value[:1].contiguous() for key, value in inputs.items()}, kind=kind)
++        row_error = float((separate - actual.detach()[:1]).abs().max())
++
++    low_precision = inputs["q"].dtype in (torch.bfloat16, torch.float16)
++    # Fixed before pilot: BF16 gradients differ at rounding boundaries. Report
++    # both normalized metrics; never adjust thresholds based on quality/CORE.
++    rms_limit, max_limit = (.015, .06) if low_precision else (.001, .005)
++    errors = [output_error, *state_errors, carried_error, *grad_errors.values()]
++    passed = (all(value["finite"] and value["normalized_rms"] <= rms_limit
++                  and value["normalized_max"] <= max_limit for value in errors)
++              and causal_error == 0 and row_error == 0)
++    torch.cuda.synchronize()
++    return dict(method=kind, dtype=str(inputs["q"].dtype), shape=list(inputs["q"].shape),
++                output=output_error, states=state_errors, gradients=grad_errors,
++                carried_state=carried_error, causal_max_abs=causal_error,
++                row_reset_max_abs=row_error, rms_limit=rms_limit, max_limit=max_limit,
++                elapsed_seconds=time.monotonic()-started, passed=passed)
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--methods", nargs="+", choices=SUPPORTED_METHODS, default=list(SUPPORTED_METHODS))
++    parser.add_argument("--lengths", type=int, nargs="+", default=[32, 128, 2048])
++    parser.add_argument("--heads", type=int, default=12)
++    parser.add_argument("--dim", type=int, default=128)
++    parser.add_argument("--slots", type=int, default=64)
++    parser.add_argument("--batch", type=int, default=2)
++    parser.add_argument("--output", type=Path, required=True)
++    args = parser.parse_args()
++    if any(length < 2 for length in args.lengths):
++        raise ValueError("oracle lengths must be at least two")
++    if not torch.cuda.is_available():
++        raise RuntimeError("this is a CUDA kernel oracle; no CPU fallback")
++    torch.manual_seed(42)
++    result = dict(scope="recurrent_operator_oracle_not_full_model_training",
++                  backend=linear_backend_provenance("fla_fused"),
++                  device=torch.cuda.get_device_name(), results=[])
++    args.output.parent.mkdir(parents=True, exist_ok=True)
++    for kind in args.methods:
++        for length in args.lengths:
++            for dtype in (torch.float32, torch.bfloat16):
++                inputs = _inputs(kind, batch=args.batch, length=length, heads=args.heads,
++                                 dim=args.dim, slots=args.slots, dtype=dtype, device="cuda")
++                item = check(kind, inputs)
++                result["results"].append(item)
++                result["passed"] = all(row["passed"] for row in result["results"])
++                args.output.write_text(json.dumps(result, indent=2)+"\n")
++                print(json.dumps(item), flush=True)
++                if not item["passed"]:
++                    raise RuntimeError("FLA recurrent output/state/gradient oracle failed")
++
++
++if __name__ == "__main__":
++    main()
+--- a/reference/methods/linear.py
++++ b/reference/methods/linear.py
+@@ -154,6 +154,7 @@
+         super().__init__()
+         self.config = config
+         self.kind = config.method
++        self.backend = config.backend
+         d, h = config.width, config.heads
+         self.c_q = Linear(d, d, bias=False)
+         self.c_k = Linear(d, d, bias=False)
+@@ -223,7 +224,14 @@
+             gate = self.gate_up(self.gate_down(x)).reshape(b, t, c.heads, c.head_dim)
+             if self.kind == "gla": decay = (F.logsigmoid(gate.float())/16).exp()
+             else: decay = (-self.log_decay.exp()*F.softplus(gate.float()+self.dt_bias)).exp()
+-        y, _ = recurrent_attention(q, k, v, kind=self.kind, decay=decay, beta=beta, slots=slots)
++        if self.backend == "reference":
++            scan = recurrent_attention
++        elif self.backend == "fla_fused":
++            from .linear_backend import fused_recurrent_attention
++            scan = fused_recurrent_attention
++        else:
++            raise ValueError("unsupported linear backend: " + str(self.backend))
++        y, _ = scan(q, k, v, kind=self.kind, decay=decay, beta=beta, slots=slots)
+         if self.kind != "elu_linear":
+             if self.kind == "gsa": y = F.silu(y)
+             y = norm(y)*self.output_gain.to(y.dtype)
+@@ -231,5 +239,6 @@
+         if hasattr(self, "output_gate"):
+             y = y*F.silu(self.output_gate(x))
+         self.last_aux = x.new_zeros(())
+-        self.last_stats = {"state_precision": str(accumulation_dtype(x)), "sequence_length": t}
++        self.last_stats = {"state_precision": str(accumulation_dtype(x)), "sequence_length": t,
++                           "backend": self.backend}
+         return self.c_proj(y)
+--- /dev/null
++++ b/reference/methods/linear_backend.py
+@@ -0,0 +1,149 @@
++"""Explicit, pinned FLA recurrent training backend for A01/A02/A03.
++
++The readable scan remains the default and numerical oracle. This adapter keeps
++the common projections, feature maps, convolution and output normalization in
++``linear.py``; it replaces only the recurrent state update/readout. It never
++silently falls back, never resets at BOS, and never carries state across rows.
++
++FLA's fused recurrent backward replays states. Its cost must be audited as this
++backend, not copied from the reference-autograd proof. No chunked/checkpointed
++kernel is selected here. Inputs and state arithmetic are FP32, matching the
++reference scan's accumulation policy; outputs are cast back to the input dtype.
++"""
++from functools import lru_cache
++import hashlib
++import importlib
++from pathlib import Path
++
++import torch
++
++
++BACKENDS = ("reference", "fla_fused")
++SUPPORTED_METHODS = ("deltanet", "gsa", "gla")
++FLA_COMMIT = "c885377e65a36f612bd10f57b7d1daa55224c31b"
++FLA_VERSION = "0.6.0"
++# SHA256 of relative path + NUL + content + NUL, sorted across fla/**/*.py.
++# The pin is the same upstream source snapshot documented in SOURCES.md.
++FLA_SOURCE_SHA256 = "18729a1590a253a66733572032b41eb1a6a94af7e6eeb07c9618c7b2a987635b"
++FLA_SOURCE_FILES = 562
++
++
++@lru_cache(maxsize=1)
++def _fla_runtime():
++    """Import lazily so ordinary CPU/reference use has no FLA dependency."""
++    fla = importlib.import_module("fla")
++    root = Path(fla.__file__).resolve().parent
++    files = sorted(root.rglob("*.py"))
++    digest = hashlib.sha256()
++    for path in files:
++        digest.update(path.relative_to(root).as_posix().encode())
++        digest.update(b"\0")
++        digest.update(path.read_bytes())
++        digest.update(b"\0")
++    actual = digest.hexdigest()
++    if (getattr(fla, "__version__", None) != FLA_VERSION
++            or len(files) != FLA_SOURCE_FILES or actual != FLA_SOURCE_SHA256):
++        raise RuntimeError(
++            "FLA source differs from the audited pin " + FLA_COMMIT
++            + "; install its exact source snapshot before selecting this backend"
++        )
++    from fla.ops.delta_rule import fused_recurrent_delta_rule
++    from fla.ops.gla import fused_recurrent_gla
++    from fla.ops.gsa import fused_recurrent_gsa
++    import triton
++    provenance = dict(
++        name="fla_fused", upstream="fla-org/flash-linear-attention",
++        upstream_commit=FLA_COMMIT, package_version=FLA_VERSION,
++        source_sha256=actual, source_files=len(files),
++        torch=torch.__version__, triton=triton.__version__,
++        state_precision="torch.float32", recurrent_inputs="torch.float32",
++        scale=1.0, state_reset="packed_row", backward="fused_with_state_replay",
++        chunked=False, activation_checkpointing=False,
++    )
++    return (fused_recurrent_delta_rule, fused_recurrent_gsa,
++            fused_recurrent_gla), provenance
++
++
++def linear_backend_provenance(backend="reference"):
++    if backend not in BACKENDS:
++        raise ValueError("unsupported linear backend: " + str(backend))
++    if backend == "reference":
++        return dict(name="reference", torch=torch.__version__,
++                    state_precision="torch.float32_for_low_precision_inputs",
++                    state_reset="packed_row", backward="pytorch_autograd")
++    return dict(_fla_runtime()[1])
++
++
++def configure_linear_backend(model, backend="reference"):
++    """Bind the trainer's explicit choice; config/proof must agree upstream.
++
++    Configuration admission is the trainer's responsibility. This function
++    rejects a different frozen config.backend, preventing a caller from using
++    a reference cost proof and then silently substituting the fused backend.
++    """
++    if backend not in BACKENDS:
++        raise ValueError("unsupported linear backend: " + str(backend))
++    if getattr(model.config, "backend", "reference") != backend:
++        raise ValueError("selected backend differs from the frozen model config")
++    from .linear import LinearMixer
++    mixers = [module for module in model.modules() if isinstance(module, LinearMixer)]
++    if not mixers:
++        raise ValueError("selected model does not contain linear mixers")
++    if backend != "reference" and any(m.kind not in SUPPORTED_METHODS for m in mixers):
++        raise ValueError("fused backend is audited only for A01 DeltaNet, A02 GSA and A03 GLA")
++    provenance = linear_backend_provenance(backend)
++    for module in mixers:
++        module.backend = backend
++    return provenance
++
++
++def fused_recurrent_attention(q, k, v, *, kind, decay=None, beta=None,
++                              slots=None, initial_state=None, eps=1e-6,
++                              output_final_state=False):
++    """Dispatch interface deliberately matches ``linear.recurrent_attention``.
++
++    Q is already scaled by the mixer for DeltaNet/GLA. GSA's address has no
++    sqrt(K) scaling in the mathematical reference, so all three pass scale=1.
++    FLA consumes log gates while the reference API consumes multiplicative
++    decay; the conversion and its gradient are ordinary, costed PyTorch ops.
++    """
++    if kind not in SUPPORTED_METHODS:
++        raise ValueError("fused backend does not implement " + str(kind))
++    if not q.is_cuda or not k.is_cuda or not v.is_cuda:
++        raise ValueError("fla_fused requires CUDA tensors")
++    if q.dtype not in (torch.float16, torch.bfloat16, torch.float32):
++        raise ValueError("FLA fused scan supports FP32/BF16/FP16, not an FP64 oracle")
++    if q.ndim != 4 or q.shape != k.shape or v.shape[:3] != q.shape[:3] or not q.shape[1]:
++        raise ValueError("expected nonempty [batch,time,head,feature] q/k/v")
++    if kind == "deltanet" and beta is None:
++        raise ValueError("DeltaNet requires beta")
++    if kind in ("gsa", "gla") and decay is None:
++        raise ValueError("gated scan requires multiplicative decay")
++    if kind == "gsa" and slots is None:
++        raise ValueError("GSA requires slot writes")
++    (delta, gsa, gla), _ = _fla_runtime()
++    dtype = q.dtype
++    # Disable caller autocast explicitly; both state updates and gradients use
++    # the reference FP32 accumulation path, not a hidden BF16 state policy.
++    with torch.autocast(device_type="cuda", enabled=False):
++        qf, kf, vf = (x.float().contiguous() for x in (q, k, v))
++        if initial_state is not None:
++            initial_state = (tuple(x.float().contiguous() for x in initial_state)
++                             if kind == "gsa" else initial_state.float().contiguous())
++        if kind == "deltanet":
++            output, state = delta(qf, kf, vf, beta=beta.float().contiguous(),
++                                  scale=1.0, initial_state=initial_state,
++                                  output_final_state=output_final_state,
++                                  use_qk_l2norm_in_kernel=False)
++        else:
++            log_decay = decay.float().log().contiguous()
++            if kind == "gla":
++                output, state = gla(qf, kf, vf, gk=log_decay, scale=1.0,
++                                     initial_state=initial_state,
++                                     output_final_state=output_final_state)
++            else:
++                output, state = gsa(qf, kf, vf, s=slots.float().contiguous(),
++                                     g=log_decay, scale=1.0,
++                                     initial_state=initial_state,
++                                     output_final_state=output_final_state)
++    return output.to(dtype), state
+--- /dev/null
++++ b/reference/train.py
+@@ -0,0 +1,576 @@
++"""Eight-rank A01/A02/A03 training with a frozen input and evaluation budget.
++
++Example: torchrun --standalone --nproc-per-node=8 -m reference.train
++  --config reference/configs/deltanet.json --site-config site.local.json
++  --output /persistent/runs/A01 --micro-batch 8
++
++Smoke and pilot outputs are permanently distinct from formal experiments.
++Only a calibrated backend can enter formal training. All training data cursor,
++optimizer, random state and cumulative cost are checkpointed together.
++"""
++from __future__ import annotations
++
++import argparse
++from contextlib import nullcontext
++from dataclasses import asdict, replace
++import hashlib
++import json
++import math
++import os
++from pathlib import Path
++import sys
++import time
++
++from .config import Protocol, load_config
++
++SUPPORTED_METHODS = ("deltanet", "gsa", "gla")
++
++
++def digest_json(value):
++    return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
++
++
++def initialize(seed):
++    """Native seed/TF32 recipe with explicit rank-device NCCL initialization."""
++    from datetime import timedelta
++    import random
++    import numpy as np
++    import torch
++    import torch.distributed as dist
++    world = int(os.environ.get("WORLD_SIZE", "1"))
++    rank = int(os.environ.get("RANK", "0"))
++    local_rank = int(os.environ.get("LOCAL_RANK", "0"))
++    device = torch.device("cuda", local_rank) if torch.cuda.is_available() else torch.device("cpu")
++    if device.type == "cuda":
++        torch.cuda.set_device(device)
++        torch.backends.cuda.matmul.allow_tf32 = True
++        torch.backends.cudnn.allow_tf32 = True
++    if world > 1:
++        options = dict(timeout=timedelta(minutes=10))
++        if device.type == "cuda":
++            dist.init_process_group("nccl", device_id=device, **options)
++        else:
++            dist.init_process_group("gloo", **options)
++    random.seed(seed)
++    np.random.seed(seed)
++    torch.manual_seed(seed)
++    if device.type == "cuda":
++        torch.cuda.manual_seed_all(seed)
++    return rank, world, device
++
++
++def precision_policy(model):
++    """Concrete runtime precision is part of resume and campaign identity."""
++    import torch
++    from nanochat.common import COMPUTE_DTYPE
++    return dict(training_autocast_dtype=str(torch.bfloat16), native_compute_dtype=str(COMPUTE_DTYPE),
++                cuda_matmul_allow_tf32=bool(torch.backends.cuda.matmul.allow_tf32),
++                cudnn_allow_tf32=bool(torch.backends.cudnn.allow_tf32),
++                float32_matmul_precision=torch.get_float32_matmul_precision(),
++                input_embedding_dtype=str(model.transformer.wte.weight.dtype),
++                unembedding_dtype=str(model.lm_head.weight.dtype),
++                parameter_dtypes=sorted({str(param.dtype) for param in model.parameters()}),
++                gradient_reduction="DDP average in each parameter gradient dtype",
++                gradient_scaler=False)
++
++
++def run_mode(smoke_steps=0, pilot_steps=0):
++    if smoke_steps < 0 or pilot_steps < 0 or (smoke_steps and pilot_steps):
++        raise ValueError("choose one nonnegative smoke or pilot step limit")
++    limit = smoke_steps or pilot_steps
++    if limit >= Protocol().steps:
++        raise ValueError("bounded checks must stop before the formal training budget")
++    return "smoke" if smoke_steps else "pilot" if pilot_steps else "formal"
++
++
++def static_update_cost(config, proof):
++    """The proof is one complete GLOBAL update, including optimizer once.
++
++    Never multiply it by the number of ranks or accumulation microsteps.
++    Only the three static, joint-training linear methods are supported here.
++    """
++    if config.method not in SUPPORTED_METHODS:
++        raise ValueError("this trainer only admits A01 DeltaNet, A02 GSA and A03 GLA")
++    p = Protocol()
++    if (proof.get("method") != config.method or proof.get("model_hash") != config.fingerprint
++            or proof.get("protocol_hash") != p.fingerprint or proof.get("unknown")):
++        raise ValueError("cost proof does not cover the actual method/model/protocol")
++    stages = proof.get("stages", [])
++    if len(stages) != 1 or stages[0].get("stage") != "joint" or stages[0].get("depth") is not None:
++        raise ValueError("static linear training requires one audited joint stage")
++    stage = stages[0]
++    cost = stage["cost"]
++    total = cost["total"]
++    if type(total) is not int or total <= 0 or stage["optimizer_steps"] != p.steps:
++        raise ValueError("invalid static cost/stage coverage")
++    if proof["total_training_flops"] != total * p.steps:
++        raise ValueError("cumulative cost is not the sum of complete global updates")
++    if cost.get("sequence_len", p.sequence_len) != p.sequence_len:
++        raise ValueError("audited context length differs")
++    phases = cost.get("phases", {})
++    if set(phases) != {"forward", "backward", "optimizer"} or sum(phases.values()) != total:
++        raise ValueError("cost proof must cover forward, backward and optimizer")
++    return total
++
++
++def make_plan(config, proof, micro_batch, world=8, *, smoke_steps=0, pilot_steps=0,
++              backend=None):
++    p = Protocol()
++    if config.method not in SUPPORTED_METHODS or config.scale != "formal":
++        raise ValueError("only full-dimension A01/A02/A03 configurations are supported")
++    mode = run_mode(smoke_steps, pilot_steps)
++    accumulation = p.accumulation(micro_batch, world)
++    actual_backend = backend or config.backend
++    if mode == "formal" and actual_backend != config.backend:
++        raise ValueError("runtime backend must equal the calibrated model configuration")
++    cost = static_update_cost(config, proof) if proof is not None else None
++    if mode == "formal" and cost is None:
++        raise ValueError("formal training requires an admitted theoretical cost proof")
++    limit = smoke_steps or pilot_steps or p.steps
++    return dict(method=config.method, mode=mode, backend=actual_backend,
++                optimizer_steps=limit, formal_optimizer_steps=p.steps,
++                global_batch_tokens=p.global_batch_tokens, total_input_tokens=limit*p.global_batch_tokens,
++                sequence_len=p.sequence_len, world_size=world, micro_batch=micro_batch,
++                accumulation=accumulation, rows_per_rank=p.global_batch_tokens//world//p.sequence_len,
++                theory_flops_per_update=cost, theory_total_flops=None if cost is None else cost*limit,
++                cost_admitted=proof is not None,
++                validation_steps=list(p.validation_steps) if mode == "formal" else [0, limit],
++                core_steps=list(p.core_steps) if mode == "formal" else [],
++                final_bpb_tokens=p.final_bpb_tokens if mode == "formal" else None,
++                protocol_hash=p.fingerprint, model_hash=config.fingerprint)
++
++
++def check_cursor(budget, rows, world, update_cost, *, complete_events=True):
++    """Check exact global input order and theory history before any resumed update."""
++    p = Protocol()
++    budget.validate()
++    if rows*world*p.sequence_len != budget.input_tokens:
++        raise ValueError("rank-local best-fit row cursor differs from the token budget")
++    if update_cost is not None and budget.theory_flops != budget.optimizer_step*update_cost:
++        raise ValueError("cumulative theory cost differs from the audited update history")
++    if complete_events:
++        for actual, expected in ((budget.val_steps, p.validation_steps), (budget.core_steps, p.core_steps)):
++            # The current checkpoint can precede a scheduled evaluation, but
++            # events strictly before it can never be skipped.
++            if [s for s in actual if s < budget.optimizer_step] != [s for s in expected if s < budget.optimizer_step]:
++                raise ValueError("checkpoint omits an earlier mandatory evaluation")
++
++
++def validate_core_result(result):
++    if not result.get("full_core") or result.get("expected_tasks") != Protocol().core_tasks:
++        raise ValueError("CORE was not run with the full frozen task pool")
++    if result.get("protocol_hash") != Protocol().fingerprint:
++        raise ValueError("CORE protocol fingerprint differs")
++    a, b = result.get("results", {}), result.get("centered_results", {})
++    if len(a) != 22 or set(a) != set(b):
++        raise ValueError("CORE must contain all 22 task results")
++    if not all(math.isfinite(float(x)) for x in [*a.values(), *b.values(), result["core_metric"]]):
++        raise ValueError("nonfinite CORE result")
++
++
++def runtime_source_manifest():
++    """Extend the native fingerprint to include this trainer and reference code."""
++    from nanochat.experiment.runtime import source_manifest
++    from nanochat.experiment.data import sha256
++    manifest = source_manifest()
++    root = Path(__file__).resolve().parents[1]
++    for path in sorted((root/"reference").rglob("*.py")):
++        if not set(path.parts) & {"tests", "__pycache__"}:
++            manifest["files"][str(path.relative_to(root))] = sha256(path)
++    manifest["sha256"] = digest_json(manifest["files"])
++    return manifest
++
++
++def archive_replay(output, step):
++    """Keep evidence of superseded work while replaying a committed checkpoint."""
++    output = Path(output)
++    archive = output/"replayed_events"/str(time.time_ns())
++    metrics = output/"metrics.jsonl"
++    if metrics.exists():
++        kept, replayed = [], []
++        for line in metrics.read_text().splitlines():
++            try:
++                target = kept if json.loads(line).get("step", 0) <= step else replayed
++            except (ValueError, TypeError):
++                target = replayed
++            target.append(line)
++        if replayed:
++            archive.mkdir(parents=True, exist_ok=True)
++            (archive/"metrics.jsonl").write_text("\n".join(replayed)+"\n")
++            temp = metrics.with_suffix(".jsonl.tmp")
++            temp.write_text("\n".join(kept)+("\n" if kept else "")); temp.replace(metrics)
++    for pattern in ("val_*.json", "core_*.json", "smoke_bpb_*.json", "pilot_bpb_*.json"):
++        for path in output.glob(pattern):
++            tail = path.stem.rsplit("_", 1)[-1]
++            if tail.isdigit() and int(tail) > step:
++                archive.mkdir(parents=True, exist_ok=True); path.rename(archive/path.name)
++    names = ("run_status.json",) if step == Protocol().steps else ("core_final.json", "bpb_final.json", "run_status.json")
++    for name in names:
++        path = output/name
++        if path.exists():
++            archive.mkdir(parents=True, exist_ok=True); path.rename(archive/name)
++    # A crashed atomic checkpoint has no completion manifest and is never used.
++    for path in output.glob("checkpoint_[0-9]*"):
++        if path.is_dir() and not (path/"complete.json").exists():
++            archive.mkdir(parents=True, exist_ok=True); path.rename(archive/path.name)
++
++
++def parse_args(argv=None):
++    from nanochat.experiment.site import add_runtime_arguments
++    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
++    add_runtime_arguments(parser)
++    parser.add_argument("--config", required=True, type=Path)
++    parser.add_argument("--output", required=True, type=Path)
++    parser.add_argument("--backend", choices=("reference", "fla_fused"))
++    parser.add_argument("--resume", type=Path)
++    parser.add_argument("--dry-run", action="store_true")
++    parser.add_argument("--smoke-steps", type=int, default=0)
++    parser.add_argument("--pilot-steps", type=int, default=0)
++    parser.add_argument("--uncalibrated-pilot", action="store_true",
++                        help="pilot only: explicit backend feasibility check without any admitted cost claim")
++    parser.add_argument("--smoke-val-tokens", type=int, default=0)
++    parser.add_argument("--log-every", type=int, default=10)
++    parser.add_argument("--checkpoint-every", type=int, default=5000,
++                        help="frozen at 5000 for formal; bounded runs also save at their stop")
++    parser.add_argument("--world-size", type=int, default=8, help="planning only; actual size comes from torchrun")
++    args = parser.parse_args(argv)
++    args.micro_batch = args.micro_batch or 8
++    mode = run_mode(args.smoke_steps, args.pilot_steps)
++    if args.log_every < 1 or args.checkpoint_every != 5000:
++        parser.error("log frequency must be positive; checkpoint interval is frozen at 5000")
++    if args.uncalibrated_pilot and mode != "pilot":
++        parser.error("--uncalibrated-pilot requires --pilot-steps")
++    if args.smoke_val_tokens < 0 or (args.smoke_val_tokens and mode == "formal"):
++        parser.error("evaluation token override is only allowed for explicit bounded checks")
++    return args
++
++
++def main(argv=None):
++    # Site resolution precedes torch, tokenizer and external kernel imports.
++    from nanochat.experiment.site import bootstrap_runtime
++    bootstrap_runtime(argv)
++    args = parse_args(argv)
++    import torch
++    import torch.distributed as dist
++    from torch.nn.parallel import DistributedDataParallel as DDP
++    from nanochat.experiment.data import atomic_json, sha256
++    from nanochat.experiment.runtime import autocast, synchronize, append_event, rng_state, restore_rng
++    from nanochat.native_experiment.config import NativeTrainConfig
++    from nanochat.native_experiment.checkpoint import save_checkpoint, load_checkpoint
++    from nanochat.native_experiment.data import BestFitStream, verify_resources
++    from nanochat.experiment.evaluation import verify_core
++    from nanochat.tokenizer import RustBPETokenizer
++    from .model import build_model
++    from .optimizer import build_optimizer, set_schedule
++    from .protocol import admit_config, BudgetState, events_at, evaluate_bpb, evaluate_core
++
++    p = Protocol()
++    if args.uncalibrated_pilot:
++        config, proof = load_config(args.config), None
++        if args.backend is not None and args.backend != config.backend:
++            config = replace(config, backend=args.backend)
++    else:
++        config, proof = admit_config(args.config)
++    plan = make_plan(config, proof, args.micro_batch, args.world_size,
++                     smoke_steps=args.smoke_steps, pilot_steps=args.pilot_steps, backend=args.backend)
++    # Deliberately different pilot backend cannot reuse a reference cost proof.
++    if plan["backend"] != config.backend:
++        if not args.uncalibrated_pilot:
++            raise ValueError("backend differs from calibrated configuration; use an explicitly uncalibrated pilot")
++    if args.dry_run:
++        print(json.dumps(plan, indent=2)); return
++    if args.wandb_mode != "disabled":
++        raise ValueError("reference trainer currently writes local metrics; set --wandb-mode disabled")
++    if args.resources is None:
++        raise ValueError("--resources or site resources is required")
++    output = args.output.resolve()
++    data_dir = (args.data_dir or args.resources/"base_data_climbmix").resolve()
++    rank, world, device = initialize(p.seed)
++    p.accumulation(args.micro_batch, world)
++    if device.type != "cuda":
++        raise ValueError("full-dimension training requires eight CUDA ranks; use --dry-run for CPU planning")
++    from nanochat.common import COMPUTE_DTYPE
++    if COMPUTE_DTYPE != torch.bfloat16:
++        raise ValueError("the frozen native training recipe requires NANOCHAT_DTYPE=bfloat16")
++    accumulation = p.accumulation(args.micro_batch, world)
++    plan["world_size"] = world
++    run_lock = None
++    run_owned = False
++    started = time.monotonic()
++    state = None
++    model = optimizer = stream = None
++    try:
++        # Broadcast lock/preflight errors so peers never wait indefinitely at a
++        # barrier when rank zero rejects a duplicate output or bad resume.
++        error = [None]
++        if rank == 0:
++            try:
++                import fcntl
++                output.mkdir(parents=True, exist_ok=True)
++                run_lock = (output/"run.lock").open("a")
++                fcntl.flock(run_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
++                if (output/"provenance.json").exists() and not args.resume:
++                    raise ValueError("output already contains a run; use --resume or a new output")
++                if args.resume:
++                    if args.resume.resolve().parent != output or not (output/"provenance.json").exists():
++                        raise ValueError("exact resume requires a checkpoint in its original output directory")
++                    complete = json.loads((args.resume/"complete.json").read_text())
++                    if any(int(q.name.removeprefix("checkpoint_")) > complete["step"]
++                           for q in output.glob("checkpoint_[0-9]*")
++                           if q.is_dir() and (q/"complete.json").exists()):
++                        raise ValueError("output contains later checkpoints; select a new output")
++            except Exception as exc:
++                error[0] = str(exc)
++        dist.broadcast_object_list(error, src=0)
++        if error[0]:
++            raise ValueError(error[0])
++        run_owned = rank == 0
++        resources, manifest_hash = verify_resources(args.resources, data_dir)
++        core_manifest = verify_core(args.resources)
++        os.environ["NANOCHAT_BASE_DIR"] = str(args.resources.resolve())
++        tokenizer = RustBPETokenizer.from_directory(args.resources/"tokenizer")
++        if tokenizer.get_vocab_size() != config.vocab_size:
++            raise ValueError("model/tokenizer vocabulary mismatch")
++        source = runtime_source_manifest()
++        train_config = NativeTrainConfig()
++        p.validate_train_config(train_config)
++        model = build_model(config, device, seed=p.seed)
++        model.set_training_stage(0)
++        backend = plan["backend"]
++        from .methods.linear_backend import configure_linear_backend, linear_backend_provenance
++        configure_linear_backend(model, backend=backend)
++        backend_record = linear_backend_provenance(backend)
++        optimizer = build_optimizer(model, train_config)
++        stream = BestFitStream(data_dir, tokenizer, "train", rank, world, p.sequence_len,
++                               p.packing_buffer, p.tokenizer_batch_size)
++        update_cost = plan["theory_flops_per_update"]
++        calibration = json.loads(args.config.read_text()).get("calibration", {})
++        identity = dict(protocol_hash=p.fingerprint, model_hash=config.fingerprint,
++                        configuration_sha256=sha256(args.config), source_sha256=source["sha256"],
++                        data_manifest_sha256=manifest_hash, tokenizer_sha256=resources["tokenizer_sha256"],
++                        core_manifest_sha256=sha256(args.resources/"core_manifest.json"),
++                        mode=plan["mode"], backend=backend_record, torch=torch.__version__,
++                        precision_policy=precision_policy(model),
++                        micro_batch=args.micro_batch, world_size=world,
++                        theory_flops_per_update=update_cost)
++        identity_hash = digest_json(identity)
++        state = dict(step=0, budget=BudgetState().state_dict(), identity_hash=identity_hash,
++                     training_seconds=0., validation_seconds=0., core_seconds=0.,
++                     final_bpb_complete=False, mode=plan["mode"], bounded_eval_steps=[],
++                     next_global_sequence=0, evaluation_files={})
++        if args.resume:
++            saved = load_checkpoint(args.resume, model, optimizer, stream, rank, world)
++            if saved["model_config"] != asdict(config) or saved["train_config"] != asdict(train_config):
++                raise ValueError("resume model or optimizer/scheduler configuration differs")
++            state = saved["state"]
++            if state.get("identity_hash") != identity_hash or state.get("mode") != plan["mode"]:
++                raise ValueError("resume source/resource/backend/mode/batch fingerprint differs")
++            for name, checksum in state["evaluation_files"].items():
++                if not (output/name).is_file() or sha256(output/name) != checksum:
++                    raise ValueError("resume evaluation evidence missing or changed: "+name)
++            del saved
++        budget = BudgetState.from_state_dict(state["budget"])
++        check_cursor(budget, stream.rows, world, update_cost, complete_events=plan["mode"] == "formal")
++        if state["step"] != budget.optimizer_step or state["next_global_sequence"] != budget.input_tokens//p.sequence_len:
++            raise ValueError("checkpoint optimizer/global sequence cursor differs")
++        if budget.optimizer_step > plan["optimizer_steps"]:
++            raise ValueError("checkpoint is later than the requested bounded stop")
++        model.set_step(budget.optimizer_step)
++        wrapped = DDP(model, device_ids=[device.index], broadcast_buffers=False)
++        if rank == 0:
++            if args.resume:
++                archive_replay(output, budget.optimizer_step)
++            provenance = dict(identity=identity, identity_hash=identity_hash, plan=plan,
++                              model=asdict(config), train=asdict(train_config), source=source,
++                              calibration=calibration, cost_proof=proof, core_manifest=core_manifest,
++                              command=sys.argv, cuda=torch.version.cuda,
++                              device=torch.cuda.get_device_name(device),
++                              parameters=sum(t.numel() for t in model.parameters()),
++                              optimizer_groups=[{k:v for k,v in g.items() if k != "params"}
++                                                for g in optimizer.param_groups])
++            atomic_json(output/(f"resume_{budget.optimizer_step:08d}.json" if args.resume else "provenance.json"), provenance)
++
++        def emit(event):
++            if rank == 0:
++                append_event(output, event); print(json.dumps(event), flush=True)
++
++        def status(phase, **extra):
++            state.update(step=budget.optimizer_step, budget=budget.state_dict(),
++                         next_global_sequence=budget.input_tokens//p.sequence_len)
++            if rank == 0:
++                summary = {k:v for k,v in state.items() if k != "evaluation_files"}
++                atomic_json(output/"run_status.json", dict(phase=phase, **summary, **extra,
++                            protocol_hash=p.fingerprint, model_hash=config.fingerprint,
++                            input_tokens=budget.input_tokens, theory_flops=budget.theory_flops,
++                            updated_at=time.time()))
++
++        def save_evaluation(name, result):
++            receipt = [None]
++            if rank == 0:
++                atomic_json(output/name, result)
++                receipt[0] = sha256(output/name)
++            dist.broadcast_object_list(receipt, src=0)
++            state["evaluation_files"][name] = receipt[0]
++
++        val_tokens = p.val_tokens if plan["mode"] == "formal" else (
++            args.smoke_val_tokens or args.micro_batch*world*p.sequence_len)
++        if val_tokens % (args.micro_batch*world*p.sequence_len):
++            raise ValueError("evaluation tokens do not divide complete distributed batches")
++
++        def evaluate(kind):
++            # Evaluation is excluded from training tokens/FLOPs and cannot alter
++            # training's random state, data stream or keyed routing state.
++            saved_rng = rng_state()
++            try:
++                status("evaluating_"+kind)
++                if kind == "val":
++                    result = evaluate_bpb(model, tokenizer, data_dir, args.resources,
++                        batch=args.micro_batch, rank=rank, world=world, device=device,
++                        tokens=val_tokens, smoke=plan["mode"] != "formal")
++                    if not math.isfinite(result["bpb"]):
++                        raise ValueError("nonfinite validation BPB")
++                    state["validation_seconds"] += result["seconds"]
++                    if plan["mode"] == "formal":
++                        budget.record_eval("val"); prefix = "val"
++                    else:
++                        state["bounded_eval_steps"].append(budget.optimizer_step); prefix = plan["mode"]+"_bpb"
++                else:
++                    before = time.monotonic()
++                    result = evaluate_core(model, tokenizer, args.resources, device)
++                    validate_core_result(result)
++                    state["core_seconds"] += time.monotonic()-before
++                    budget.record_eval("core"); prefix = "core"
++                event = dict(event="validation" if kind == "val" else "core",
++                             step=budget.optimizer_step, mode=plan["mode"], **result)
++                save_evaluation(f"{prefix}_{budget.optimizer_step:08d}.json", event)
++                if kind == "core" and budget.optimizer_step == p.steps:
++                    save_evaluation("core_final.json", event)
++                emit(event)
++            finally:
++                restore_rng(saved_rng)
++
++        def due_events():
++            if plan["mode"] == "formal":
++                scheduled = events_at(budget.optimizer_step)
++                if scheduled["val"] and budget.optimizer_step not in budget.val_steps:
++                    evaluate("val")
++                if scheduled["core"] and budget.optimizer_step not in budget.core_steps:
++                    evaluate("core")
++            elif budget.optimizer_step in (0, plan["optimizer_steps"]) and budget.optimizer_step not in state["bounded_eval_steps"]:
++                evaluate("val")
++
++        model.train()
++        due_events()
++        rows_per_rank = plan["rows_per_rank"]
++        while budget.optimizer_step < plan["optimizer_steps"]:
++            step = budget.optimizer_step
++            model.set_step(step)
++            optimizer.zero_grad(set_to_none=True)
++            multiplier = set_schedule(optimizer, step, train_config)
++            synchronize(device); before = time.perf_counter(); data_seconds = 0.
++            torch.cuda.reset_peak_memory_stats(device)
++            sums = torch.zeros(4, device=device, dtype=torch.float64)
++            for micro in range(accumulation):
++                data_before = time.perf_counter()
++                x, y = stream.batch(args.micro_batch, device)
++                data_seconds += time.perf_counter()-data_before
++                expected_offset = step*(p.global_batch_tokens//p.sequence_len)+rank*rows_per_rank+micro*args.micro_batch
++                model.set_row_offset(expected_offset)
++                context = wrapped.no_sync() if micro < accumulation-1 else nullcontext()
++                with context, autocast(device):
++                    loss = wrapped(x, y)
++                    (loss/accumulation).backward()
++                n = x.numel()
++                sums[0] += model.last_lm_loss.detach().double()*n
++                sums[1] += model.last_aux_loss.detach().double()*n
++                sums[2] += loss.detach().double()*n
++                sums[3] += n
++            # Boolean validation adds no new gradient norm/rescaling algorithm.
++            # The scientific optimizer receives the unmodified DDP gradients.
++            if any(param.grad is None for param in model.parameters() if param.requires_grad):
++                raise RuntimeError("a trainable parameter has no gradient")
++            finite = torch.stack([torch.isfinite(param.grad).all() for param in model.parameters()
++                                  if param.requires_grad]).all()
++            if not bool(finite):
++                raise RuntimeError("nonfinite gradient")
++            synchronize(device); opt_before = time.perf_counter()
++            optimizer.step()
++            synchronize(device); opt_seconds = time.perf_counter()-opt_before
++            dist.all_reduce(sums)
++            values = sums.tolist()
++            if int(values[3]) != p.global_batch_tokens or not all(math.isfinite(x) for x in values[:3]):
++                raise RuntimeError("nonfinite objective or global input-token budget drift")
++            duration = time.perf_counter()-before
++            if update_cost is None:
++                budget.optimizer_step += 1; budget.input_tokens += p.global_batch_tokens
++                budget.validate()  # No theoretical cost is claimed by this pilot.
++            else:
++                budget.advance(p.global_batch_tokens, update_cost)
++            check_cursor(budget, stream.rows, world, update_cost, complete_events=False)
++            state["training_seconds"] += duration
++            status("training")
++            if budget.optimizer_step % args.log_every == 0 or step == 0 or budget.optimizer_step == plan["optimizer_steps"]:
++                dense = calibration.get("dense_flops_per_token")
++                deviation = None if dense is None or update_cost is None else update_cost/(p.global_batch_tokens*dense)-1
++                emit(dict(event="train", step=budget.optimizer_step, input_tokens=budget.input_tokens,
++                          mode=plan["mode"], lm_loss=values[0]/values[3], aux_loss=values[1]/values[3],
++                          loss=values[2]/values[3], gradients_finite=True, lr_multiplier=multiplier,
++                          step_seconds=duration, data_seconds=data_seconds, optimizer_seconds=opt_seconds,
++                          tokens_per_second=p.global_batch_tokens/duration,
++                          training_seconds=state["training_seconds"], gpu_hours=world*state["training_seconds"]/3600,
++                          theory_flops=budget.theory_flops if update_cost is not None else None,
++                          step_theory_flops=update_cost, theory_relative_error=deviation,
++                          rolling_budget_warning=deviation is not None and abs(deviation)>p.routing_warning,
++                          peak_memory_bytes=torch.cuda.max_memory_allocated(device)))
++            due_events()
++            if budget.optimizer_step % args.checkpoint_every == 0 and budget.optimizer_step != plan["optimizer_steps"]:
++                status("checkpointing")
++                save_checkpoint(output, model, optimizer, stream, config, train_config, state, rank, world)
++
++        if plan["mode"] == "formal" and not state["final_bpb_complete"]:
++            status("evaluating_final_bpb")
++            saved_rng = rng_state()
++            try:
++                final = {split:evaluate_bpb(model, tokenizer, data_dir, args.resources,
++                    batch=args.micro_batch, rank=rank, world=world, device=device,
++                    tokens=p.final_bpb_tokens, split=split) for split in ("train", "val")}
++                if not all(math.isfinite(item["bpb"]) for item in final.values()):
++                    raise ValueError("nonfinite final independent BPB")
++                save_evaluation("bpb_final.json", dict(step=p.steps, independent=True, **final))
++                emit(dict(event="final_bpb", step=p.steps, **{s+"_bpb":r["bpb"] for s,r in final.items()}))
++                state["final_bpb_complete"] = True
++            finally:
++                restore_rng(saved_rng)
++        # Refuse a moving implementation and verify resources at the end, too.
++        if runtime_source_manifest()["sha256"] != source["sha256"]:
++            raise ValueError("source changed during the run")
++        verify_resources(args.resources, data_dir); verify_core(args.resources)
++        for name, checksum in state["evaluation_files"].items():
++            if sha256(output/name) != checksum:
++                raise ValueError("evaluation evidence changed during run: "+name)
++        status("checkpointing")
++        final_checkpoint = output/f"checkpoint_{budget.optimizer_step:08d}"
++        if not (final_checkpoint/"complete.json").exists():
++            save_checkpoint(output, model, optimizer, stream, config, train_config, state, rank, world)
++        verdict = budget.final_status(calibration["dense_flops_per_token"]) if plan["mode"] == "formal" else "not_formal"
++        if plan["mode"] == "formal" and not state["final_bpb_complete"]:
++            verdict = "incomplete_eval"
++        phase = "training_complete" if plan["mode"] == "formal" else plan["mode"]+"_complete"
++        status(phase, budget_status=verdict, checkpoint=str(final_checkpoint),
++               final_core_complete=budget.core_steps == list(p.core_steps),
++               elapsed_this_invocation_seconds=time.monotonic()-started)
++        emit(dict(event="complete", step=budget.optimizer_step, phase=phase, budget_status=verdict))
++    except BaseException as exc:
++        if run_owned:
++            atomic_json(output/"failure.json", dict(error=repr(exc), at=time.time(), state=state,
++                                                    mode=plan["mode"], command=sys.argv))
++        raise
++    finally:
++        if dist.is_initialized():
++            dist.destroy_process_group()
++        if run_lock is not None:
++            run_lock.close()
++
++
++if __name__ == "__main__":
++    main()

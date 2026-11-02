@@ -1,12 +1,11 @@
-"""Arena disclosure cards and the scope of arena pull requests (arena rules)."""
+"""Arena disclosure cards and the scope of arena pull requests (ARENA.md)."""
 import json
 import shutil
 
 from nexttransformer.arena import check, check_card, classify
 from nexttransformer.export_run import REPO, RESULTS
 
-TEMPLATE = REPO/"docs/public/arena/card.template.json"
-DOCS = "docs/src/content/docs/"
+TEMPLATE = REPO/"docs/arena/card.template.json"
 
 
 def test_published_cards_and_the_template_are_valid():
@@ -45,7 +44,7 @@ def test_card_rules(tmp_path):
 def test_a_complete_entry_is_the_admitted_matched_run(tmp_path):
     root = copy_results(tmp_path)
     card = json.loads(TEMPLATE.read_text())
-    card.update(id="gdn-entry", methodId="gdn", runIds=["gdn"], status="complete")
+    card.update(id="gdn-entry", methodId="gdn", runIds=["gdn_h20_seed42"], status="complete")
     card["artifacts"].update(checkpointUrl="https://example.org/checkpoint", logsUrl="https://example.org/logs")
     (root/"arena/gdn-entry.json").write_text(json.dumps(card))
     assert check(root) == []
@@ -66,18 +65,18 @@ def test_scope_keeps_the_contract_and_published_evidence_fixed():
     verdicts = {path: verdict for verdict, _, path, _ in classify([
         ("A", "nexttransformer/models/ring.py"), ("M", "nexttransformer/models/registry.py"),
         ("M", "nexttransformer/models/backbone.py"), ("M", "nexttransformer/evaluation/formal.py"),
-        ("M", "nanochat/dataloader.py"), ("M", DOCS+"arena/rules.md"), ("A", "results/runs/ring.json"),
+        ("M", "nanochat/dataloader.py"), ("M", "nextt_gym/service.py"), ("M", "ARENA.md"), ("A", "results/runs/ring.json"),
         ("M", "results/runs/nsa.json"), ("A", "evidence/costs/ring/ring.json"),
         ("A", "results/arena/ring.json"), ("D", "results/arena/circle-loop.json"), ("A", "results/methods/ring.json"),
-        ("A", DOCS+"results/runs/ring.md"), ("M", DOCS+"methods/sources.md"), ("M", "README.md")])}
+        ("M", "docs/records/EXPERIMENTS.md"), ("M", "README.md")])}
     assert verdicts == {
         "nexttransformer/models/ring.py": "ok", "nexttransformer/models/registry.py": "review",
         "nexttransformer/models/backbone.py": "blocked", "nexttransformer/evaluation/formal.py": "blocked",
-        "nanochat/dataloader.py": "blocked", DOCS+"arena/rules.md": "blocked",
+        "nanochat/dataloader.py": "blocked", "nextt_gym/service.py": "blocked", "ARENA.md": "blocked",
         "results/runs/ring.json": "ok",
         "results/runs/nsa.json": "blocked", "evidence/costs/ring/ring.json": "ok",
         "results/arena/ring.json": "ok", "results/arena/circle-loop.json": "blocked", "results/methods/ring.json": "ok",
-        DOCS+"results/runs/ring.md": "ok", DOCS+"methods/sources.md": "ok", "README.md": "review"}
+        "docs/records/EXPERIMENTS.md": "ok", "README.md": "review"}
 
 
 def test_scope_allows_a_calibration_refresh_but_not_a_model_change():

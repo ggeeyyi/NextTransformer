@@ -1,4 +1,4 @@
-"""kda_hybrid and its VE-off controls; MLA oracles reused from the frozen Others implementation."""
+"""H04 and its VE-off controls; MLA oracles reused from xxy/others-attention 8cba0a3."""
 from dataclasses import replace
 import copy
 import pytest

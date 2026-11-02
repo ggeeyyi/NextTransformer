@@ -1,0 +1,169 @@
+{
+ "round2": {
+  "pool": {
+   "attnres_gate_canon": {
+    "attempt_id": "att_000040",
+    "verification_id": "ver_000112",
+    "flops_vs_anchor_pct": 0.257,
+    "debug_step_seconds": 2.082,
+    "debug_peak_memory_bytes": 88363305984,
+    "debug_median_util": 100
+   },
+   "attnres_full_gate": {
+    "attempt_id": "att_000041",
+    "verification_id": "ver_000113",
+    "flops_vs_anchor_pct": 0.367,
+    "debug_step_seconds": 2.223,
+    "debug_peak_memory_bytes": 83792243712,
+    "debug_median_util": 100
+   },
+   "attnres_full_canon": {
+    "attempt_id": "att_000045",
+    "verification_id": "ver_000117",
+    "flops_vs_anchor_pct": 0.348,
+    "debug_step_seconds": 2.377,
+    "debug_peak_memory_bytes": 86106526720,
+    "debug_median_util": 100
+   },
+   "attnres_full_gate_canon": {
+    "attempt_id": "att_000046",
+    "verification_id": "ver_000118",
+    "flops_vs_anchor_pct": 0.407,
+    "debug_step_seconds": 2.399,
+    "debug_peak_memory_bytes": 88442735616,
+    "debug_median_util": 100
+   },
+   "attnres_gate_elem": {
+    "attempt_id": "att_000042",
+    "verification_id": "ver_000114",
+    "flops_vs_anchor_pct": -0.544,
+    "debug_step_seconds": 1.866,
+    "debug_peak_memory_bytes": 82071545856,
+    "debug_median_util": 100
+   },
+   "attnres_canon_abcd": {
+    "attempt_id": "att_000043",
+    "verification_id": "ver_000115",
+    "flops_vs_anchor_pct": 0.337,
+    "debug_step_seconds": 2.682,
+    "debug_peak_memory_bytes": 102259926016,
+    "debug_median_util": 100
+   },
+   "attnres_deep_gate": {
+    "attempt_id": "att_000044",
+    "verification_id": "ver_000116",
+    "flops_vs_anchor_pct": 0.072,
+    "debug_step_seconds": 1.994,
+    "debug_peak_memory_bytes": 88303827968,
+    "debug_median_util": 100
+   },
+   "attnres_deep_canon": {
+    "attempt_id": "att_000047",
+    "verification_id": "ver_000119",
+    "flops_vs_anchor_pct": 0.05,
+    "debug_step_seconds": 2.177,
+    "debug_peak_memory_bytes": 91014988800,
+    "debug_median_util": 100
+   },
+   "attnres_moe": {
+    "attempt_id": "att_000048",
+    "verification_id": "ver_000120",
+    "flops_vs_anchor_pct": 0.217,
+    "debug_step_seconds": 2.319,
+    "debug_peak_memory_bytes": 109205872640,
+    "debug_median_util": 100,
+    "debug_job": "gyyige-nextt-gym-s2moecheck-f73190a42b-debug-20261101-232229",
+    "note": "added 2026-11-01 23:00 after round-1 values to update 1,536 showed no round-1 change ahead of the anchors; first estimate failed V3 on aten.scatter.src (topk backward), fixed by gathering the routing weights"
+   },
+   "attnres_moe16": {
+    "attempt_id": "att_000049",
+    "verification_id": "ver_000121",
+    "flops_vs_anchor_pct": 0.264,
+    "debug_step_seconds": 2.499,
+    "debug_peak_memory_bytes": 125500232192,
+    "debug_median_util": 100,
+    "debug_job": "gyyige-nextt-gym-s2moe16check-3d290d6fa8-debug-20261101-232908",
+    "note": "added 2026-11-01 23:28 with attnres_moe; same compute and parameters, 16 experts of half width, top-4"
+   }
+  },
+  "first_submission_refused": {
+   "attnres_full_canon": "DUPLICATE_ATTEMPT (similarity 0.971-0.974 to a VARIANT file with the same config); resubmitted with only the round-1 components it uses",
+   "attnres_full_gate_canon": "DUPLICATE_ATTEMPT (similarity 0.971-0.974 to a VARIANT file with the same config); resubmitted with only the round-1 components it uses",
+   "attnres_deep_canon": "DUPLICATE_ATTEMPT (similarity 0.971-0.974 to a VARIANT file with the same config); resubmitted with only the round-1 components it uses"
+  },
+  "debug_job": "gyyige-nextt-gym-s2r2check-ad12dcf0c3-debug-20261101-202119",
+  "bundle_commit": "e06e4e6",
+  "cancelled_round1": {
+   "run_id": "run_000046",
+   "name": "dense_full_gate",
+   "at": "2026-11-01 23:31",
+   "reason": "cancelled while queued so round 2 could launch; dense control of attnres_gate, whose dev gain over attnres was 0.0000 at update 1,536; every round-2 candidate builds on attnres"
+  },
+  "round2_selection": {
+   "chosen": [
+    "attnres_moe",
+    "attnres_gate_canon",
+    "attnres_full_gate",
+    "attnres_full_canon",
+    "attnres_moe16",
+    "attnres_canon_abcd"
+   ],
+   "not_chosen": {
+    "attnres_deep_gate": "attnres_deep +0.0075 vs attnres at update 512 (dev)",
+    "attnres_deep_canon": "attnres_deep +0.0075 vs attnres at update 512 (dev)",
+    "attnres_gate_elem": "displaces a layer and FFN width; the head-wise gate's gain faded by update 1,536",
+    "attnres_full_gate_canon": "two changes against every earlier candidate (one-primary-change rule)"
+   },
+   "basis": "dev BPB at update 512 vs attnres 0.8900: gate -0.0027, full -0.0011, canon -0.0007, ve_all +0.0022, deep +0.0075; gate at 1,536 = attnres"
+  },
+  "run_000051_oom": {
+   "run": "run_000051",
+   "failed_at_update": 300,
+   "checkpoint": 250,
+   "peak_memory_gib": 130.9,
+   "limit_gib": 139.8,
+   "cause": "rank 6 CUDA OOM in backward (126.89 GiB allocated + 8.67 GiB reserved-unallocated, 4 GiB request)",
+   "gym_restart": "segment 2 queued from checkpoint 250, then cancelled by the operator before admission",
+   "platform_gpu_hours_segment1": 6.16,
+   "relaunch": {
+    "run": "run_000053",
+    "backend": "koala-h20-mb8",
+    "micro_batch": 8,
+    "accumulation": 8,
+    "from_scratch": true
+   },
+   "log": "run_000051_seg1.log"
+  }
+ },
+ "round3": {
+  "round": 3,
+  "opened": "2026-11-02 08:35 (every round-2 candidate had its update-512 value)",
+  "round2_winners": {
+   "run_000050": "attnres_full_canon 0.798489",
+   "run_000049": "attnres_full_gate 0.799296"
+  },
+  "pool": {
+   "attnres_full_canon_abcd": {
+    "attempt_id": "att_000050",
+    "verification_id": "ver_000122",
+    "parent": "attnres_canon_abcd (att_000043)",
+    "flops_vs_anchor_pct": 0.486,
+    "debug_step_seconds": 3.014,
+    "debug_peak_memory_bytes": 102338241536,
+    "debug_median_util": 100,
+    "debug_job": "gyyige-nextt-gym-s2r3check-2d76533a5f-debug-20261102-095911",
+    "debug_checks": "debug-s2r3-20261102"
+   }
+  },
+  "selection": {
+   "chosen": [
+    "attnres_full_canon_abcd"
+   ],
+   "not_chosen": {
+    "attnres_full_gate_canon": "verified in the round-2 pool (att_000046) and one change against the round-2 winner attnres_full_canon, but the gate was neutral at update 2,000 (+0.0005 on attnres_canon, -0.0002 on attnres_full), and with it the estimated Stage 2 total is about 595 of the 600 platform GPU-hour cap"
+   },
+   "basis": "dev BPB at update 1,536: attnres_canon 0.8114, attnres_full_canon 0.80934, attnres_canon_abcd 0.80943; Full AttnRes and Canon-A-D each lowered attnres_canon by about 0.002",
+   "budget": "estimated before launch: 499.7 platform GPU-hours through round 2 (round 1 255.8, round 2 241.6 with run_000051's first segment, debug pods 1.5 upper bound) + about 51 for this candidate"
+  }
+ }
+}

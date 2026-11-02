@@ -1,8 +1,8 @@
 {
- "id": "retnet",
+ "id": "retnet_h20_seed42",
  "methodId": "retnet",
  "cohort": "reference-v1",
- "name": "RetNet · Retention",
+ "name": "A05 RetNet",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,8 +789,9 @@
    "value": 0.29364787857781705
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/retnet.json",
- "source": "Run directory · cumulative audit",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/h20-retnet-formal.json",
+ "hardware": "H20 ×8",
+ "source": "H20 run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
   "protocol": "nextt-reference-50b-v1",
@@ -1129,7 +1130,7 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/retnet.json"
+  "source": "Cumulative audit · evidence/checks/h20-retnet-formal.json"
  },
  "order": 5
 }

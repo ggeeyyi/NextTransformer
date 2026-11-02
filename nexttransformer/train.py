@@ -27,7 +27,7 @@ from nexttransformer.runtime.site import add_runtime_arguments, bootstrap_runtim
 
 
 def rank_kernel_caches(environ):
-    """Give every local rank its own Triton and Inductor cache directory.
+    """Give every local rank its own Triton and Inductor cache directory (record 031).
 
     A process benchmarks each kernel configuration it finds no cached choice for. Ranks sharing
     one cache keep only the last writer's choice, so a later process could run another
@@ -89,10 +89,9 @@ from nexttransformer.protocol.admission import (BudgetState, admit_config, data_
 from nexttransformer.evaluation.formal import evaluate_bpb, evaluate_core
 from nexttransformer.checks.validate import source_hash as reference_source_hash
 
-# Dense BF16 tensor-core peaks, used only for the reported execution MFU; unknown devices report no MFU.
-# Ordered so that a name is matched before any of its substrings ("H200" before "H20").
-PEAK_FLOPS = (("B200", 2250e12), ("H200", 989e12), ("H100", 989e12), ("H800", 989e12), ("H20", 148e12),
-              ("A100", 312e12), ("A800", 312e12), ("L40S", 362e12))
+# Dense BF16 tensor-core peaks, used only for the reported execution MFU.
+# Ordered so that "H200" is matched before its substring "H20".
+PEAK_FLOPS = (("H200", 989e12), ("H100", 989e12), ("H20", 148e12), ("A800", 312e12), ("A100", 312e12))
 
 
 def stage_cost(proof, config, step):
@@ -129,7 +128,7 @@ def software_identity(config, sparse_backend="reference"):
                     native_source_sha256=native["sha256"], git_commit=native["commit"] or None,
                     python=platform.python_version(), torch=torch.__version__, cuda=torch.version.cuda,
                     nccl=".".join(map(str, nccl)) if isinstance(nccl, tuple) else nccl,
-                    code_snapshot=os.environ.get("NEXTTRANSFORMER_CODE_SNAPSHOT"))
+                    code_snapshot=os.environ.get("KOALA_CODE_SNAPSHOT_ID"))
     if config.has_sparse:
         identity.update(sparse_backend=sparse_backend)
     if config.backend in CHUNK_BACKENDS and torch.cuda.is_available():
@@ -271,7 +270,7 @@ def main(argv=None):
         from nanochat import flash_attention
         if flash_attention.USE_FA3: raise RuntimeError("FA3 backward is not deterministic; run without FA3")
         torch.backends.cuda.enable_flash_sdp(False)
-        # Efficient SDPA also needs its deterministic backward path for MLA.
+        # Efficient SDPA also needs its deterministic backward path for MLA (record 039).
         os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
         torch.use_deterministic_algorithms(True)
     if args.formal: (config, proof), findings = admit_config(args.config), []
@@ -383,7 +382,7 @@ def main(argv=None):
             parameters=sum(t.numel() for t in model.parameters()), smoke=smoke,
             admission=dict(mode=mode, findings=findings, method_source_hash=source_hash),
             resumed_from=str(resume) if resume else None,
-            wandb_mode=args.wandb_mode, wandb_note=wandb_note, job_id=os.environ.get("NEXTTRANSFORMER_JOB_ID") or os.environ.get("SLURM_JOB_ID"),
+            wandb_mode=args.wandb_mode, wandb_note=wandb_note, koala_job=os.environ.get("KOALA_JOB_NAME"),
             kernel_caches={key: os.environ.get(key) for key in ("TRITON_CACHE_DIR", "TORCHINDUCTOR_CACHE_DIR")}))
 
     peak = peak_flops(device)
@@ -454,7 +453,7 @@ def main(argv=None):
             # DDP rebuilds its gradient buckets after a process's first backward. One discarded
             # backward on a fixed dummy batch makes every update of every segment all-reduce with
             # the same rebuilt layout: on 4+ nodes NCCL's Ring all-reduce rounds by bucket layout,
-            # so a resumed segment would otherwise differ from a continuous run.
+            # so a resumed segment would otherwise differ from a continuous run (record 029).
             # No data, optimizer, budget or RNG state changes.
             if world == 1: return
             rngs, routing = rng_state(), model.routing_rng_state()

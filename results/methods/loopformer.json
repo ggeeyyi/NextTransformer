@@ -17,9 +17,10 @@
  "blocks": 15,
  "flops": 4.775756,
  "cohort": "native-v3",
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/native/model.py",
+ "owner": "xuyuan & selen",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/f41786282acf98f54292774972f6e3509ddbeb51/nanochat/native_experiment/model.py",
  "error": 0.011106993525563325,
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#historical-native-track",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/f41786282acf98f54292774972f6e3509ddbeb51/docs/COMMON_CORE_README.md",
  "costModel": "native-v3-matrix-estimate",
  "order": 21
 }

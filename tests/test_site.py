@@ -19,11 +19,11 @@ from nexttransformer.runtime.tracking import RunTracker
 def test_precedence_and_relative_paths(tmp_path):
     config=tmp_path/'machine.local.json'
     config.write_text(json.dumps({'runtime_dir':'file root','resources':'shared resources','gpus':4,'wandb_project':'file-project'}))
-    env={'NANOCHAT_RUNTIME':str(tmp_path/'env'),'NEXTTRANSFORMER_RESOURCES':str(tmp_path/'env-resources'),
+    env={'NANOCHAT_RUNTIME':str(tmp_path/'env'),'NEXTT_RESOURCES':str(tmp_path/'env-resources'),
          'GPUS':'2','WANDB_ENTITY':'my-team','PATH':'/bin'}
     values=resolve(['--site-config',str(config),'--runtime-dir',str(tmp_path/'cli root'),'--gpus','8'],env)
     assert values['NANOCHAT_RUNTIME']==str(tmp_path/'cli root')
-    assert values['NEXTTRANSFORMER_RESOURCES']==str(tmp_path/'shared resources')
+    assert values['NEXTT_RESOURCES']==str(tmp_path/'shared resources')
     assert values['NANOCHAT_VENV']==str(tmp_path/'cli root'/'venv')
     assert values['GPUS']=='8' and values['WANDB_PROJECT']=='file-project' and values['WANDB_ENTITY']=='my-team'
     assert values['HF_HUB_CACHE']==str(tmp_path/'cli root'/'huggingface'/'hub')
@@ -43,7 +43,7 @@ def test_runtime_is_explicit_and_caches_are_overridable(tmp_path):
     assert values['TIKTOKEN_CACHE_DIR']==env['TIKTOKEN_CACHE_DIR']
     assert values['HF_HUB_CACHE']==str(tmp_path/'hf'/'hub')
     assert values['WANDB_MODE']=='disabled'
-    assert values['NEXTTRANSFORMER_WANDB_METRICS']=='core'
+    assert values['NEXTT_WANDB_METRICS']=='core'
 
 
 def test_source_identity_ignores_machine_local_configuration():

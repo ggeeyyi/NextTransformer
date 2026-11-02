@@ -1,4 +1,4 @@
-"""Hybrids deltanet_hybrid, gdn_hybrid and gdn_hybrid_swa: registered layouts, per-layer mixers, windows, costs and calibration."""
+"""v2 hybrids H01/H02/H03: registered layouts, per-layer mixers, windows, costs and calibration."""
 from dataclasses import replace
 import json
 
@@ -38,9 +38,9 @@ def activate(model):
 
 def test_layouts_follow_the_registration():
     h02, h03 = hybrid_layout("gdn_hybrid", 24), hybrid_layout("gdn_hybrid_swa", 24)
-    # gdn_hybrid: GDN, GDN, GDN, attention repeated, so attention at one-based 4, 8, ..., N.
+    # H02: GDN, GDN, GDN, attention repeated, so attention at one-based 4, 8, ..., N.
     assert one_based(h02, "attention") == list(range(4, 25, 4)) and h02.count("gdn") == 18
-    # gdn_hybrid_swa: GDN first and SWA second (lit_gpt gated_delta_per_layer=2); the last layer is SWA.
+    # H03: GDN first and SWA second (lit_gpt gated_delta_per_layer=2); the last layer is SWA.
     assert one_based(h03, "swa") == list(range(2, 25, 2)) and one_based(h03, "gdn") == list(range(1, 24, 2))
     for method, bad in (("gdn_hybrid", 22), ("gdn_hybrid_swa", 23)):
         with pytest.raises(ValueError, match="multiple"):
@@ -102,7 +102,7 @@ def test_layers_use_the_registered_mixers_and_windows(method):
         elif kind in SPARSE:
             assert type(block.attn) is SparseMixer and block.attn.kind == kind
         else:
-            # The Dense baseline's native attention: 12 heads of 128, QK norm, RoPE; VE where the shell places it.
+            # B01's native attention: 12 heads of 128, QK norm, RoPE; VE where the shell places it.
             assert type(block.attn) is CausalSelfAttention
             assert (block.attn.n_head, block.attn.n_kv_head, block.attn.head_dim) == (12, 12, 128)
         assert m._window(i, c.n_layer) == ((2047, 0) if kind == "swa" else (2048, 0))
@@ -138,7 +138,7 @@ def test_sliding_window_sees_exactly_w_keys_including_the_current_token():
 
 
 def test_a_window_covering_the_context_is_full_causal_attention():
-    # The registered gdn_hybrid_swa window (2048 keys) covers the whole 2K context: SWA is then global.
+    # The registered H03 window (2048 keys) covers the whole 2K context: SWA is then global.
     covering = replace(debug_config("gdn_hybrid_swa"), sliding_window=12)
     wider = replace(covering, sliding_window=13)
     narrow = replace(covering, sliding_window=4)

@@ -1,0 +1,234 @@
+{
+  "status": "passed",
+  "previous_set": "h01-shared-20261025",
+  "source_hash": "61e4010d69a0bc38727ba6ab98e1f9a4d48f870285f589a359636c931e7995d2",
+  "previous_methods": 28,
+  "checks": {
+    "attnres": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "deeploop": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "deltanet": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "deltanet_hybrid": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "dense": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "dense_full": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "dsa": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "elu_linear": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "elu_norm": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "elu_qknorm": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "fixed_recursive": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "gdn": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "gdn_hybrid": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "gdn_hybrid_swa": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "gla": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "gsa": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "hc": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "huginn": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "kda": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "mhc": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "moba": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "nsa": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "ouro": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "qsa": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "residual_standard": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "retnet": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "seer": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    },
+    "ut_act": {
+      "model_hash": true,
+      "protocol_hash": true,
+      "parameters": true,
+      "total_training_flops": true,
+      "flops_per_token": true,
+      "stages": true
+    }
+  },
+  "anchor_flops_per_token": 4672398325.44785,
+  "anchor_training_flops": 229657722492412734375
+}

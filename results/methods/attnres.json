@@ -11,16 +11,17 @@
   "One zero-initialized pseudo-query per attention and FFN sublayer and one for the readout; parameter-free RMSNorm keys, softmax over depth",
   "Native residual/x0 scalars and backout frozen and unused; 23 full-attention layers, FFN 6144, value embeddings"
  ],
- "limitations": "Single seed 42; the preregistered pilot was skipped by the maintainers' decision. Read it as a paired difference from Standard Residual. Published gains come from other scales and MoE backbones. The reference implementation is eager PyTorch without fused kernels, so its step time, about 1.35 times Standard Residual's, reflects this implementation rather than the method. Parameters, memory and speed are outcomes, not controls.",
+ "limitations": "Single seed 42 on 8 × A800; the preregistered pilot was skipped by the owner's decision. Read it as a paired difference from Standard Residual (R00). Published gains come from other scales and MoE backbones. The reference implementation is eager PyTorch without fused kernels, so its 5.8 s per update, against 4.3 s for R00, reflects this implementation rather than the method. Parameters, memory and speed are outcomes, not controls.",
  "diagram": "residual",
  "blocks": 23,
  "ffn": 6144,
  "params": 1355882760,
  "flops": 4.679857,
  "error": 0.16,
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/residual.py",
+ "owner": "selen",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/4dd6ebb9f4f1f8b4571963c5df2aaa384eea7825/models/reference/residual.py",
  "cohort": "reference-v1",
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#full-attention-dense-and-residual-family",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/4dd6ebb9f4f1f8b4571963c5df2aaa384eea7825/reference/SOURCES.md#full-attention-dense-and-residual-family",
  "costModel": "reference-aten-math-v2",
  "order": 24
 }

@@ -1,0 +1,233 @@
+{
+  "status": "implemented; cost-admitted; bounded four-GPU update and bitwise real-data resume checks passed; formal-layout acceptance pending",
+  "owner": "kris",
+  "date": "2026-10-26",
+  "baseline_commit": "3113eb82a96a14df30fd9361684ba702fac89a16",
+  "science_hash": "95e60748722ec5d6d7b8f5fa6f52c671d6ab7098bbc15f829192d41f4aa24074",
+  "validation_source_hash": "af4d6e104d1baf004e494f1328b787dacff6f90db5d78915daee0985b1b2f7ae",
+  "initial_validation_source_hash": "793ed1de64efd71981055c0bcf38bcaff93587222e53800178568862d75fda06",
+  "source_scope": "The validation helper gained explicit full-batch --smoke rank support after single-GPU checks; model/scientific sources did not change.",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "models": {
+    "qsa_hybrid": {
+      "model_hash": "02e93f56c35991d66acb43ea7f8efbb9302816a2027bcf8c3b5e4a81aa5bb7a8",
+      "layers": 24,
+      "ffn": 5760,
+      "layout": [
+        "gdn",
+        "gdn",
+        "gdn",
+        "qsa",
+        "gdn",
+        "gdn",
+        "gdn",
+        "qsa",
+        "gdn",
+        "gdn",
+        "gdn",
+        "qsa",
+        "gdn",
+        "gdn",
+        "gdn",
+        "qsa",
+        "gdn",
+        "gdn",
+        "gdn",
+        "qsa",
+        "gdn",
+        "gdn",
+        "gdn",
+        "qsa"
+      ],
+      "value_embeddings": true,
+      "parameters": 1405174202,
+      "parameter_parts": {
+        "gdn": 213335568,
+        "qsa": 62522208,
+        "ffn": 424673280,
+        "shell": 704643146
+      },
+      "parameter_fractions": {
+        "gdn": 0.15182143800843848,
+        "qsa": 0.04449427545069604,
+        "ffn": 0.30222109073420067,
+        "shell": 0.5014631958066649
+      },
+      "gflops_per_token": 4.691636932460713,
+      "relative_error": 0.004117501478433816,
+      "total_training_flops": 230603338504308997890,
+      "proof": "../../costs/h05-h06-20261026/qsa_hybrid.json"
+    },
+    "moba_hybrid": {
+      "model_hash": "314131debc9e0d1aa7779d35fe94a29f935e1ba2a139315d81f8d1f624011b0f",
+      "layers": 25,
+      "ffn": 6016,
+      "layout": [
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "moba",
+        "attention",
+        "attention",
+        "attention"
+      ],
+      "value_embeddings": true,
+      "parameters": 1452935068,
+      "parameter_parts": {
+        "attention": 28311840,
+        "moba": 207619632,
+        "ffn": 462028800,
+        "shell": 754974796
+      },
+      "parameter_fractions": {
+        "attention": 0.01948596370447024,
+        "moba": 0.14289670376377756,
+        "ffn": 0.31799686729014925,
+        "shell": 0.519620465241603
+      },
+      "gflops_per_token": 4.659989005911318,
+      "relative_error": -0.0026558779179732817,
+      "total_training_flops": 229047779618553093750,
+      "proof": "../../costs/h05-h06-20261026/moba_hybrid.json"
+    }
+  },
+  "tests": [
+    {
+      "name": "cpu",
+      "tests": 514,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 43,
+      "seconds": 357.373
+    },
+    {
+      "name": "admission",
+      "tests": 70,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 2.408
+    },
+    {
+      "name": "kernels",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 19.088
+    }
+  ],
+  "current_admission_count": 34,
+  "hardware": {
+    "gpus": 4,
+    "physical_indices": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "model": "NVIDIA H100 80GB HBM3"
+  },
+  "environment": {
+    "python": "3.10.12",
+    "torch": "2.9.1+cu128",
+    "fla_core": "0.5.2",
+    "triton": "3.5.1",
+    "dtype": "bfloat16"
+  },
+  "evidence": {
+    "cost_comparison": "cost-comparison.json",
+    "compatibility": "compatibility.json",
+    "gpu": "gpu.json",
+    "resume": "resume.json"
+  },
+  "fixed_contract": {
+    "total_tokens": 49152000000,
+    "global_batch_tokens": 1048576,
+    "context": 2048,
+    "optimizer_updates": 46875,
+    "seed": 42,
+    "validation_events": 189,
+    "core_events": 6,
+    "core_tasks": 22,
+    "activation_checkpointing": false
+  },
+  "bounded_scope": {
+    "synthetic_complete_updates": 3,
+    "world_size": 4,
+    "micro_batch": 4,
+    "accumulation": 32,
+    "global_batch_tokens": 1048576,
+    "causal_prefix_max_abs": 0
+  },
+  "remaining": [
+    "Eight-stream eight-rank bounded acceptance, and hardware validation for any 16/32-rank deployment.",
+    "Stability pilot, including the real H05 512-update burn-in boundary; the CPU regression crosses a shortened debug boundary.",
+    "Formal 49.152B-token training, full scheduled evaluation, final independent BPB and cumulative acceptance."
+  ],
+  "formal_training_started": false,
+  "matched": false,
+  "metadata_cleanup": {
+    "note": "Only AppleDouble metadata removed; every Python module executed by earlier checks is unchanged.",
+    "removed_metadata": {
+      "nexttransformer/._train.py": "3e3b5d8c1e2d068a0697e62f3ce7b795be4323b76c002d43058db531127d0828",
+      "nexttransformer/models/._config.py": "3e3b5d8c1e2d068a0697e62f3ce7b795be4323b76c002d43058db531127d0828",
+      "nexttransformer/models/._lm.py": "3e3b5d8c1e2d068a0697e62f3ce7b795be4323b76c002d43058db531127d0828",
+      "nexttransformer/models/._registry.py": "3e3b5d8c1e2d068a0697e62f3ce7b795be4323b76c002d43058db531127d0828",
+      "nexttransformer/models/._sparse.py": "3e3b5d8c1e2d068a0697e62f3ce7b795be4323b76c002d43058db531127d0828",
+      "nexttransformer/protocol/._calibrate.py": "3e3b5d8c1e2d068a0697e62f3ce7b795be4323b76c002d43058db531127d0828",
+      "nexttransformer/protocol/._compute.py": "3e3b5d8c1e2d068a0697e62f3ce7b795be4323b76c002d43058db531127d0828",
+      "tests/._test_hybrid.py": "3e3b5d8c1e2d068a0697e62f3ce7b795be4323b76c002d43058db531127d0828",
+      "tests/._test_paper_alignment.py": "3e3b5d8c1e2d068a0697e62f3ce7b795be4323b76c002d43058db531127d0828",
+      "tests/._test_train.py": "3e3b5d8c1e2d068a0697e62f3ce7b795be4323b76c002d43058db531127d0828"
+    },
+    "tested_science_hash": "b3055a9f825995ae53af01bfcaa7ceae8ad57f810aa56eee02a87efc8b259b19",
+    "tested_four_gpu_source_hash": "fa8572197b83ebd589f1a3b92027a92c61f81a3a2885c68e815af113b2c3ba17",
+    "executable_python_files_unchanged": true,
+    "executable_python_manifest_sha256": "03a9ff8f2a9149103c5075883af271f65efdce4cd31ebe3d00ad4a22ed1ddf2c",
+    "cost_action": "All 34 configurations independently re-audited after cleanup; no previous hash relabelled. Raw GPU reports retain their actual source hashes."
+  },
+  "resume": {
+    "world_size": 4,
+    "steps": 2,
+    "input_tokens_per_trajectory": 2097152,
+    "fresh_process": true,
+    "weights_losses_optimizer_rng_data_bitwise": true,
+    "next_rows_equal": true,
+    "counters_exact": true,
+    "validation_events": 2,
+    "validation_tokens_per_event": 8192,
+    "core_run": false,
+    "layout_scope": "Four smoke streams, not the formal eight streams.",
+    "h05_stage_scope": "Both updates in burnin; GPU joint stage separately checked synthetically."
+  },
+  "resource_identity": {
+    "data_manifest_sha256": "7f37aebc75cf8b451fd9c9a1b19d71a6012f7f94678bf5dfbcb23aa12f6c5474",
+    "tokenizer_sha256": "06258dc0044b6198c6fa8ba75c5b3bbaeaeab44f4804b464d9ce5f5e3797ec54",
+    "content_check_reference": "../h04-shared-20261026/validation.json (same-day full-file content verification; current run checks the public resource manifest)"
+  },
+  "current_admission": {
+    "admitted": 34,
+    "science_hash": "95e60748722ec5d6d7b8f5fa6f52c671d6ab7098bbc15f829192d41f4aa24074",
+    "validation_source_hash": "af4d6e104d1baf004e494f1328b787dacff6f90db5d78915daee0985b1b2f7ae",
+    "all_executable_python_files_unchanged": true
+  }
+}

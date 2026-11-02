@@ -1,16 +1,14 @@
 ## What this changes
 
-<!-- A result, a new method, documentation, or a fix. Link the issue it closes or was agreed in. -->
+<!-- A new method, a finished run, a fix, or documentation. -->
 
 ## Checklist
 
-- [ ] One method or one result per pull request.
-- [ ] The training contract is unchanged: data, tokenizer, token budget, batch, schedule, seed and evaluation points.
-- [ ] **Result:** audit from `python -m nexttransformer.audit_run` in `evidence/audits/`, record written by `python -m nexttransformer.export_run`, a run-notes page, and tables refreshed with `python docs/scripts/generate.py`.
-- [ ] **New method:** plugin under `nexttransformer/methods/<method>/`, calibrated configuration and cost proof, tests, model card, and a source-notes entry.
-- [ ] **Shared code:** agreed in an issue first; `python -m nexttransformer.checks.golden --base origin/main` reports no difference, or this pull request explains why one is intended.
-- [ ] `python -m pytest -q -n auto` passes locally.
-
-## AI assistance
-
-- [ ] An AI agent prepared or substantially wrote this pull request. Agent and model: <!-- e.g. "Claude Code, model X" -->
+- [ ] Branch `<handle>/<topic>`; this PR targets `main` and the maintainer merges it.
+- [ ] Protocol unchanged: data, token budget, global batch, schedule, seed, and evaluation points.
+- [ ] New or changed fingerprinted source: a new proof set under `evidence/costs/`, and every configuration admitted.
+- [ ] New method: registry entry, calibrated configuration, tests, model card in `results/methods/`, SOURCES.md entry.
+- [ ] Finished run: record written by `nexttransformer.export_run`, audit under `evidence/checks/`, EXPERIMENTS.md record.
+- [ ] Arena entry: disclosure card in `results/arena/`; `python -m nexttransformer.arena --check` and `--scope origin/main` pass.
+- [ ] `python -m pytest -q` and `python -m nexttransformer.export_run --check` pass; website tests pass if it changed.
+- [ ] Parameter names and configuration fields unchanged for methods with trained checkpoints.

@@ -1,0 +1,277 @@
+{
+  "recorded_at": "2026-10-25T14:05:48.763097+00:00",
+  "status": "passed",
+  "tolerance": {
+    "output": 0.01,
+    "gradient": 0.03
+  },
+  "device": "NVIDIA H100 80GB HBM3",
+  "capability": [
+    9,
+    0
+  ],
+  "hopper_shared_memory": true,
+  "torch": "2.9.1+cu128",
+  "triton": "3.5.1",
+  "fla_core": "0.5.2",
+  "backend_dispatch_disabled": true,
+  "source_hash": "e906ecf93b367c99e6006eb67aa711cf68a58ce72b15140af5894d30d82808ee",
+  "rows": [
+    {
+      "kind": "deltanet",
+      "batch": 2,
+      "length": 65,
+      "seed": 0,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 2.794872400628139e-07,
+          "grad_q": 2.8018827517765914e-07,
+          "grad_k": 2.960009546741945e-07,
+          "grad_v": 2.8856180211260653e-07,
+          "grad_logit": 3.106140580279789e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 112391168
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.006150956784606861,
+          "grad_q": 0.006415174506697483,
+          "grad_k": 0.0068978404844194895,
+          "grad_v": 0.00618889043963496,
+          "grad_logit": 0.006959494910507528
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 368964096
+      }
+    },
+    {
+      "kind": "deltanet",
+      "batch": 2,
+      "length": 65,
+      "seed": 1,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 2.7749789542368157e-07,
+          "grad_q": 2.8051830293014457e-07,
+          "grad_k": 2.968225611892173e-07,
+          "grad_v": 2.854668811241897e-07,
+          "grad_logit": 3.263396913411443e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 112391168
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.006038354870849091,
+          "grad_q": 0.006311400502342948,
+          "grad_k": 0.006824340075424633,
+          "grad_v": 0.006081768024567907,
+          "grad_logit": 0.0072542670992215424
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 100528640
+      }
+    },
+    {
+      "kind": "deltanet",
+      "batch": 2,
+      "length": 2048,
+      "seed": 0,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.4956956472065455e-07,
+          "grad_q": 3.506195379006328e-07,
+          "grad_k": 4.3076328929374043e-07,
+          "grad_v": 3.580843178086554e-07,
+          "grad_logit": 4.188397167905308e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 1010962432
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.007260861968268299,
+          "grad_q": 0.007469524666949338,
+          "grad_k": 0.008994681439668825,
+          "grad_v": 0.006886258500277949,
+          "grad_logit": 0.008463641232178543
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 1006601216
+      }
+    },
+    {
+      "kind": "deltanet",
+      "batch": 2,
+      "length": 2048,
+      "seed": 1,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.491137988065846e-07,
+          "grad_q": 3.507129204026508e-07,
+          "grad_k": 4.3097801837730857e-07,
+          "grad_v": 3.582847330363689e-07,
+          "grad_logit": 4.195367388245012e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 1010962432
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.007268878934464731,
+          "grad_q": 0.007478610974921869,
+          "grad_k": 0.009009109695494592,
+          "grad_v": 0.006891206195365678,
+          "grad_logit": 0.008498476822321174
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 1006601216
+      }
+    },
+    {
+      "kind": "gdn",
+      "batch": 2,
+      "length": 65,
+      "seed": 0,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.2670905960164435e-07,
+          "grad_q": 3.271361217229063e-07,
+          "grad_k": 3.438974698874902e-07,
+          "grad_v": 3.429079095986304e-07,
+          "grad_gate": 1.446227868307189e-06,
+          "grad_logit": 3.631380113854727e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 117509632
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.005331890971023319,
+          "grad_q": 0.004828160916421448,
+          "grad_k": 0.005007309815968991,
+          "grad_v": 0.005362242982197083,
+          "grad_gate": 0.005798316564144913,
+          "grad_logit": 0.006058025152736337
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 375589376
+      }
+    },
+    {
+      "kind": "gdn",
+      "batch": 2,
+      "length": 65,
+      "seed": 1,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.312742474841295e-07,
+          "grad_q": 3.489986882361755e-07,
+          "grad_k": 3.613916222147417e-07,
+          "grad_v": 3.466394607200825e-07,
+          "grad_gate": 1.502443596658635e-06,
+          "grad_logit": 3.6739875203286466e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 117509632
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.005416348679288487,
+          "grad_q": 0.004902866506733082,
+          "grad_k": 0.005039159087847923,
+          "grad_v": 0.0053835384979935815,
+          "grad_gate": 0.0051706490478708985,
+          "grad_logit": 0.006267543526598562
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 107160576
+      }
+    },
+    {
+      "kind": "gdn",
+      "batch": 2,
+      "length": 2048,
+      "seed": 0,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.645518616156124e-07,
+          "grad_q": 3.6331205986802125e-07,
+          "grad_k": 4.10730053065313e-07,
+          "grad_v": 3.7629793524312585e-07,
+          "grad_gate": 1.3478949882515149e-06,
+          "grad_logit": 4.075833412984925e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 1101143552
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.006253987185218201,
+          "grad_q": 0.005765871654230505,
+          "grad_k": 0.006515674427352932,
+          "grad_v": 0.005885965771628369,
+          "grad_gate": 0.006475756693204609,
+          "grad_logit": 0.00711429470731883
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 1204389376
+      }
+    },
+    {
+      "kind": "gdn",
+      "batch": 2,
+      "length": 2048,
+      "seed": 1,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.641497336706251e-07,
+          "grad_q": 3.6734426150650903e-07,
+          "grad_k": 4.129816618123374e-07,
+          "grad_v": 3.762162031172827e-07,
+          "grad_gate": 1.2635557260789415e-06,
+          "grad_logit": 4.073939443580748e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 1101143552
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.006247531020891136,
+          "grad_q": 0.005774579926795318,
+          "grad_k": 0.006520721245346345,
+          "grad_v": 0.005890892787286661,
+          "grad_gate": 0.006250758051261978,
+          "grad_logit": 0.007165363973232155
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 1204389376
+      }
+    }
+  ]
+}

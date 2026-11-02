@@ -54,7 +54,7 @@ class ReferenceLM(GPT):
             if config.mlp_width != 4*config.width: block.mlp=FlexibleMLP(config)
             if config.method in LINEAR: block.attn=LinearMixer(config,i)
             elif config.method in SPARSE: block.attn=SparseMixer(config,i)
-            # Hybrid attention layers keep the native Dense-baseline attention built by GPT.
+            # Hybrid attention layers keep the native B01 attention built by GPT.
             elif config.method in HYBRID and config.layer_mixers[i] in LINEAR:
                 block.attn=LinearMixer(config,i,kind=config.layer_mixers[i])
             elif config.method in HYBRID and config.layer_mixers[i] in SPARSE:
@@ -187,7 +187,7 @@ class ReferenceLM(GPT):
     def _window(self,virtual,total):
         c=self.config
         if c.method in HYBRID:
-            # Physical == virtual (no loops). Full layers use the Dense baseline's (T, 0); a sliding
+            # Physical == virtual (no loops). Full layers use B01's (T, 0); a sliding
             # window of w keys including the current token is the left window w-1.
             if c.layer_mixers[virtual]=="swa":return (c.sliding_window-1,0)
             return (c.sequence_len,0)

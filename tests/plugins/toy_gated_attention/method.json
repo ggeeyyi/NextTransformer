@@ -2,7 +2,7 @@
  "name": "toy_gated_attention",
  "family": "others",
  "title": "Toy gated attention (test plugin)",
- "paper": {"title": "Test fixture for the mixer hook", "url": "https://github.com/Interactive-Active-AI/NextTransformer"},
+ "paper": {"title": "Test fixture for the mixer hook", "url": "https://github.com/Selen-Suyue/NextTransformer"},
  "options": {"gate_bias": 0.0},
  "debug_options": {"gate_bias": 0.5},
  "shell": {"layers": 24, "mlp_width": 6144, "window_pattern": "L"}

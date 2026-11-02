@@ -1,5 +1,5 @@
 {
- "id": "mhc",
+ "id": "nextt-v2-residual-20261023_mhc_a800_seed42",
  "methodId": "mhc",
  "cohort": "reference-v1",
  "name": "Manifold-Constrained Hyper-Connections · mHC",
@@ -789,7 +789,8 @@
    "value": 0.35327820830272355
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/mhc.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/mhc-formal.json",
+ "hardware": "A800 ×8",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -1129,7 +1130,7 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/mhc.json"
+  "source": "Cumulative audit · evidence/checks/mhc-formal.json"
  },
  "comparisonNote": "Four training segments. The registered switch to log-space Sinkhorn at update 31,500 changes the per-token cost by 6,072 FLOPs. The audit retains both proofs and excludes superseded updates."
 }

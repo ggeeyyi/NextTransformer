@@ -1,8 +1,8 @@
 {
- "id": "sssl",
+ "id": "1897a72c",
  "methodId": "dense",
  "cohort": "native-v3",
- "name": "SSSL",
+ "name": "native-v3-core8k-20261014-r2_dense_a800_seed42",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -813,7 +813,8 @@
   "boolq": 0.1831643016714799,
   "bigbench_language_identification": 0.18195818385931
  },
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/sssl.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/results/runs/sssl.json",
+ "hardware": "8 × A800 80GB",
  "source": "Per-evaluation JSON",
  "protocol": "native-v3 · historical matrix FLOPs",
  "taskEvaluations": [
@@ -1131,7 +1132,7 @@
   "step": 46875,
   "final": true,
   "accounting": "Historical matrix FLOPs · 3 × forward + recompute",
-  "source": "Maintainer-verified final training logs"
+  "source": "Owner-verified final training logs"
  },
  "order": 0
 }

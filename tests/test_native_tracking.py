@@ -59,7 +59,7 @@ def test_offline_sdk_records_native_schema_and_filtered_metrics(tmp_path,arch):
     pytest.importorskip('wandb')
     directory=tmp_path/arch;directory.mkdir()
     args=SimpleNamespace(output=directory,wandb_mode='offline',wandb_metrics='core',
-        wandb_project='nexttransformer-test',wandb_entity=None,wandb_group='native-d24-test',
+        wandb_project='nextt-test',wandb_entity=None,wandb_group='native-d24-test',
         wandb_dir=directory/'wandb',run_name=arch,resume=None)
     c=NativeModelConfig(architecture=arch);data=event()
     with RunTracker(args,0,c,NativeTrainConfig(),{'step':0,'data_manifest_sha256':'test'},'test') as tracker:

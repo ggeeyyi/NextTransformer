@@ -1,0 +1,78 @@
+{
+  "kind": "xiangyue_formal_run_cumulative_audit",
+  "method": "gla",
+  "run_id": "A03_gla",
+  "date": "2026-10-27",
+  "owner": "xiangyue",
+  "ok": true,
+  "problems": [],
+  "final_status": "matched",
+  "optimizer_steps": 46875,
+  "input_tokens": 49152000000,
+  "theory_flops": 231086853386212078125,
+  "formula_version": "reference-aten-math-v2-all-backends-replay",
+  "dense_flops_per_token": 4716615064.44785,
+  "flops_per_token": 4701474067.916099,
+  "cumulative_relative_error": -0.003210140391968652,
+  "validation_events": 189,
+  "core_events": 6,
+  "final_bpb": {
+    "train": 0.6685170939444487,
+    "val": 0.6663204042729152,
+    "tokens_per_split": 20971520,
+    "independent": true
+  },
+  "periodic_final_val_bpb": 0.6690117386942814,
+  "core": 0.3110914073851192,
+  "fingerprints": {
+    "protocol": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+    "model": "3064a203502b319559ec99eecc9db83a63df342f59f194e25255845bfa3548ba",
+    "identity": "33ce2766887855811b670e96af785f42250b4eced4e9f687a98466c65bf25707",
+    "source": "352f82ac06542d68d1c044b8b0bc017f947fd2da330014574468aa4f2241f9da",
+    "git_commit": "",
+    "reconstruction_base": "f41786282acf98f54292774972f6e3509ddbeb51",
+    "cost_source": "4044911d351da65500a0d3e635e9702f9951407f388c99e37f8b6b6a892e628e",
+    "tokenizer": "06258dc0044b6198c6fa8ba75c5b3bbaeaeab44f4804b464d9ce5f5e3797ec54",
+    "data_manifest": "34c06970ad0028cae2bef8f2d3e94951f2e5ffaf45647a90a2ff60723f38b8f9",
+    "core_manifest": "9f8acadb3b867ae19c942892025df3aa133445a9ea73dce2813d3a69b27ecc3c"
+  },
+  "backend": {
+    "name": "fla_fused",
+    "upstream": "fla-org/flash-linear-attention",
+    "upstream_commit": "c885377e65a36f612bd10f57b7d1daa55224c31b",
+    "package_version": "0.6.0",
+    "source_sha256": "18729a1590a253a66733572032b41eb1a6a94af7e6eeb07c9618c7b2a987635b",
+    "source_files": 562,
+    "torch": "2.9.1+cu128",
+    "triton": "3.5.1",
+    "state_precision": "torch.float32",
+    "recurrent_inputs": "torch.float32",
+    "scale": 1.0,
+    "state_reset": "packed_row",
+    "backward": "fused_with_state_replay",
+    "chunked": false,
+    "activation_checkpointing": false
+  },
+  "checkpoint": {
+    "manifest_sha256": "e02d6f522fd88a052e72098269403cb868aa3ef7c298774ca0bba6f74b5a0073",
+    "payload_files": 9,
+    "total_bytes": 12530707632
+  },
+  "metrics_sha256": "8f5e34f67d40457ac97e7f83774a6c79adb72b11a1444d942a8299cd599c07be",
+  "verification": {
+    "accepted_at": "2026-10-26T01:44:46+08:00",
+    "two_original_validators_passed": true,
+    "shared_storage_full_payload_SHA256_passed": true,
+    "complete_evaluation_schedule_passed": true
+  },
+  "checks": [
+    "Frozen source identity and protocol; 46875 updates / 49.152B tokens; full integer cumulative budget matched.",
+    "189 periodic full validations and six full CORE-22 evaluations; task centering and means agree.",
+    "Independent train/val BPB at final checkpoint, 20,971,520 tokens per split.",
+    "Both original archive validators passed; all nine final payloads and all evaluations read back from shared storage."
+  ],
+  "notes": [
+    "Frozen all-backends-replay accounting; historical cohort, not current-main admission.",
+    "Single seed 42; canonical GPU-hours exclude discarded replay and infrastructure overhead."
+  ]
+}

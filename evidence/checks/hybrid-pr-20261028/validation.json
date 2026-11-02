@@ -1,0 +1,86 @@
+{
+  "status": "passed",
+  "created_at": "2026-10-28T09:46:18.142983+00:00",
+  "scope": "Rebase onto main scoring interfaces; CPU compatibility and admission validation",
+  "main_base": "31489f11a1bbf40a19467bccd7acb42ccab00e11",
+  "tested_commit": "fa191c6b5c191cfb22b213a055e4690af1b9fa19",
+  "source_hash": "70606cd15bc9d3660e7dbca2293648282dfe1261cf4c443278cf2f7bdef6074f",
+  "cost_admission": {
+    "methods": 33,
+    "all_passed": true,
+    "config_and_proof_bytes_unchanged_from": "ab3a5570440385654714fc6b8c154a912a5b6276",
+    "proofs": "../../costs/hybrid-main-20261027/summary.json",
+    "new_audit_required": false,
+    "reason": "All fingerprinted scientific source and config/proof bytes unchanged since the existing audit"
+  },
+  "protocol": {
+    "unchanged": true,
+    "total_tokens": 49152000000,
+    "tokens_per_update": 1048576,
+    "updates": 46875,
+    "sequence_len": 2048,
+    "seed": 42,
+    "validation_events": 189,
+    "core22_events": 6,
+    "preflight_tolerance": 0.01,
+    "cumulative_tolerance": 0.02
+  },
+  "regressions": {
+    "command": "python -m pytest tests -q",
+    "passed": 588,
+    "skipped": 58,
+    "seconds": 126.44,
+    "log_sha256": "7fd758121372dfdc91afdaf44925f8510fbbeb4bd2d014796e4ff77c21b8b4b7"
+  },
+  "gym": {
+    "command": "python -m pytest nextt_gym/tests -q -k \"not audit_reproduces_upstream_proof and not prefix_scale_is_matched_by_its_parent\"",
+    "passed": 80,
+    "deselected": 15,
+    "seconds": 239.19,
+    "log_sha256": "2d4b6e163d8b8d00044e62112a7dd811732083d69ebb458861c8913fd5d123f3",
+    "unchanged_full_audits": "15 costly audit cases were not repeated; identical Gym/scientific code passed the full 95-case suite in ../hybrid-main-20261027/validation.json"
+  },
+  "scorer": {
+    "checkpoints": "All six Hybrid debug checkpoints pass restricted scorer inspection, public weights-only loading, exact weights and CPU logits",
+    "routing": "Both BPB/CORE backend combinations checked on all six Hybrid models with mocked metrics; fixed final BPB token count and full-CORE selection preserved",
+    "existing_h01": {
+      "status": "passed",
+      "method": "deltanet_hybrid",
+      "checkpoint_step": 12,
+      "parameters": 1403810314,
+      "weights": "exact",
+      "loading": "new scorer read_model_payload and public load_model with forced weights-only",
+      "scope": "read-only; no training or optimizer resume"
+    }
+  },
+  "website": {
+    "passed": 26,
+    "typecheck": "passed",
+    "production_build": "passed",
+    "tests_sha256": "01c145fc89b08e4f7c382138a2b23d11ff156c72d6cc9ce65a40448f86ceb00c",
+    "build_sha256": "37fc08c07a1772765b1c79970ce61bc9110408c4c356cfa8cecdfb208e63aa86"
+  },
+  "exports": {
+    "result_records": "passed",
+    "arena": "passed",
+    "scope": "No arena disclosure card changed"
+  },
+  "documentation": {
+    "main_experiment_records_preserved_verbatim": true,
+    "hybrid_records_renumbered": "043-046",
+    "changed_links_and_unique_record_anchors": "passed"
+  },
+  "environment": {
+    "python": "3.10.12",
+    "torch": "2.9.1+cu128",
+    "cuda_visible_devices": "",
+    "nanochat_dtype": "float32",
+    "torch_compile_disable": "1",
+    "omp_num_threads": 1
+  },
+  "limits": [
+    "No GPU kernel, multi-rank, full scoring-image parity or formal training acceptance is claimed by these checks.",
+    "Historical proofs and GPU evidence remain immutable; frozen runs keep their original snapshots.",
+    "The final amendment adds only validation metadata and documentation after the tested commit."
+  ]
+}

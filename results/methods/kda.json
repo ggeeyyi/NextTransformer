@@ -11,16 +11,17 @@
   "Causal convolution of width 4, Q/K L2 normalization, β and a learned decay bias",
   "Trained with FLA chunk kernels (chunk 64) and a fused causal convolution; FP64 recurrent oracle checks"
  ],
- "limitations": "The KDA mixer only, without Kimi Linear's MLA layers or MoE. The repository keeps constant 0/−3 gate initialization rather than Kimi's. The published formal run is the restarted KDA v2; a generation state cache is not implemented.",
+ "limitations": "The KDA mixer only, without Kimi Linear's MLA layers or MoE. The repository keeps constant 0/−3 gate initialization rather than Kimi's. The formal H20 run is the restarted KDA v2; a generation state cache is not implemented.",
  "diagram": "state",
  "blocks": 23,
  "ffn": 6144,
  "params": 1412126344,
  "flops": 4.692443,
  "error": 0.429,
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/linear.py",
+ "owner": "geyi",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/82bbe58a7a61d01f9eae24c360b4e5c1ff521639/reference/methods/linear.py",
  "cohort": "reference-v1",
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#linear-attention",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/82bbe58a7a61d01f9eae24c360b4e5c1ff521639/reference/SOURCES.md",
  "costModel": "reference-aten-math-v2",
  "order": 15
 }

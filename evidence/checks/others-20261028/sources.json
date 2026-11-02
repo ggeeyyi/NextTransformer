@@ -1,0 +1,35 @@
+{
+  "kind": "others_results_evidence_sources",
+  "review_date": "2026-10-28",
+  "timezone": "Asia/Hong_Kong",
+  "base_main_commit": "8ba20deb9f221bc54c1da2ae5648ac8100931b45",
+  "source_branch": "gy/others-attention",
+  "source_commit": "fe8089e3e615776cad622294d4e1a31beb8e6931",
+  "historical_records": "All experiments_record numbers inside these four audits refer to reference/EXPERIMENTS.md on source_commit, not to main docs/records/EXPERIMENTS.md.",
+  "h800_audits": {
+    "copied_unchanged": [
+      "h800-gqa-formal.json",
+      "h800-mqa-formal.json"
+    ],
+    "source_directory": "https://github.com/Selen-Suyue/NextTransformer/tree/fe8089e3e615776cad622294d4e1a31beb8e6931/reference/results",
+    "verification": "The two original cumulative audits were copied byte-for-byte; their run directories were not re-audited in this report."
+  },
+  "h20_audits": {
+    "files": [
+      "h20-mla-nope-qknorm-formal.json",
+      "h20-mla-qknorm-formal.json"
+    ],
+    "auditor": "https://github.com/Selen-Suyue/NextTransformer/blob/fe8089e3e615776cad622294d4e1a31beb8e6931/docs/others/audit_h20_run.py",
+    "source_record": "https://github.com/Selen-Suyue/NextTransformer/blob/fe8089e3e615776cad622294d4e1a31beb8e6931/reference/EXPERIMENTS.md#record-041",
+    "training_commit_recorded_by_launch": "a0c795c47eff3bf6fabb50034ddf84ab12028817",
+    "training_bundle": "c149799ca521810e23b9b1131a4fa0214261b79ecd44579dc9a68db443208347",
+    "verification": "Read-only audit of both original run directories through an existing CPU debug job; no training launched or resumed. Added canonical CORE task-set/centering/aggregate checks, final BPB consistency, pinned tokenizer/protocol checks, deterministic-mode verification and final checkpoint file inventory. Tensor payloads were not loaded or rehashed.",
+    "date_note": "The audit date field derives from run_status.json mtime in the source host timezone; both jobs ended on 2026-10-28 in UTC+8.",
+    "finished_at": {
+      "mla_qknorm": "2026-10-28T02:15:51+08:00",
+      "mla_nope_qknorm": "2026-10-28T01:57:27+08:00"
+    },
+    "audit_script": "audit_h20.py"
+  },
+  "publication_scope": "Progress report and historical run evidence. Others implementations, model cards and results/runs exports await a separate port and admission PR."
+}

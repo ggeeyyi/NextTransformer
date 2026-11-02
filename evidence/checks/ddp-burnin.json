@@ -1,0 +1,74 @@
+{
+  "created_at": "2026-10-18T05:24:54.186506+00:00",
+  "source_hash": "d7e8e34d66b6b0eafce84a87c5360af44eaf9c189cdf163ea46ba5fbaf35f6d6",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "torch": "2.9.1+cu128",
+  "dtype": "torch.bfloat16",
+  "device": "NVIDIA A800-SXM4-80GB",
+  "seed": 42,
+  "results": [
+    {
+      "method": "dsa",
+      "status": "passed",
+      "stage": "joint",
+      "model_hash": "0d84e1ee381d16f9ec411351cb09115c57a62b73e563056efc9bfff7c379b1cb",
+      "full_dimensions": false,
+      "input_shape": [
+        32,
+        2048
+      ],
+      "global_tokens": 1048576,
+      "world_size": 8,
+      "accumulation": 2,
+      "optimizer_updates": 1,
+      "loss": 5.3473286628723145,
+      "seconds": 16.327581338584423,
+      "all_rank_parameters_equal": true,
+      "peak_allocated_bytes": 11533228032,
+      "synthetic_data": true
+    },
+    {
+      "method": "qsa",
+      "status": "passed",
+      "stage": "joint",
+      "model_hash": "1e0839bda1abba96800438f52cd0cdc3102de14c314737eef91709e88e92576f",
+      "full_dimensions": false,
+      "input_shape": [
+        32,
+        2048
+      ],
+      "global_tokens": 1048576,
+      "world_size": 8,
+      "accumulation": 2,
+      "optimizer_updates": 1,
+      "loss": 10.948749542236328,
+      "seconds": 11.558020368218422,
+      "all_rank_parameters_equal": true,
+      "peak_allocated_bytes": 7108347904,
+      "synthetic_data": true
+    },
+    {
+      "method": "seer",
+      "status": "passed",
+      "stage": "joint",
+      "model_hash": "0251a9ac19d98fa36c23793f5a954d3d1f897ab06c4115306b022d125365dd46",
+      "full_dimensions": false,
+      "input_shape": [
+        32,
+        2048
+      ],
+      "global_tokens": 1048576,
+      "world_size": 8,
+      "accumulation": 2,
+      "optimizer_updates": 1,
+      "loss": 5.281848430633545,
+      "seconds": 7.714150846004486,
+      "all_rank_parameters_equal": true,
+      "peak_allocated_bytes": 4894988288,
+      "synthetic_data": true
+    }
+  ],
+  "invocation_stage": "burnin",
+  "stage_field_semantics": "trainable-parameter stage; sparse burnin also trains backbone and indexer jointly",
+  "science_hash": "2653a4b47a9952339ef23f2d210d3a5ee0c18c3359dc4b10329e3240478beb66"
+}

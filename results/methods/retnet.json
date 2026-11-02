@@ -18,9 +18,10 @@
  "params": 1410077320,
  "flops": 4.63006,
  "error": -0.906,
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/linear.py",
+ "owner": "geyi",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/165efdfd25f9fc4e6faee269353720c5330167c2/reference/methods/linear.py",
  "cohort": "reference-v1",
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#linear-attention",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/165efdfd25f9fc4e6faee269353720c5330167c2/reference/SOURCES.md",
  "costModel": "reference-aten-math-v2",
  "order": 16
 }

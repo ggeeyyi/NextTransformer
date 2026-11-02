@@ -1,0 +1,102 @@
+{
+  "recorded_at": "2026-10-25",
+  "status": "bounded_checks_passed",
+  "base_commit": "5899a53ad1020fae258187368d91ae0b4f988c46",
+  "science_hash": "657db174fe6d87a0f4af6772ce474a19631779d22c46be16484a9a8a39d3e738",
+  "validation_source_hash": "e906ecf93b367c99e6006eb67aa711cf68a58ce72b15140af5894d30d82808ee",
+  "model_hash": "924757d20560f545a9d2cd68c23da2e648fe81eadd2c745787345d9d415e8ab7",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "environment": {
+    "python": "3.10.12",
+    "torch": "2.9.1+cu128",
+    "cuda": "12.8",
+    "triton": "3.5.1",
+    "fla_core": "0.5.2",
+    "setuptools": "84.0.0",
+    "device": "NVIDIA H100 80GB HBM3",
+    "gpu_count_used": 1,
+    "native_attention": "sdpa",
+    "deterministic_attention": false,
+    "FLA_DISABLE_BACKEND_DISPATCH": "1",
+    "HF_HUB_OFFLINE": "1"
+  },
+  "tests": {
+    "cpu": {
+      "tests": 410,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 37,
+      "passed": 373,
+      "seconds": 371.907,
+      "command": "CUDA_VISIBLE_DEVICES=\"\" OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python -m pytest -q --ignore=tests/test_configs.py"
+    },
+    "admission": {
+      "tests": 46,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 46,
+      "seconds": 2.334,
+      "command": "CUDA_VISIBLE_DEVICES=\"\" python -m pytest -q tests/test_configs.py"
+    },
+    "cuda": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 5,
+      "seconds": 237.799,
+      "command": "CUDA_VISIBLE_DEVICES=<idle GPU> python -m pytest -q tests/test_reference.py -k \"cuda_path_matches or fused_causal_conv or preserves_causality\""
+    }
+  },
+  "legacy_equivalence": {
+    "status": "passed",
+    "comparison": "legacy Hybrid vs shared implementation",
+    "device": "cpu",
+    "batch": 2,
+    "sequence_len": 70,
+    "checks": {
+      "reference": {
+        "initial": true,
+        "gradients": true,
+        "logits": true,
+        "loss": true,
+        "optimizer_ownership": true
+      },
+      "fla_chunk64": {
+        "initial": true,
+        "gradients": true,
+        "logits": true,
+        "loss": true,
+        "optimizer_ownership": true
+      }
+    }
+  },
+  "calibration": {
+    "command": "CUDA_VISIBLE_DEVICES=\"\" OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python -m nexttransformer.protocol.calibrate --reuse-configs configs --output configs --results evidence/costs/h01-shared-20261025 --cache <fresh task cache> --workers 2",
+    "admitted_configurations": 28,
+    "previous_configurations_counts_unchanged": 27,
+    "h01_counts_unchanged": true,
+    "comparison": "cost-comparison.json"
+  },
+  "gpu_checks": {
+    "fla": {
+      "command": "python -m nexttransformer.checks.fla --kinds deltanet gdn --lengths 65 2048 --seeds 0 1 --batch 2 --output <check directory>/fla.json",
+      "evidence": "fla.json",
+      "cases": 8
+    },
+    "full_size": {
+      "command": "python -m nexttransformer.checks.validate --mode target --methods deltanet_hybrid --device cuda --sequence-length 2048 --micro-batch 1 --config-dir configs --output <check directory>/full-size.json",
+      "evidence": "full-size.json",
+      "data": "synthetic",
+      "full_global_update": false
+    }
+  },
+  "pending": [
+    "Target-cluster common data/tokenizer/byte-table/CORE identity verification",
+    "New-source eight-rank complete global updates and real-data fresh-process resume on registered deterministic attention",
+    "Target hardware acceptance for any intended 16/32-rank run",
+    "Remaining pilot/formal-run acceptance; no new full training launched"
+  ],
+  "historical_runs": "Resume only with their original frozen source, environment and proof; shared layout serialization changes the H01 model hash."
+}

@@ -1,0 +1,169 @@
+{
+  "status": "passed",
+  "previous_methods": 32,
+  "source_hash": "95e60748722ec5d6d7b8f5fa6f52c671d6ab7098bbc15f829192d41f4aa24074",
+  "frozen_anchor": 4672398325.44785,
+  "checks": [
+    {
+      "method": "dense",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "ut_act",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "fixed_recursive",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "huginn",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "ouro",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "deeploop",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "dsa",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "qsa",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "nsa",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "seer",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "moba",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "deltanet",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "gsa",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "gla",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "kda",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "retnet",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "elu_linear",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "elu_norm",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "elu_qknorm",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "gdn",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "dense_full",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "residual_standard",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "hc",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "mhc",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "attnres",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "gdn_hybrid",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "gdn_hybrid_swa",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "deltanet_hybrid",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "kda_hybrid",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "kda_no_ve",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "mla_nope",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    },
+    {
+      "method": "mha_no_ve",
+      "model_protocol_parameters_identical": true,
+      "stages_operators_and_counts_identical": true
+    }
+  ],
+  "all_34_costs_and_new_grid_tables_unchanged_after_metadata_cleanup": true
+}

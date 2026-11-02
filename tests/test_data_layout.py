@@ -98,7 +98,7 @@ def _rank(rank, world, port, root, name=None, extra=()):
     from nexttransformer import train
     from nexttransformer.models.config import debug_config
     stages = [dict(stage="joint", depth=None, cost=dict(total=5e15, phases=dict(forward=2e15)))]
-    if os.environ.get("NEXTTRANSFORMER_TEST_METHOD") == "ouro":  # gate-only stage from update 2
+    if os.environ.get("NEXTT_TEST_METHOD") == "ouro":  # gate-only stage from update 2
         model = replace(debug_config("ouro"), sequence_len=16, vocab_size=64,
                         ouro_gate_steps=train.Protocol().steps-2)
         stages.append(dict(stage="gate_only", depth=None, cost=dict(total=2e15, phases=dict(forward=1e15))))
@@ -132,7 +132,7 @@ def _run(world, root, name=None, extra=()):
     mp.start_processes(_rank, args=(world, port, root, name, tuple(extra)), nprocs=world, start_method="spawn")
 
 
-@pytest.mark.slow
+@pytest.mark.ddp
 def test_trainer_with_sixteen_ranks_reads_the_eight_rank_batches(tmp_path):
     shards(tmp_path)
     (tmp_path/"config.json").write_text(json.dumps(dict(calibration=dict(dense_flops_per_token=4.6e9))))
@@ -153,12 +153,12 @@ def test_trainer_with_sixteen_ranks_reads_the_eight_rank_batches(tmp_path):
     for r in range(16): assert data(16, r) == data(8, r//2)
 
 
-@pytest.mark.slow
+@pytest.mark.ddp
 def test_resumed_segment_is_bitwise_with_eight_ddp_ranks(tmp_path):
     """A run segmented after its first update and resumed in a new process equals the continuous
     run bitwise under 8-rank DDP. Needs the trainer's DDP bucket warm-up: a new process's first
     backward would otherwise all-reduce with DDP's initial buckets, and a ring all-reduce over
-    more than two ranks rounds by bucket layout."""
+    more than two ranks rounds by bucket layout (record 029)."""
     shards(tmp_path)
     (tmp_path/"config.json").write_text(json.dumps(dict(calibration=dict(dense_flops_per_token=4.6e9))))
     steps = ["--smoke-steps", "4"]  # argparse keeps the last occurrence
@@ -175,11 +175,11 @@ def test_resumed_segment_is_bitwise_with_eight_ddp_ranks(tmp_path):
     for key in a: assert torch.equal(a[key], b[key]), key
 
 
-@pytest.mark.slow
+@pytest.mark.ddp
 def test_ouro_gate_only_transition_is_bitwise_with_eight_ddp_ranks(tmp_path, monkeypatch):
     """The gate-only stage rebuilds the optimizer and the DDP reducer (then warms its buckets up).
     Crossing the boundary in a run, or resuming after it, equals the continuous 8-rank run bitwise."""
-    monkeypatch.setenv("NEXTTRANSFORMER_TEST_METHOD", "ouro")
+    monkeypatch.setenv("NEXTT_TEST_METHOD", "ouro")
     shards(tmp_path)
     (tmp_path/"config.json").write_text(json.dumps(dict(calibration=dict(dense_flops_per_token=4.6e9))))
     steps = ["--smoke-steps", "4"]

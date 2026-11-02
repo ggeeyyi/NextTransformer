@@ -27,11 +27,11 @@ def accumulation_dtype(x):
     return torch.float32 if x.dtype in (torch.float16, torch.bfloat16) else x.dtype
 
 
-# elu_qknorm: per-token q/k RMS of each head before phi, fixed at the
-# scale the stable pilot reached. Not learnable.
+# A06'' elu_qknorm: per-token q/k RMS of each head before phi, fixed at the
+# scale the stable A06' pilot reached (EXPERIMENTS record 021). Not learnable.
 ELU_QK_TEMPERATURE = 8.
 
-# GDN: the per-head gate initialization of FLA's GatedDeltaNet layer (fla 0.5.2,
+# A07 GDN: the per-head gate initialization of FLA's GatedDeltaNet layer (fla 0.5.2,
 # the authors' reference): A ~ U(0, 16), dt log-uniform in [1e-3, 1e-1], floor 1e-4.
 GDN_A_RANGE, GDN_DT_RANGE, GDN_DT_FLOOR = (0., 16.), (1e-3, 1e-1), 1e-4
 
@@ -308,7 +308,7 @@ def _fla_chunks(q, k, v, *, kind, g, beta, chunk, qk_l2norm_scale=None):
     elif kind == "kda":
         from fla.ops.kda import chunk_kda
         # disable_recompute: keep w/u/h for backward instead of recomputing them;
-        # outputs and gradients are bitwise identical.
+        # outputs and gradients are bitwise identical (EXPERIMENTS record 016).
         y, _ = chunk_kda(q, k, v, g.float().contiguous(), beta.contiguous(), scale=1.0, chunk_size=chunk,
                          disable_recompute=True)
     elif kind == "gdn":
@@ -317,7 +317,7 @@ def _fla_chunks(q, k, v, *, kind, g, beta, chunk, qk_l2norm_scale=None):
         # (gated chunk_bwd_dqkwg, issue #640). The KDA kernels evaluate the same algebra with the
         # head gate broadcast over key features, exactly (see _gdn_chunks); the redundant
         # per-feature gate work is execution cost, not theory cost (COSTS.md). The q/k L2 norm
-        # and the q scale run inside the kernel (FP32 norm, fused backward).
+        # and the q scale run inside the kernel (FP32 norm, fused backward; record 025).
         gate = g.float().unsqueeze(-1).expand(*k.shape).contiguous()
         y, _ = chunk_kda(q, k, v, gate, beta.contiguous(), scale=qk_l2norm_scale, chunk_size=chunk,
                          disable_recompute=True, use_qk_l2norm_in_kernel=True)
@@ -363,7 +363,7 @@ class _ELUChunkFP32(torch.autograd.Function):
 
     The q/k gradients of phi(q)S/phi(q)z are a small difference of two large
     terms once the phi(k) sums grow; a BF16 numerator against an FP32
-    denominator loses them entirely. The same
+    denominator loses them entirely (EXPERIMENTS record 017). The same
     registered chunk algebra is built inside forward and differentiated in
     backward under IEEE precision; nothing is recomputed. elu_norm also needs
     this precision before its output RMSNorm. Return the input feature dtype,

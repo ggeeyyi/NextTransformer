@@ -1,0 +1,46 @@
+{
+  "schema": "h20-two-node-checks/v1",
+  "date": "2026-10-21",
+  "record": "EXPERIMENTS 023",
+  "scope": "Two-node (2x8 H20-3e, 16 ranks) training path for A06'' elu_qknorm; bounded smoke check, not a formal result",
+  "job": "gyyige-nextt-probe2n-df822a1418-normal-20261021-005811",
+  "code": {
+    "commit": "a3a9fde",
+    "bundle_sha256": "2235165e5983102f644a4107e2932f98a9f375f59d3f7b8059f4620ec735306e",
+    "how_run": "job queued with bundle d74a2ff9 before the two-node code existed; its CPFS script ran a git-archive copy of a3a9fde verified file by file (242 files, sha256) against the tracked tree that bundle 2235165e packs",
+    "science_hash": "534914e0b83109acc1139e9b98d7f1a04234662be983c7705183c8d4a5b3486e",
+    "reference_source_hash": "dd3171c01ed6f1797980b298b7b742d70533f7e11d3e174c1cb00411dd73c843",
+    "native_source_sha256": "f105fdc6b3f05e467be32050e50c71c91c6e5ac473d6c759ade2055952751e07",
+    "torch": "2.9.1+cu128", "nccl": "2.27.5", "fla_core": "0.5.2"
+  },
+  "platform": {
+    "launch": "Koala MPIJob; the -c command runs on every worker (k1-<id>-worker-0/1); MASTER_ADDR = worker-0, no node-rank variable, so run.sh orders nodes by host name",
+    "nccl_transport": "NET/IB, 4 x mlx5_bond RoCE v2 at 200 Gb/s per node, GPU Direct RDMA enabled, NVLS available",
+    "allreduce_busbw_GBps": {"16_ranks_1GiB": 337.5, "16_ranks_2GiB": 345.3, "8_ranks_1GiB": 467.5, "8_ranks_2GiB": 475.7}
+  },
+  "layout": {"world": 16, "streams": 8, "ranks_per_stream": 2, "micro_batch": 8, "accumulation": 4, "global_rows": 512},
+  "bounded_check": {
+    "root": "nextt/checks/a06pp-16-bounded/elu_qknorm", "steps": 12, "smoke_val_tokens": 41943040,
+    "reference_8gpu": "nextt/checks/a06pp-bounded/elu_qknorm",
+    "B1_resume_bitwise": true,
+    "B2_stream_states_equal_8gpu": true,
+    "B3_val0": {"value": 3.1689349757853997, "pilot_8gpu": 3.1689347429400248, "relative_difference": 7.35e-08, "passed": true},
+    "B4_step1_loss": {"value": 10.398528069257736, "reference_8gpu": 10.398528069257736, "relative_difference": 0.0, "passed": true},
+    "loss_relative_difference_steps_2_12": {"max": 1.25e-03, "note": "floating-point reduction order only; reported, no threshold"},
+    "passed": true,
+    "val12": 2.0180014764940215, "core_smoke_32_per_task": -0.011007289051273551
+  },
+  "throughput": {
+    "median_step_seconds": {"16_gpu": 3.8115, "8_gpu": 7.4346},
+    "scaling_efficiency": 0.9753,
+    "mfu_theory": {"16_gpu": 0.5413, "8_gpu": 0.5546},
+    "median_data_seconds": {"16_gpu": 0.0562, "8_gpu": 0.0629},
+    "median_optimizer_seconds": {"16_gpu": 0.0424, "8_gpu": 0.0461},
+    "peak_memory_bytes_16_gpu": 96128940544,
+    "val_seconds_41943040_tokens": {"16_gpu": 54.0, "8_gpu_pilot": 105.4},
+    "gpu_utilization": {"sampling": "nvidia-smi every 1 s, samples with model resident (>40 GB used)",
+                        "median_nonzero_percent": {"worker-0": 100, "worker-1": 100},
+                        "zero_fraction": {"worker-0": 0.107, "worker-1": 0.07},
+                        "zero_samples": "process start, compile, checkpoint save, evaluation set-up"}
+  }
+}

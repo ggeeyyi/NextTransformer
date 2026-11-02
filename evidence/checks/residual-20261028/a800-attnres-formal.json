@@ -1,0 +1,114 @@
+{
+ "kind": "a800_formal_run_cumulative_audit",
+ "method": "R03 Block AttnRes (attnres)",
+ "date": "2026-10-28",
+ "finished_at": "2026-10-27T15:42+08:00",
+ "run_dir": "daxiao nanochat-runtime/runs/nextt-v2-residual-20261023_attnres_a800_seed42",
+ "experiments_record": "050",
+ "checks": [
+  "run_status.json: phase training_complete at 46875; trainer final_status",
+  "ledger (run_status/budget.json): 46875 optimizer steps, 49,152,000,000 input tokens, val/CORE step lists equal to the protocol, charged == theory FLOPs",
+  "cumulative theory FLOPs / (49.152e9 x SSSL 4.672398325e9) - 1 within 2%; budget_anomaly events counted",
+  "metrics.jsonl train events: strictly increasing steps, input_tokens == step x 1,048,576, finite loss/grad norm, last step 46875 with the ledger's cumulative FLOPs",
+  "189 validation events at 0, every 250, 46875 (41,943,040 tokens each) and the same 189 val_*.json files",
+  "6 CORE events at 8000/16000/24000/32000/40000/46875, each full_core with 22 tasks, centering and aggregate reproduced, equal to core_*.json",
+  "exactly one final_bpb event; bpb_final.json (20,971,520 tokens per split), core_final.json and latest.json at the final checkpoint",
+  "every segment's provenance (provenance.json, resume_*.json): identical model/protocol/data/tokenizer fingerprints, parameter count, config, cost proof, validation source hash and science_hash; non-smoke; world x micro x accumulation x 2048 == 1,048,576"
+ ],
+ "result_checkpoint": "checkpoint_00046875 (final; latest.json); no best-checkpoint selection",
+ "naming": "periodic_val_bpb_46875 is the 189th scheduled val point; final_bpb is the independent final BPB",
+ "ok": true,
+ "problems": [],
+ "final_status": "matched",
+ "optimizer_steps": 46875,
+ "input_tokens": 49152000000,
+ "theory_flops": 230024347183694859375,
+ "dense_flops_per_token": 4672398325.44785,
+ "flops_per_token": 4679857323.887021,
+ "proof_relative_error": 0.0015963960946021594,
+ "cumulative_relative_error": 0.0015963960946023814,
+ "train_event_relative_error": {
+  "min": 0.0015963960946021594,
+  "max": 0.0015963960946021594
+ },
+ "budget_anomalies": 0,
+ "train_events": 4689,
+ "validation_events": 189,
+ "core_events": 6,
+ "final_bpb": {
+  "train": 0.6622956682842065,
+  "val": 0.6602173420730655,
+  "tokens_per_split": 20971520
+ },
+ "core": {
+  "8000": 0.22686030013051794,
+  "16000": 0.23355468283360256,
+  "24000": 0.26777597688128174,
+  "32000": 0.2758655573263242,
+  "40000": 0.32377223260586185,
+  "46875": 0.3399712587714711
+ },
+ "core_final": 0.3399712587714711,
+ "last_loss": 2.1794014032930136,
+ "grad_norm_max_after_500": 4.922741889953613,
+ "step_seconds_median": 5.812943130731583,
+ "mfu_median": 0.3382142259409425,
+ "peak_memory_gib_max": 49.00924730300903,
+ "gpu_hours_training": 607.7780035102616,
+ "training_seconds": 273500.1015796177,
+ "evaluation_seconds": 18502.108737733215,
+ "evaluation_forward_flops": 12372092210436718000,
+ "segments": [
+  {
+   "file": "provenance.json",
+   "step": 0,
+   "host": "os-node-created-9j6nd",
+   "world": 8,
+   "micro": 8,
+   "accumulation": 8,
+   "commit": "4dd6ebb9f4f1f8b4571963c5df2aaa384eea7825",
+   "code": null
+  }
+ ],
+ "fingerprints": {
+  "model_hash": "0f831ad7ade636f7b8ca73a4ec5eb7357e7b851debafc8193446c7ecbd66eada",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "data_manifest_sha256": "69fa9df6810b6c5e89f41c53b5134353e7ddfb676b4af3d694d9aa8a34358cc2",
+  "tokenizer_sha256": "06258dc0044b6198c6fa8ba75c5b3bbaeaeab44f4804b464d9ce5f5e3797ec54",
+  "reference_source_hash": "2130db89fb45daf6f0690de5f7c719f3903d47c878837b4dfb76954395ad97fb",
+  "science_hash": "e6e8b8473fc1312a27213d367212d1a32d4978feb4e8be9e5326f41687743034"
+ },
+ "parameters": 1355882760,
+ "layers": 23,
+ "mlp_width": 6144,
+ "window_pattern": "L",
+ "device": "NVIDIA A800-SXM4-80GB",
+ "software": {
+  "torch": "2.9.1+cu128",
+  "cuda": "12.8",
+  "nccl": "2.27.5"
+ },
+ "periodic_val_bpb": {
+  "0": 3.168765930043209,
+  "8000": 0.7779818024497025,
+  "16000": 0.7647505968653526,
+  "24000": 0.7394018851248865,
+  "32000": 0.7114869845074472,
+  "40000": 0.6833502986703983,
+  "46875": 0.6629632890240634
+ },
+ "periodic_val_bpb_minimum": {
+  "val_bpb": 0.6629632890240634,
+  "step": 46875
+ },
+ "tracking": {
+  "run": "e1d85791",
+  "mode": "online",
+  "last_step": 46875,
+  "state": "finished",
+  "events_logged": 4885,
+  "summary_matches_run_dir": true,
+  "note": "the trainer logged online; on 2026-10-28 the tracked run was finished with 4,885 history lines, and its summary final BPB, periodic val BPB, CORE and cumulative theory FLOPs equal the run directory. Every other value here is read from the run directory"
+ },
+ "boundaries": "Single seed 42. Hardware 1x8 A800-SXM4-80GB, one node of the four-node ModelArts job that ran R00-R03 as independent eight-GPU runs (runs/train_reference_modelarts.py), micro 8 x accumulation 8, launched from the frozen checkout asoul/NextT at commit 4dd6ebb (record 028). The preregistered pilot was skipped by the owner's decision; the formal run started from random initialization. One segment, so there is no resume boundary. Resources are outcomes, not controls; the reference residual implementations are eager PyTorch without fused kernels. Evaluation forward FLOPs are reported separately and not charged to the training budget."
+}

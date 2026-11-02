@@ -1,5 +1,5 @@
 {
- "id": "mla_nope_qknorm",
+ "id": "mla_nope_qknorm_h20_seed42",
  "methodId": "mla_nope_qknorm",
  "cohort": "reference-v1",
  "name": "MLA-NoPE + QK-norm",
@@ -789,7 +789,8 @@
    "value": 0.27653604321434416
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/mla_nope_qknorm.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/others-20261028/h20-mla-nope-qknorm-formal.json",
+ "hardware": "H20 ×32 (4 nodes)",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -1129,7 +1130,7 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/mla_nope_qknorm.json"
+  "source": "Cumulative audit · evidence/checks/others-20261028/h20-mla-nope-qknorm-formal.json"
  },
- "comparisonNote": "Trained from a frozen source revision; the implementation is not yet in the current code."
+ "comparisonNote": "Trained from the frozen Others branch (gy/others-attention); the implementation is not yet in the current code."
 }

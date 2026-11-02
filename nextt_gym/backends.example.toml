@@ -1,0 +1,57 @@
+# Copy to nextt_gym/backends.local.toml (ignored by git via *.local.toml) and edit.
+# Each table is one backend; the agent sees only its id, kind, GPU type, allowed world
+# sizes and status. Paths and hosts stay here; credentials stay in ~/.ssh/config or
+# the cluster CLI login, never in this file.
+
+# This machine. Useful for single-node runs and for --synthetic smoke tests.
+[local]
+kind = "local"
+gpu_type = "A800"
+gpus_per_node = 8
+allowed_world_sizes = [8]
+site_config = "/persistent/nextt-runtime/site.native.local.json"   # upstream site JSON
+# python = "/persistent/nextt-runtime/venv/bin/python"
+
+# A plain SSH node (or several, for 16 ranks: the first two hosts are used).
+[daxiao-a800]
+kind = "ssh"
+hosts = ["a800-01", "a800-02"]
+gpu_type = "A800"
+gpus_per_node = 8
+allowed_world_sizes = [8, 16]
+workdir = "/persistent/nextt-gym"
+env_setup = "source /persistent/nextt-runtime/venv/bin/activate"
+python = "python"
+site_config = "/persistent/nextt-runtime/site.native.local.json"
+check_occupancy = true          # refuse GPUs already in use (AGENTS.md)
+busy_memory_mb = 1024
+
+# Koala H20: segmented runs, like launch/koala/chain.sh. Bundles go through `koala code publish`, the
+# environment is built as in launch/koala/run.sh, and results are read through a CPU debug pod
+# (`koala exec --cpu`), because CPFS need not be mounted where the gym runs. Keep NEXTT_GYM_HOME
+# outside any git work tree.
+[koala-h20]
+kind = "koala"
+cluster = "h20"
+gpu_type = "H20"
+gpus_per_node = 8
+allowed_world_sizes = [8]
+workdir = "/cpfs/<user>/nextt-gym"
+site_config = "/cpfs/<user>/site.h20.gym.json"   # upstream site JSON; set micro_batch here or in trainer_args
+# reader_target = "cpfs-reader"     # a pod name or unique substring, if several CPU debug pods exist
+# reader = "bash -c {script}"       # instead, when `workdir` is mounted on the gym host
+# trainer_args = ["--micro-batch", "16"]
+max_wall_hours_per_segment = 45.5
+max_segments = 8
+
+# GPU smoke test on this machine: synthetic tokens, formal-size model, a few updates, chosen GPUs only.
+[a100-smoke]
+kind = "local"
+gpu_type = "A100"
+allowed_world_sizes = [4]
+synthetic = true
+smoke_full_size = true          # train the submitted formal-size model (default: its debug overrides)
+smoke_steps = 6
+trainer_args = ["--smoke-rows", "4"]
+python = "/path/to/NextTransformer/.venv-gpu/bin/python"
+env = { CUDA_VISIBLE_DEVICES = "4,5,6,7", NANOCHAT_RUNTIME = "/persistent/nextt-gym/runtime", NANOCHAT_DTYPE = "bfloat16" }

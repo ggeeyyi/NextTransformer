@@ -1,8 +1,8 @@
 {
- "id": "kda",
+ "id": "kda_h20_seed42_v2",
  "methodId": "kda",
  "cohort": "reference-v1",
- "name": "Kimi Delta Attention · KDA",
+ "name": "A04 KDA v2",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,8 +789,9 @@
    "value": 0.31060639352177416
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/kda.json",
- "source": "Run directory · cumulative audit",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/h20-kda-formal.json",
+ "hardware": "H20 ×8",
+ "source": "H20 run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
   "protocol": "nextt-reference-50b-v1",
@@ -1129,7 +1130,7 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/kda.json"
+  "source": "Cumulative audit · evidence/checks/h20-kda-formal.json"
  },
  "order": 4
 }

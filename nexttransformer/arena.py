@@ -3,8 +3,7 @@
     python -m nexttransformer.arena --check
     python -m nexttransformer.arena --scope origin/main
 
-`--check` validates every card under results/arena/ against the arena rules (docs/src/content/docs/arena/rules.md):
-required disclosures, status, involvement
+`--check` validates every card under results/arena/ against ARENA.md: required disclosures, status, involvement
 level, selection signal, and the model card, run records, and admitted configuration the entry names. `--scope BASE`
 classifies the files changed since BASE when a card is among them or a method plugin is added under
 nexttransformer/methods/, and fails when such a pull request changes the training contract, the evaluation, another
@@ -19,7 +18,7 @@ from nexttransformer.export_run import CARD_ALIASES, REPO, RESULTS
 from nexttransformer.models.registry import FAMILY
 from nexttransformer.protocol.spec import config_path
 
-VERSION = "arena-v1"
+VERSION = "nextt-arena-v1"
 TRAINING_PROTOCOL = "nextt-reference-50b-v1"
 # The last training shard in sorted order; a formal 49.152B stream reads from the first shard and never reaches it.
 DEV_SHARD = "shard_06541.parquet"
@@ -38,17 +37,15 @@ FIELDS = {"card": ("id", "name", "methodId", "runIds", "arenaProtocol", "status"
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 COMMIT = re.compile(r"[0-9a-f]{7,40}")
 
-DOCS = "docs/src/content/docs/"
-# Scope of an arena pull request (arena rules, "What an entry may change"). The first matching prefix decides.
+# Scope of an arena pull request (ARENA.md, "What an entry may change"). The first matching prefix decides.
 BLOCKED = ("nexttransformer/models/backbone.py", "nexttransformer/protocol/", "nexttransformer/evaluation/",
            "nexttransformer/runtime/", "nexttransformer/training/", "nexttransformer/checks/", "nexttransformer/native/",
            "nexttransformer/__init__.py", "nexttransformer/arena.py", "nexttransformer/export_run.py",
            "nexttransformer/train.py", "nexttransformer/evaluate.py", "nexttransformer/prepare.py",
-           "nexttransformer/generate.py", "nexttransformer/audit_run.py", "nanochat/", "launch/", "requirements/", ".github/",
-           "website/", DOCS+"protocol/", DOCS+"zh-cn/protocol/", DOCS+"arena/rules.md", DOCS+"zh-cn/arena/rules.md",
-           "AGENTS.md", "CONTRIBUTING.md", "pyproject.toml", "uv.lock")
-FROZEN = ("results/runs/", "evidence/", DOCS+"results/runs/", DOCS+"zh-cn/results/runs/")
-DOCUMENTS = (DOCS+"methods/sources.md", DOCS+"zh-cn/methods/sources.md")
+           "nexttransformer/generate.py", "nanochat/", "nextt_gym/", "launch/", "environments/", "adapters/", "requirements/", ".github/", "website/",
+           "PROTOCOL.md", "ARENA.md", "AGENTS.md", "CONTRIBUTING.md", "pyproject.toml", "uv.lock")
+FROZEN = ("results/runs/", "evidence/")
+DOCUMENTS = ("PLAN.md", "docs/methods/SOURCES.md", "docs/records/EXPERIMENTS.md")
 
 
 def check_card(card, name):

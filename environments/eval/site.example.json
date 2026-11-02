@@ -1,0 +1,11 @@
+{
+  "image": "registry.example.org/nextt/scoring@sha256:REPLACE_WITH_RELEASE_DIGEST",
+  "checkpoint": "/absolute/checkpoint_00046875",
+  "resources": "/absolute/prepared-resources",
+  "data": "/absolute/climbmix",
+  "kernels": "/absolute/verified-hf-hub-cache",
+  "contract": "/absolute/reference.json",
+  "gpu_devices": ["0", "1", "2", "3", "4", "5", "6", "7"],
+  "output": "/absolute/new-attempt",
+  "timeout_seconds": 28800
+}

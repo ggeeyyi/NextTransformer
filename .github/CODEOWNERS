@@ -1,0 +1,11 @@
+# Ownership map. Only @Selen-Suyue merges into main (CONTRIBUTING.md); family owners review their areas.
+*                                          @Selen-Suyue
+/nexttransformer/models/looped.py          @Selen-Suyue @xjxyys
+/nexttransformer/models/sparse.py          @Selen-Suyue @xjxyys
+/nexttransformer/models/sparse_kernels.py  @Selen-Suyue @xjxyys
+/nexttransformer/models/linear.py          @Selen-Suyue @ggeeyyi @Xiangyue-Zhang
+/configs/looped/                           @Selen-Suyue @xjxyys
+/configs/sparse/                           @Selen-Suyue @xjxyys
+/configs/linear/                           @Selen-Suyue @ggeeyyi @Xiangyue-Zhang
+/configs/hybrid/                           @Selen-Suyue @Xiangnan-Wu @ggeeyyi
+/launch/koala/                             @Selen-Suyue @ggeeyyi

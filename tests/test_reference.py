@@ -248,7 +248,7 @@ def test_gdn_chunk_form_is_the_kda_algebra_with_a_shared_gate():
 
 def test_gdn_chunk_form_stays_exact_for_strong_gates():
     """Pairwise exp(b_i-b_j), i >= j: no exponent is positive, unlike the exp(b)exp(-b) KDA form
-   . Here the within-chunk cumulative log decay reaches thousands."""
+    (record 014). Here the within-chunk cumulative log decay reaches thousands."""
     leaves,oracle,raw,scan,chunked=_chunk_case("gdn",200,strength=60.)
     assert float(chunked["g"].detach()[:,:64].sum(1).min())<-1000
     expected,_=recurrent_attention(*oracle,kind="gdn",**scan)
@@ -491,7 +491,7 @@ def test_elu_mixer_bf16_full_path_matches_dense_fp64(kind,backend):
 
 @pytest.mark.parametrize("kind",["elu_norm","elu_qknorm"])
 def test_elu_qknorm_removes_the_qk_projection_scale(kind):
-    """elu_qknorm pins phi's input scale; elu_norm changes its output when q/k projections grow."""
+    """A06'' pins phi's input scale; A06' changes its output when q/k projections grow (record 021)."""
     c=replace(debug_config(kind,sequence_len=65),backend="fla_chunk64")
     torch.manual_seed(0)
     mixer=LinearMixer(c,0)

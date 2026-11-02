@@ -18,9 +18,10 @@
  "params": 1384122122,
  "flops": 4.67239832544785,
  "error": 0,
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/native/model.py",
+ "owner": "selen",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/51be8b97efc4230afabaaeac34f538d49d2f3060/reference/model.py",
  "cohort": "reference-v1",
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#historical-native-track",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/51be8b97efc4230afabaaeac34f538d49d2f3060/reference/SOURCES.md",
  "costModel": "reference-aten-math-v2",
  "order": 31
 }

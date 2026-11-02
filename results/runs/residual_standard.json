@@ -1,8 +1,8 @@
 {
- "id": "residual_standard",
+ "id": "nextt-v2-residual-20261023_residual_standard_a800_seed42",
  "methodId": "residual_standard",
  "cohort": "reference-v1",
- "name": "Standard Residual",
+ "name": "R00 Standard Residual",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,7 +789,8 @@
    "value": 0.31951264929497936
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/residual_standard.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/residual-20261028/a800-residual-standard-formal.json",
+ "hardware": "A800 ×8",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -1129,6 +1130,6 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/residual_standard.json"
+  "source": "Cumulative audit · evidence/checks/residual-20261028/a800-residual-standard-formal.json"
  }
 }

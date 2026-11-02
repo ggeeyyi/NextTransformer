@@ -1,0 +1,377 @@
+{
+  "status": "passed",
+  "baseline_commit": "fab8c032e9ebc91cc14933d8e7e0275f6c60224f",
+  "source_hash": "70606cd15bc9d3660e7dbca2293648282dfe1261cf4c443278cf2f7bdef6074f",
+  "methods": 33,
+  "all_previous_counts_unchanged": true,
+  "checks": {
+    "dense": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1384122122,
+      "flops_per_token": 4672398325.44785,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.0
+    },
+    "dense_full": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1355810568,
+      "flops_per_token": 4674661693.46476,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.00048441247069686
+    },
+    "deltanet_hybrid": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1403810314,
+      "flops_per_token": 4675325779.958443,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.0006265421538760307
+    },
+    "gdn_hybrid": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1399275962,
+      "flops_per_token": 4703799874.889431,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.0067206490659315055
+    },
+    "gdn_hybrid_swa": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1329681662,
+      "flops_per_token": 4647087059.586152,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": -0.005417189224609209
+    },
+    "kda_hybrid": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 793542986,
+      "flops_per_token": 4692309035.399331,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.004261346863994708
+    },
+    "moba_hybrid": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1452935068,
+      "flops_per_token": 4659989005.911318,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": -0.0026558779179732817
+    },
+    "qsa_hybrid": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1405174202,
+      "flops_per_token": 4691636932.460713,
+      "stages": {
+        "burnin": 512,
+        "joint": 46363
+      },
+      "relative_error": 0.004117501478433816
+    },
+    "deltanet": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1463690268,
+      "flops_per_token": 4674979395.583146,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.0005524079831205064
+    },
+    "elu_linear": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1462765468,
+      "flops_per_token": 4651240645.737594,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": -0.004528226884044306
+    },
+    "elu_norm": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1462768668,
+      "flops_per_token": 4651242183.277505,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": -0.004527897815372439
+    },
+    "elu_qknorm": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1462768668,
+      "flops_per_token": 4652242983.277505,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": -0.004313703748366371
+    },
+    "gdn": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1411349680,
+      "flops_per_token": 4687197103.198651,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.0031672765719055196
+    },
+    "gla": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1411207816,
+      "flops_per_token": 4642047645.345908,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": -0.006495739016222024
+    },
+    "kda": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1412126344,
+      "flops_per_token": 4692443222.178279,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.0042900659006865904
+    },
+    "kda_no_ve": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 808144840,
+      "flops_per_token": 4692294613.498795,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.004258260247757661
+    },
+    "retnet": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1410077320,
+      "flops_per_token": 4630059863.511195,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": -0.009061398234406104
+    },
+    "deeploop": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 742392722,
+      "flops_per_token": 4660529228.311522,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": -0.0025402579809354897
+    },
+    "fixed_recursive": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 927990968,
+      "flops_per_token": 4663054303.624462,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": -0.001999834169209569
+    },
+    "huginn": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 870581286,
+      "flops_per_token": 4649327343.234095,
+      "stages": {
+        "joint": 14761
+      },
+      "relative_error": -0.004937717336319869
+    },
+    "ouro": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 607127805,
+      "flops_per_token": 4658210281.9856,
+      "stages": {
+        "joint": 45851,
+        "gate_only": 1024
+      },
+      "relative_error": -0.003036565479654363
+    },
+    "ut_act": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 742394259,
+      "flops_per_token": 4660085227.848996,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": -0.002635284224761336
+    },
+    "mha_no_ve": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 751829064,
+      "flops_per_token": 4674513084.785275,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.000452606817767931
+    },
+    "mla_nope": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 744751182,
+      "flops_per_token": 4684528594.148932,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.0025961546632304877
+    },
+    "attnres": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1355882760,
+      "flops_per_token": 4679857323.887021,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.0015963960946021594
+    },
+    "hc": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1356235700,
+      "flops_per_token": 4698482827.1407995,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.005582679359951381
+    },
+    "mhc": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1353550818,
+      "flops_per_token": 4674357257.47247,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.00041925621237193234
+    },
+    "residual_standard": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1355810568,
+      "flops_per_token": 4674297661.463183,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.0004065013046914423
+    },
+    "dsa": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1316236406,
+      "flops_per_token": 4650934280.429963,
+      "stages": {
+        "burnin": 512,
+        "joint": 46363
+      },
+      "relative_error": -0.004593796059934596
+    },
+    "moba": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1462765468,
+      "flops_per_token": 4673520639.4876175,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": 0.00024020084795739471
+    },
+    "nsa": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1381293832,
+      "flops_per_token": 4638685687.888867,
+      "stages": {
+        "joint": 46875
+      },
+      "relative_error": -0.007215274728477161
+    },
+    "qsa": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1378420488,
+      "flops_per_token": 4628037080.821343,
+      "stages": {
+        "burnin": 512,
+        "joint": 46363
+      },
+      "relative_error": -0.00949431994804395
+    },
+    "seer": {
+      "model_and_protocol_unchanged": true,
+      "all_count_fields_unchanged": true,
+      "admission": "passed",
+      "parameters": 1387464456,
+      "flops_per_token": 4659563500.855809,
+      "stages": {
+        "burnin": 512,
+        "joint": 46363
+      },
+      "relative_error": -0.0027469457221009907
+    }
+  }
+}

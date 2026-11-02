@@ -80,7 +80,7 @@ def events_at(step):
 def data_layout(rank,world):
     """(stream rank, stream world, shares) of the frozen eight-stream data layout.
 
-    A multiple of eight ranks (two eight-GPU nodes: 16) runs each of the eight
+    A multiple of eight ranks (two H20 nodes: 16) runs each of the eight
     BestFitStreams on `shares` consecutive ranks; see share_batches. Other world
     sizes keep one stream per rank (smoke runs only)."""
     p=Protocol()

@@ -1,0 +1,1083 @@
+{
+  "method": "qsa_hybrid",
+  "model_hash": "02e93f56c35991d66acb43ea7f8efbb9302816a2027bcf8c3b5e4a81aa5bb7a8",
+  "source_hash": "e0fadcdb8800e001b9563fcfb0237ddf291182f1fecf1ba25fd889c45e55938d",
+  "method_source": {
+    "version": "method-source-v1",
+    "files": [
+      "nanochat/common.py",
+      "nanochat/flash_attention.py",
+      "nanochat/optim.py",
+      "nexttransformer/models/backbone.py",
+      "nexttransformer/models/config.py",
+      "nexttransformer/models/linear.py",
+      "nexttransformer/models/lm.py",
+      "nexttransformer/models/native/config.py",
+      "nexttransformer/models/sparse.py",
+      "nexttransformer/models/sparse_kernels.py",
+      "nexttransformer/protocol/compute.py",
+      "nexttransformer/protocol/fingerprint.py",
+      "nexttransformer/protocol/spec.py",
+      "nexttransformer/training/optimizer.py"
+    ],
+    "hash": "06698911c0d66017ecb938dd41388d03e1d184eec230e02822a4fc6adb8a685a"
+  },
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "formula_version": "reference-aten-math-v2",
+  "torch": "2.9.1+cu128",
+  "parameters": 1405174202,
+  "total_training_flops": 230603338504308997890,
+  "flops_per_token": 4691636932.460713,
+  "stages": [
+    {
+      "stage": "burnin",
+      "depth": null,
+      "optimizer_steps": 512,
+      "cost": {
+        "formula_version": "reference-aten-math-v2",
+        "phases": {
+          "forward": 1692286831140303,
+          "backward": 3292455484560037,
+          "optimizer": 25261295932082
+        },
+        "pair_block": 64,
+        "total": 5010003611632422,
+        "matrix_total": 4997880855682560,
+        "padded_envelope": 5149762078130982,
+        "operators": {
+          "backward/aten._log_softmax_backward_data.default": {
+            "calls": 1,
+            "theory": 137438953472,
+            "padded_envelope": 137438953472,
+            "matrix": 0
+          },
+          "backward/aten._softmax_backward_data.default": {
+            "calls": 384,
+            "theory": 12884901888,
+            "padded_envelope": 12884901888,
+            "matrix": 0
+          },
+          "backward/aten.add.Tensor": {
+            "calls": 4246,
+            "theory": 2876343977040,
+            "padded_envelope": 2883478488144,
+            "matrix": 0
+          },
+          "backward/aten.bmm.default": {
+            "calls": 5358,
+            "theory": 64811056496640,
+            "padded_envelope": 79422535237632,
+            "matrix": 64811056496640
+          },
+          "backward/aten.convolution_backward.default": {
+            "calls": 54,
+            "theory": 1391569403904,
+            "padded_envelope": 1391569403904,
+            "matrix": 1391569403904
+          },
+          "backward/aten.cumsum.default": {
+            "calls": 18,
+            "theory": 222953472,
+            "padded_envelope": 222953472,
+            "matrix": 0
+          },
+          "backward/aten.div.Scalar": {
+            "calls": 98,
+            "theory": 133076877312,
+            "padded_envelope": 133076877312,
+            "matrix": 0
+          },
+          "backward/aten.div.Tensor": {
+            "calls": 914,
+            "theory": 269509198209,
+            "padded_envelope": 269509198209,
+            "matrix": 0
+          },
+          "backward/aten.embedding_dense_backward.default": {
+            "calls": 13,
+            "theory": 20937965568,
+            "padded_envelope": 20937965568,
+            "matrix": 0
+          },
+          "backward/aten.linalg_solve_triangular.default": {
+            "calls": 18,
+            "theory": 3652869685248,
+            "padded_envelope": 3652869685248,
+            "matrix": 3652869685248
+          },
+          "backward/aten.mm.default": {
+            "calls": 436,
+            "theory": 3135573992620032,
+            "padded_envelope": 3135573992620032,
+            "matrix": 3135573992620032
+          },
+          "backward/aten.mul.Scalar": {
+            "calls": 208,
+            "theory": 277683372032,
+            "padded_envelope": 277683372032,
+            "matrix": 0
+          },
+          "backward/aten.mul.Tensor": {
+            "calls": 3070,
+            "theory": 1556284308702,
+            "padded_envelope": 1606225886430,
+            "matrix": 0
+          },
+          "backward/aten.neg.default": {
+            "calls": 1051,
+            "theory": 105847455960,
+            "padded_envelope": 120116478168,
+            "matrix": 0
+          },
+          "backward/aten.nll_loss_backward.default": {
+            "calls": 1,
+            "theory": 2097152,
+            "padded_envelope": 2097152,
+            "matrix": 0
+          },
+          "backward/aten.pow.Tensor_Scalar": {
+            "calls": 208,
+            "theory": 277683372032,
+            "padded_envelope": 277683372032,
+            "matrix": 0
+          },
+          "backward/aten.sigmoid_backward.default": {
+            "calls": 31,
+            "theory": 1135606272,
+            "padded_envelope": 1135606272,
+            "matrix": 0
+          },
+          "backward/aten.silu_backward.default": {
+            "calls": 72,
+            "theory": 927712935936,
+            "padded_envelope": 927712935936,
+            "matrix": 0
+          },
+          "backward/aten.softplus_backward.default": {
+            "calls": 18,
+            "theory": 1132462080,
+            "padded_envelope": 1132462080,
+            "matrix": 0
+          },
+          "backward/aten.sum.default": {
+            "calls": 48,
+            "theory": 77309411280,
+            "padded_envelope": 77309411280,
+            "matrix": 0
+          },
+          "backward/aten.sum.dim_IntList": {
+            "calls": 1283,
+            "theory": 499643536718,
+            "padded_envelope": 521047070030,
+            "matrix": 0
+          },
+          "backward/aten.tanh_backward.default": {
+            "calls": 1,
+            "theory": 103079215104,
+            "padded_envelope": 103079215104,
+            "matrix": 0
+          },
+          "backward/aten.threshold_backward.default": {
+            "calls": 408,
+            "theory": 157840048128,
+            "padded_envelope": 157840048128,
+            "matrix": 0
+          },
+          "backward/indexed_attention": {
+            "calls": 384,
+            "theory": 79590227705856,
+            "padded_envelope": 159102768513024,
+            "matrix": 79203491905536
+          },
+          "forward/aten._log_softmax.default": {
+            "calls": 1,
+            "theory": 171798691840,
+            "padded_envelope": 171798691840,
+            "matrix": 0
+          },
+          "forward/aten._softmax.default": {
+            "calls": 768,
+            "theory": 789200240640,
+            "padded_envelope": 789200240640,
+            "matrix": 0
+          },
+          "forward/aten.add.Tensor": {
+            "calls": 1658,
+            "theory": 240609657241,
+            "padded_envelope": 240609657241,
+            "matrix": 0
+          },
+          "forward/aten.add_.Scalar": {
+            "calls": 92,
+            "theory": 456654848,
+            "padded_envelope": 456654848,
+            "matrix": 0
+          },
+          "forward/aten.amax.default": {
+            "calls": 384,
+            "theory": 9663676416,
+            "padded_envelope": 9663676416,
+            "matrix": 0
+          },
+          "forward/aten.bmm.default": {
+            "calls": 3054,
+            "theory": 70103529947136,
+            "padded_envelope": 75582834475008,
+            "matrix": 70103529947136
+          },
+          "forward/aten.clamp_min.default": {
+            "calls": 1189,
+            "theory": 6901727233,
+            "padded_envelope": 6901727233,
+            "matrix": 0
+          },
+          "forward/aten.convolution.default": {
+            "calls": 54,
+            "theory": 695784701952,
+            "padded_envelope": 695784701952,
+            "matrix": 695784701952
+          },
+          "forward/aten.cos.default": {
+            "calls": 12,
+            "theory": 491520,
+            "padded_envelope": 491520,
+            "matrix": 0
+          },
+          "forward/aten.cumsum.default": {
+            "calls": 18,
+            "theory": 222953472,
+            "padded_envelope": 222953472,
+            "matrix": 0
+          },
+          "forward/aten.div.Tensor": {
+            "calls": 818,
+            "theory": 95563023105,
+            "padded_envelope": 95563023105,
+            "matrix": 0
+          },
+          "forward/aten.exp.default": {
+            "calls": 90,
+            "theory": 7817527512,
+            "padded_envelope": 14952038616,
+            "matrix": 0
+          },
+          "forward/aten.linalg_solve_triangular.default": {
+            "calls": 18,
+            "theory": 3652869685248,
+            "padded_envelope": 3652869685248,
+            "matrix": 3652869685248
+          },
+          "forward/aten.linalg_vector_norm.default": {
+            "calls": 36,
+            "theory": 116417101824,
+            "padded_envelope": 116417101824,
+            "matrix": 0
+          },
+          "forward/aten.log.default": {
+            "calls": 768,
+            "theory": 6442450944,
+            "padded_envelope": 6442450944,
+            "matrix": 0
+          },
+          "forward/aten.mean.dim": {
+            "calls": 482,
+            "theory": 287695699968,
+            "padded_envelope": 287695699968,
+            "matrix": 0
+          },
+          "forward/aten.mm.default": {
+            "calls": 224,
+            "theory": 1573971749216256,
+            "padded_envelope": 1573971749216256,
+            "matrix": 1573971749216256
+          },
+          "forward/aten.mul.Tensor": {
+            "calls": 2971,
+            "theory": 955543944710,
+            "padded_envelope": 976947478022,
+            "matrix": 0
+          },
+          "forward/aten.neg.default": {
+            "calls": 54,
+            "theory": 2064984,
+            "padded_envelope": 2064984,
+            "matrix": 0
+          },
+          "forward/aten.nll_loss_forward.default": {
+            "calls": 1,
+            "theory": 2097152,
+            "padded_envelope": 2097152,
+            "matrix": 0
+          },
+          "forward/aten.pow.Scalar": {
+            "calls": 12,
+            "theory": 384,
+            "padded_envelope": 384,
+            "matrix": 0
+          },
+          "forward/aten.pow.Tensor_Scalar": {
+            "calls": 116,
+            "theory": 277226717184,
+            "padded_envelope": 277226717184,
+            "matrix": 0
+          },
+          "forward/aten.relu.default": {
+            "calls": 408,
+            "theory": 157840048128,
+            "padded_envelope": 157840048128,
+            "matrix": 0
+          },
+          "forward/aten.rsqrt.default": {
+            "calls": 92,
+            "theory": 456654848,
+            "padded_envelope": 456654848,
+            "matrix": 0
+          },
+          "forward/aten.sigmoid.default": {
+            "calls": 31,
+            "theory": 1514141696,
+            "padded_envelope": 1514141696,
+            "matrix": 0
+          },
+          "forward/aten.silu.default": {
+            "calls": 72,
+            "theory": 579820584960,
+            "padded_envelope": 579820584960,
+            "matrix": 0
+          },
+          "forward/aten.sin.default": {
+            "calls": 12,
+            "theory": 491520,
+            "padded_envelope": 491520,
+            "matrix": 0
+          },
+          "forward/aten.softplus.default": {
+            "calls": 18,
+            "theory": 905969664,
+            "padded_envelope": 905969664,
+            "matrix": 0
+          },
+          "forward/aten.sub.Tensor": {
+            "calls": 979,
+            "theory": 40504393728,
+            "padded_envelope": 47638904832,
+            "matrix": 0
+          },
+          "forward/aten.sum.default": {
+            "calls": 386,
+            "theory": 8388222,
+            "padded_envelope": 8388222,
+            "matrix": 0
+          },
+          "forward/aten.sum.dim_IntList": {
+            "calls": 1152,
+            "theory": 16093544448,
+            "padded_envelope": 16093544448,
+            "matrix": 0
+          },
+          "forward/aten.tanh.default": {
+            "calls": 1,
+            "theory": 34359738368,
+            "padded_envelope": 34359738368,
+            "matrix": 0
+          },
+          "forward/indexed_attention": {
+            "calls": 384,
+            "theory": 40065828913152,
+            "padded_envelope": 80092550135808,
+            "matrix": 39601745952768
+          },
+          "optimizer/aten.add.Tensor": {
+            "calls": 241,
+            "theory": 6359713238,
+            "padded_envelope": 6359713238,
+            "matrix": 0
+          },
+          "optimizer/aten.add_.Tensor": {
+            "calls": 193,
+            "theory": 1508013556,
+            "padded_envelope": 1508013556,
+            "matrix": 0
+          },
+          "optimizer/aten.bmm.default": {
+            "calls": 60,
+            "theory": 25222196067840,
+            "padded_envelope": 25222196067840,
+            "matrix": 25222196067840
+          },
+          "optimizer/aten.clamp_min.default": {
+            "calls": 16,
+            "theory": 747096,
+            "padded_envelope": 747096,
+            "matrix": 0
+          },
+          "optimizer/aten.div.Tensor": {
+            "calls": 595,
+            "theory": 2159504189,
+            "padded_envelope": 2159504189,
+            "matrix": 0
+          },
+          "optimizer/aten.lerp_.Tensor": {
+            "calls": 398,
+            "theory": 8432317452,
+            "padded_envelope": 8432317452,
+            "matrix": 0
+          },
+          "optimizer/aten.linalg_vector_norm.default": {
+            "calls": 16,
+            "theory": 5209662564,
+            "padded_envelope": 5209662564,
+            "matrix": 0
+          },
+          "optimizer/aten.mean.dim": {
+            "calls": 4,
+            "theory": 651167424,
+            "padded_envelope": 651167424,
+            "matrix": 0
+          },
+          "optimizer/aten.mul.Tensor": {
+            "calls": 309,
+            "theory": 11212685513,
+            "padded_envelope": 11212685513,
+            "matrix": 0
+          },
+          "optimizer/aten.mul_.Tensor": {
+            "calls": 193,
+            "theory": 754006778,
+            "padded_envelope": 754006778,
+            "matrix": 0
+          },
+          "optimizer/aten.neg.default": {
+            "calls": 193,
+            "theory": 193,
+            "padded_envelope": 193,
+            "matrix": 0
+          },
+          "optimizer/aten.pow.Tensor_Scalar": {
+            "calls": 201,
+            "theory": 1405598282,
+            "padded_envelope": 1405598282,
+            "matrix": 0
+          },
+          "optimizer/aten.pow.Tensor_Tensor": {
+            "calls": 386,
+            "theory": 386,
+            "padded_envelope": 386,
+            "matrix": 0
+          },
+          "optimizer/aten.reciprocal.default": {
+            "calls": 4,
+            "theory": 156,
+            "padded_envelope": 156,
+            "matrix": 0
+          },
+          "optimizer/aten.rsqrt.default": {
+            "calls": 4,
+            "theory": 424080,
+            "padded_envelope": 424080,
+            "matrix": 0
+          },
+          "optimizer/aten.rsub.Scalar": {
+            "calls": 973,
+            "theory": 973,
+            "padded_envelope": 973,
+            "matrix": 0
+          },
+          "optimizer/aten.sqrt.default": {
+            "calls": 201,
+            "theory": 754007090,
+            "padded_envelope": 754007090,
+            "matrix": 0
+          },
+          "optimizer/aten.sub_.Tensor": {
+            "calls": 4,
+            "theory": 651167424,
+            "padded_envelope": 651167424,
+            "matrix": 0
+          },
+          "optimizer/aten.sum.dim_IntList": {
+            "calls": 8,
+            "theory": 847848,
+            "padded_envelope": 847848,
+            "matrix": 0
+          }
+        },
+        "unknown": {},
+        "diagnostic_scalar_reads": 577,
+        "method": "qsa_hybrid",
+        "model_hash": "02e93f56c35991d66acb43ea7f8efbb9302816a2027bcf8c3b5e4a81aa5bb7a8",
+        "sequence_len": 2048,
+        "batch": 512,
+        "stage": "burnin",
+        "depth": null,
+        "parameters": 1405174202,
+        "identity": {
+          "source": "e0fadcdb8800e001b9563fcfb0237ddf291182f1fecf1ba25fd889c45e55938d",
+          "model": "02e93f56c35991d66acb43ea7f8efbb9302816a2027bcf8c3b5e4a81aa5bb7a8",
+          "stage": "burnin",
+          "depth": null,
+          "t": 2048,
+          "batch": 512,
+          "optimizer": true,
+          "formula": "reference-aten-math-v2",
+          "torch": "2.9.1+cu128",
+          "fingerprint": "method-source-v1"
+        },
+        "audit_seconds": 57.49215135164559,
+        "source_files": [
+          "nanochat/optim.py",
+          "nexttransformer/models/backbone.py",
+          "nexttransformer/models/config.py",
+          "nexttransformer/models/linear.py",
+          "nexttransformer/models/lm.py",
+          "nexttransformer/models/native/config.py",
+          "nexttransformer/models/sparse.py",
+          "nexttransformer/protocol/compute.py",
+          "nexttransformer/protocol/fingerprint.py",
+          "nexttransformer/protocol/spec.py",
+          "nexttransformer/training/optimizer.py"
+        ]
+      }
+    },
+    {
+      "stage": "joint",
+      "depth": null,
+      "optimizer_steps": 46363,
+      "cost": {
+        "formula_version": "reference-aten-math-v2",
+        "phases": {
+          "forward": 1661660621020623,
+          "backward": 3231616932024997,
+          "optimizer": 25261295932082
+        },
+        "pair_block": 64,
+        "total": 4918538848977702,
+        "matrix_total": 4907066456563200,
+        "padded_envelope": 4940933352669990,
+        "operators": {
+          "backward/aten._log_softmax_backward_data.default": {
+            "calls": 1,
+            "theory": 137438953472,
+            "padded_envelope": 137438953472,
+            "matrix": 0
+          },
+          "backward/aten._softmax_backward_data.default": {
+            "calls": 384,
+            "theory": 12884901888,
+            "padded_envelope": 12884901888,
+            "matrix": 0
+          },
+          "backward/aten.add.Tensor": {
+            "calls": 4246,
+            "theory": 2876343977040,
+            "padded_envelope": 2883478488144,
+            "matrix": 0
+          },
+          "backward/aten.bmm.default": {
+            "calls": 5358,
+            "theory": 64811056496640,
+            "padded_envelope": 79422535237632,
+            "matrix": 64811056496640
+          },
+          "backward/aten.convolution_backward.default": {
+            "calls": 54,
+            "theory": 1391569403904,
+            "padded_envelope": 1391569403904,
+            "matrix": 1391569403904
+          },
+          "backward/aten.cumsum.default": {
+            "calls": 18,
+            "theory": 222953472,
+            "padded_envelope": 222953472,
+            "matrix": 0
+          },
+          "backward/aten.div.Scalar": {
+            "calls": 98,
+            "theory": 133076877312,
+            "padded_envelope": 133076877312,
+            "matrix": 0
+          },
+          "backward/aten.div.Tensor": {
+            "calls": 914,
+            "theory": 269509198209,
+            "padded_envelope": 269509198209,
+            "matrix": 0
+          },
+          "backward/aten.embedding_dense_backward.default": {
+            "calls": 13,
+            "theory": 20937965568,
+            "padded_envelope": 20937965568,
+            "matrix": 0
+          },
+          "backward/aten.linalg_solve_triangular.default": {
+            "calls": 18,
+            "theory": 3652869685248,
+            "padded_envelope": 3652869685248,
+            "matrix": 3652869685248
+          },
+          "backward/aten.mm.default": {
+            "calls": 436,
+            "theory": 3135573992620032,
+            "padded_envelope": 3135573992620032,
+            "matrix": 3135573992620032
+          },
+          "backward/aten.mul.Scalar": {
+            "calls": 208,
+            "theory": 277683372032,
+            "padded_envelope": 277683372032,
+            "matrix": 0
+          },
+          "backward/aten.mul.Tensor": {
+            "calls": 3070,
+            "theory": 1556284308702,
+            "padded_envelope": 1606225886430,
+            "matrix": 0
+          },
+          "backward/aten.neg.default": {
+            "calls": 1051,
+            "theory": 105847455960,
+            "padded_envelope": 120116478168,
+            "matrix": 0
+          },
+          "backward/aten.nll_loss_backward.default": {
+            "calls": 1,
+            "theory": 2097152,
+            "padded_envelope": 2097152,
+            "matrix": 0
+          },
+          "backward/aten.pow.Tensor_Scalar": {
+            "calls": 208,
+            "theory": 277683372032,
+            "padded_envelope": 277683372032,
+            "matrix": 0
+          },
+          "backward/aten.sigmoid_backward.default": {
+            "calls": 31,
+            "theory": 1135606272,
+            "padded_envelope": 1135606272,
+            "matrix": 0
+          },
+          "backward/aten.silu_backward.default": {
+            "calls": 72,
+            "theory": 927712935936,
+            "padded_envelope": 927712935936,
+            "matrix": 0
+          },
+          "backward/aten.softplus_backward.default": {
+            "calls": 18,
+            "theory": 1132462080,
+            "padded_envelope": 1132462080,
+            "matrix": 0
+          },
+          "backward/aten.sum.default": {
+            "calls": 48,
+            "theory": 77309411280,
+            "padded_envelope": 77309411280,
+            "matrix": 0
+          },
+          "backward/aten.sum.dim_IntList": {
+            "calls": 1283,
+            "theory": 499643536718,
+            "padded_envelope": 521047070030,
+            "matrix": 0
+          },
+          "backward/aten.tanh_backward.default": {
+            "calls": 1,
+            "theory": 103079215104,
+            "padded_envelope": 103079215104,
+            "matrix": 0
+          },
+          "backward/aten.threshold_backward.default": {
+            "calls": 408,
+            "theory": 157840048128,
+            "padded_envelope": 157840048128,
+            "matrix": 0
+          },
+          "backward/indexed_attention": {
+            "calls": 384,
+            "theory": 18751675170816,
+            "padded_envelope": 20198593658880,
+            "matrix": 18660559159296
+          },
+          "forward/aten._log_softmax.default": {
+            "calls": 1,
+            "theory": 171798691840,
+            "padded_envelope": 171798691840,
+            "matrix": 0
+          },
+          "forward/aten._softmax.default": {
+            "calls": 768,
+            "theory": 789200240640,
+            "padded_envelope": 789200240640,
+            "matrix": 0
+          },
+          "forward/aten.add.Tensor": {
+            "calls": 1658,
+            "theory": 240609657241,
+            "padded_envelope": 240609657241,
+            "matrix": 0
+          },
+          "forward/aten.add_.Scalar": {
+            "calls": 92,
+            "theory": 456654848,
+            "padded_envelope": 456654848,
+            "matrix": 0
+          },
+          "forward/aten.amax.default": {
+            "calls": 384,
+            "theory": 9663676416,
+            "padded_envelope": 9663676416,
+            "matrix": 0
+          },
+          "forward/aten.bmm.default": {
+            "calls": 3054,
+            "theory": 70103529947136,
+            "padded_envelope": 75582834475008,
+            "matrix": 70103529947136
+          },
+          "forward/aten.clamp_min.default": {
+            "calls": 1189,
+            "theory": 6901727233,
+            "padded_envelope": 6901727233,
+            "matrix": 0
+          },
+          "forward/aten.convolution.default": {
+            "calls": 54,
+            "theory": 695784701952,
+            "padded_envelope": 695784701952,
+            "matrix": 695784701952
+          },
+          "forward/aten.cos.default": {
+            "calls": 12,
+            "theory": 491520,
+            "padded_envelope": 491520,
+            "matrix": 0
+          },
+          "forward/aten.cumsum.default": {
+            "calls": 18,
+            "theory": 222953472,
+            "padded_envelope": 222953472,
+            "matrix": 0
+          },
+          "forward/aten.div.Tensor": {
+            "calls": 818,
+            "theory": 95563023105,
+            "padded_envelope": 95563023105,
+            "matrix": 0
+          },
+          "forward/aten.exp.default": {
+            "calls": 90,
+            "theory": 7817527512,
+            "padded_envelope": 14952038616,
+            "matrix": 0
+          },
+          "forward/aten.linalg_solve_triangular.default": {
+            "calls": 18,
+            "theory": 3652869685248,
+            "padded_envelope": 3652869685248,
+            "matrix": 3652869685248
+          },
+          "forward/aten.linalg_vector_norm.default": {
+            "calls": 36,
+            "theory": 116417101824,
+            "padded_envelope": 116417101824,
+            "matrix": 0
+          },
+          "forward/aten.log.default": {
+            "calls": 768,
+            "theory": 6442450944,
+            "padded_envelope": 6442450944,
+            "matrix": 0
+          },
+          "forward/aten.mean.dim": {
+            "calls": 482,
+            "theory": 287695699968,
+            "padded_envelope": 287695699968,
+            "matrix": 0
+          },
+          "forward/aten.mm.default": {
+            "calls": 224,
+            "theory": 1573971749216256,
+            "padded_envelope": 1573971749216256,
+            "matrix": 1573971749216256
+          },
+          "forward/aten.mul.Tensor": {
+            "calls": 2971,
+            "theory": 955543944710,
+            "padded_envelope": 976947478022,
+            "matrix": 0
+          },
+          "forward/aten.neg.default": {
+            "calls": 54,
+            "theory": 2064984,
+            "padded_envelope": 2064984,
+            "matrix": 0
+          },
+          "forward/aten.nll_loss_forward.default": {
+            "calls": 1,
+            "theory": 2097152,
+            "padded_envelope": 2097152,
+            "matrix": 0
+          },
+          "forward/aten.pow.Scalar": {
+            "calls": 12,
+            "theory": 384,
+            "padded_envelope": 384,
+            "matrix": 0
+          },
+          "forward/aten.pow.Tensor_Scalar": {
+            "calls": 116,
+            "theory": 277226717184,
+            "padded_envelope": 277226717184,
+            "matrix": 0
+          },
+          "forward/aten.relu.default": {
+            "calls": 408,
+            "theory": 157840048128,
+            "padded_envelope": 157840048128,
+            "matrix": 0
+          },
+          "forward/aten.rsqrt.default": {
+            "calls": 92,
+            "theory": 456654848,
+            "padded_envelope": 456654848,
+            "matrix": 0
+          },
+          "forward/aten.sigmoid.default": {
+            "calls": 31,
+            "theory": 1514141696,
+            "padded_envelope": 1514141696,
+            "matrix": 0
+          },
+          "forward/aten.silu.default": {
+            "calls": 72,
+            "theory": 579820584960,
+            "padded_envelope": 579820584960,
+            "matrix": 0
+          },
+          "forward/aten.sin.default": {
+            "calls": 12,
+            "theory": 491520,
+            "padded_envelope": 491520,
+            "matrix": 0
+          },
+          "forward/aten.softplus.default": {
+            "calls": 18,
+            "theory": 905969664,
+            "padded_envelope": 905969664,
+            "matrix": 0
+          },
+          "forward/aten.sub.Tensor": {
+            "calls": 979,
+            "theory": 40504393728,
+            "padded_envelope": 47638904832,
+            "matrix": 0
+          },
+          "forward/aten.sum.default": {
+            "calls": 386,
+            "theory": 8388222,
+            "padded_envelope": 8388222,
+            "matrix": 0
+          },
+          "forward/aten.sum.dim_IntList": {
+            "calls": 1152,
+            "theory": 16093544448,
+            "padded_envelope": 16093544448,
+            "matrix": 0
+          },
+          "forward/aten.tanh.default": {
+            "calls": 1,
+            "theory": 34359738368,
+            "padded_envelope": 34359738368,
+            "matrix": 0
+          },
+          "forward/indexed_attention": {
+            "calls": 384,
+            "theory": 9439618793472,
+            "padded_envelope": 10167999528960,
+            "matrix": 9330279579648
+          },
+          "optimizer/aten.add.Tensor": {
+            "calls": 241,
+            "theory": 6359713238,
+            "padded_envelope": 6359713238,
+            "matrix": 0
+          },
+          "optimizer/aten.add_.Tensor": {
+            "calls": 193,
+            "theory": 1508013556,
+            "padded_envelope": 1508013556,
+            "matrix": 0
+          },
+          "optimizer/aten.bmm.default": {
+            "calls": 60,
+            "theory": 25222196067840,
+            "padded_envelope": 25222196067840,
+            "matrix": 25222196067840
+          },
+          "optimizer/aten.clamp_min.default": {
+            "calls": 16,
+            "theory": 747096,
+            "padded_envelope": 747096,
+            "matrix": 0
+          },
+          "optimizer/aten.div.Tensor": {
+            "calls": 595,
+            "theory": 2159504189,
+            "padded_envelope": 2159504189,
+            "matrix": 0
+          },
+          "optimizer/aten.lerp_.Tensor": {
+            "calls": 398,
+            "theory": 8432317452,
+            "padded_envelope": 8432317452,
+            "matrix": 0
+          },
+          "optimizer/aten.linalg_vector_norm.default": {
+            "calls": 16,
+            "theory": 5209662564,
+            "padded_envelope": 5209662564,
+            "matrix": 0
+          },
+          "optimizer/aten.mean.dim": {
+            "calls": 4,
+            "theory": 651167424,
+            "padded_envelope": 651167424,
+            "matrix": 0
+          },
+          "optimizer/aten.mul.Tensor": {
+            "calls": 309,
+            "theory": 11212685513,
+            "padded_envelope": 11212685513,
+            "matrix": 0
+          },
+          "optimizer/aten.mul_.Tensor": {
+            "calls": 193,
+            "theory": 754006778,
+            "padded_envelope": 754006778,
+            "matrix": 0
+          },
+          "optimizer/aten.neg.default": {
+            "calls": 193,
+            "theory": 193,
+            "padded_envelope": 193,
+            "matrix": 0
+          },
+          "optimizer/aten.pow.Tensor_Scalar": {
+            "calls": 201,
+            "theory": 1405598282,
+            "padded_envelope": 1405598282,
+            "matrix": 0
+          },
+          "optimizer/aten.pow.Tensor_Tensor": {
+            "calls": 386,
+            "theory": 386,
+            "padded_envelope": 386,
+            "matrix": 0
+          },
+          "optimizer/aten.reciprocal.default": {
+            "calls": 4,
+            "theory": 156,
+            "padded_envelope": 156,
+            "matrix": 0
+          },
+          "optimizer/aten.rsqrt.default": {
+            "calls": 4,
+            "theory": 424080,
+            "padded_envelope": 424080,
+            "matrix": 0
+          },
+          "optimizer/aten.rsub.Scalar": {
+            "calls": 973,
+            "theory": 973,
+            "padded_envelope": 973,
+            "matrix": 0
+          },
+          "optimizer/aten.sqrt.default": {
+            "calls": 201,
+            "theory": 754007090,
+            "padded_envelope": 754007090,
+            "matrix": 0
+          },
+          "optimizer/aten.sub_.Tensor": {
+            "calls": 4,
+            "theory": 651167424,
+            "padded_envelope": 651167424,
+            "matrix": 0
+          },
+          "optimizer/aten.sum.dim_IntList": {
+            "calls": 8,
+            "theory": 847848,
+            "padded_envelope": 847848,
+            "matrix": 0
+          }
+        },
+        "unknown": {},
+        "diagnostic_scalar_reads": 577,
+        "method": "qsa_hybrid",
+        "model_hash": "02e93f56c35991d66acb43ea7f8efbb9302816a2027bcf8c3b5e4a81aa5bb7a8",
+        "sequence_len": 2048,
+        "batch": 512,
+        "stage": "joint",
+        "depth": null,
+        "parameters": 1405174202,
+        "identity": {
+          "source": "e0fadcdb8800e001b9563fcfb0237ddf291182f1fecf1ba25fd889c45e55938d",
+          "model": "02e93f56c35991d66acb43ea7f8efbb9302816a2027bcf8c3b5e4a81aa5bb7a8",
+          "stage": "joint",
+          "depth": null,
+          "t": 2048,
+          "batch": 512,
+          "optimizer": true,
+          "formula": "reference-aten-math-v2",
+          "torch": "2.9.1+cu128",
+          "fingerprint": "method-source-v1"
+        },
+        "audit_seconds": 54.44646518304944,
+        "source_files": [
+          "nanochat/optim.py",
+          "nexttransformer/models/backbone.py",
+          "nexttransformer/models/config.py",
+          "nexttransformer/models/linear.py",
+          "nexttransformer/models/lm.py",
+          "nexttransformer/models/native/config.py",
+          "nexttransformer/models/sparse.py",
+          "nexttransformer/protocol/compute.py",
+          "nexttransformer/protocol/fingerprint.py",
+          "nexttransformer/protocol/spec.py",
+          "nexttransformer/training/optimizer.py"
+        ]
+      }
+    }
+  ],
+  "unknown": {},
+  "calibration": {
+    "status": "theoretical_preflight_passed",
+    "formula_version": "reference-aten-math-v2",
+    "source_hash": "e0fadcdb8800e001b9563fcfb0237ddf291182f1fecf1ba25fd889c45e55938d",
+    "method_source_hash": "06698911c0d66017ecb938dd41388d03e1d184eec230e02822a4fc6adb8a685a",
+    "torch": "2.9.1+cu128",
+    "dense_flops_per_token": 4672398325.44785,
+    "flops_per_token": 4691636932.460713,
+    "relative_error": 0.004117501478433816,
+    "cumulative_run_audit": "not_run",
+    "cost_record": "../../evidence/costs/method-fingerprints-20261031/qsa_hybrid.json"
+  },
+  "initial_ffn": 5760,
+  "selected_ffn": 5760,
+  "physical_layers": 24,
+  "core_layers": 9,
+  "structural_trials": [],
+  "verification_only": true,
+  "selection_provenance": {
+    "status": "theoretical_preflight_passed",
+    "formula_version": "reference-aten-math-v2",
+    "source_hash": "5617c2e16c5848cacf1f94573b7444e1f5650b3d92fb721a18ead04f5bb4a944",
+    "torch": "2.9.1+cu128",
+    "dense_flops_per_token": 4672398325.44785,
+    "flops_per_token": 4691636932.460713,
+    "relative_error": 0.004117501478433816,
+    "cumulative_run_audit": "not_run",
+    "cost_record": "../../evidence/costs/mhc-logsinkhorn-20261028/qsa_hybrid.json"
+  }
+}

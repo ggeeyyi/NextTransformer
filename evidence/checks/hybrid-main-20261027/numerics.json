@@ -1,0 +1,318 @@
+{
+  "status": "passed",
+  "baseline_commit": "fab8c032e9ebc91cc14933d8e7e0275f6c60224f",
+  "device": "cpu",
+  "dtype": "float32",
+  "batch": 2,
+  "sequence_len": 70,
+  "nonzero_output_projections": true,
+  "methods": 33,
+  "method_stage_cases": 38,
+  "comparison": "bitwise",
+  "checks": {
+    "attnres:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "deeploop:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "deltanet:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "deltanet_hybrid:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "dense:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "dense_full:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "dsa:0": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "dsa:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "elu_linear:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "elu_norm:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "elu_qknorm:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "fixed_recursive:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "gdn:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "gdn_hybrid:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "gdn_hybrid_swa:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "gla:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "hc:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "huginn:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "kda:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "kda_hybrid:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "kda_no_ve:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "mha_no_ve:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "mhc:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "mla_nope:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "moba:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "moba_hybrid:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "nsa:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "ouro:46874": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "ouro:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "qsa:0": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "qsa:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "qsa_hybrid:0": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "qsa_hybrid:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "residual_standard:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "retnet:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "seer:0": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "seer:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    },
+    "ut_act:512": {
+      "config": true,
+      "gradients": true,
+      "initial": true,
+      "logits": true,
+      "loss": true,
+      "optimizer_ownership": true
+    }
+  }
+}

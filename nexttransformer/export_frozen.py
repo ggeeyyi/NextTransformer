@@ -1,4 +1,4 @@
-"""Export the frozen DeltaNet and GLA run-directory schema with its original accounting."""
+"""Export the frozen A01-A03 run-directory schema with its original accounting."""
 import argparse
 from datetime import datetime
 import hashlib
@@ -6,9 +6,9 @@ import json
 import math
 from pathlib import Path
 
-from nexttransformer.export_run import FROZEN_COHORT, P, REPO, RESULTS, record
+from nexttransformer.export_run import P, REPO, RESULTS, record
 
-COHORT = FROZEN_COHORT
+COHORT = "xiangyue-20261019"
 ACCOUNTING = "reference-aten-math-v2-all-backends-replay"
 BASE_COMMIT = "f41786282acf98f54292774972f6e3509ddbeb51"
 NOTE = "Frozen all-backends-replay accounting; original cumulative FLOPs and source fingerprints are retained."
@@ -60,15 +60,15 @@ def export(directory, audit_path):
                                 model_hash=identity["model_hash"], data_manifest_sha256=identity["data_manifest_sha256"],
                                 software=dict(science_hash=p["cost_proof"]["source_hash"]), cost=p["calibration"])])
     method = p["model"]["method"]
-    name = json.loads((RESULTS/"methods"/f"{method}.json").read_text())["name"]
-    run, _ = record(raw, method, name, audit_path, BASE_COMMIT, COHORT)
+    name = {"deltanet": "A01 DeltaNet", "gla": "A03 GLA"}[method]
+    run, _ = record(raw, method, name, "8 × H200", audit_path, BASE_COMMIT, COHORT)
     run.update(comparisonNote=NOTE, finalTrainBpb=raw["final_bpb"]["train_bpb"],
                auditSha256=hashlib.sha256(path.read_bytes()).hexdigest())
     run["trainingCompute"]["accounting"] = ACCOUNTING
     run["proof"].update(src_head=p["source"]["commit"], reconstruction_base_commit=BASE_COMMIT,
                         source_snapshot_sha256=p["source"]["sha256"], cost_formula_version=ACCOUNTING,
                         cost_anchor_gflops_per_token=p["calibration"]["dense_flops_per_token"]/1e9,
-                        backend=identity["backend"], source_manifest="evidence/audits/deltanet-gla-source-manifest.json")
+                        backend=identity["backend"], source_manifest="evidence/checks/xiangyue-a01-a03-20261027/source-manifest.json")
     check_audit(run, audit)
     return run
 

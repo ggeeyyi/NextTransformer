@@ -25,7 +25,7 @@ export default function RankChart({runs,methods,metric,cursor,name}:{runs:Run[];
     return <g key={run.id} opacity={dim?.18:1} onMouseEnter={()=>setHover(run.id)} style={{cursor:'default'}}>
      <path d={pts.map((p,i)=>`${i?'L':'M'}${x(p.step)},${y(p.rank)}`).join(' ')} stroke={color} strokeDasharray={run.methodId==='dense_full'?'6 5':undefined}/>
      {pts.map(p=><circle key={p.step} cx={x(p.step)} cy={y(p.rank)} r={p.step===current?4:2.6} fill={p.step===current?color:'#FFFEFD'} stroke={color} strokeWidth="1.6"/>)}
-     {last.step===current&&<text x={x(last.step)+9} y={y(last.rank)+4} className="rank-label" fill={color}>{last.rank}. {name(run)}</text>}
+     {last.step===current&&<text x={x(last.step)+9} y={y(last.rank)+4} className="rank-label" fill={color}>{last.rank}. {name(run).split(' · ').at(-1)}</text>}
     </g>;})}
   </svg>
  </div>;

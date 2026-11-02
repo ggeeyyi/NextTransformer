@@ -1,0 +1,270 @@
+{
+  "small": {
+    "created_at": "2026-10-23T07:54:08.010864+00:00",
+    "source_hash": "2130db89fb45daf6f0690de5f7c719f3903d47c878837b4dfb76954395ad97fb",
+    "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+    "torch": "2.9.1+cu128",
+    "dtype": "torch.bfloat16",
+    "device": "NVIDIA A800-SXM4-80GB",
+    "seed": 42,
+    "results": [
+      {
+        "method": "dense_full",
+        "status": "passed",
+        "stage": "joint",
+        "model_hash": "6e9afd92c4b8c20840f7785cff8933822e4615c129eab65447231db938bb3624",
+        "full_dimensions": false,
+        "input_shape": [
+          64,
+          2048
+        ],
+        "global_tokens": 1048576,
+        "world_size": 8,
+        "accumulation": 1,
+        "optimizer_updates": 1,
+        "loss": 4.158153533935547,
+        "seconds": 5.859974244609475,
+        "all_rank_parameters_equal": true,
+        "peak_allocated_bytes": 719678464,
+        "synthetic_data": true
+      },
+      {
+        "method": "residual_standard",
+        "status": "passed",
+        "stage": "joint",
+        "model_hash": "532f01e933345b5a95c14d5db511ce931415b643846ec5d2942594fe04b1453b",
+        "full_dimensions": false,
+        "input_shape": [
+          64,
+          2048
+        ],
+        "global_tokens": 1048576,
+        "world_size": 8,
+        "accumulation": 1,
+        "optimizer_updates": 1,
+        "loss": 4.158151626586914,
+        "seconds": 0.04527803510427475,
+        "all_rank_parameters_equal": true,
+        "peak_allocated_bytes": 695071744,
+        "synthetic_data": true
+      },
+      {
+        "method": "hc",
+        "status": "passed",
+        "stage": "joint",
+        "model_hash": "8faf90d92095e09892ec19103a678346a17fe98f27a622ee6be9041fc678d0ab",
+        "full_dimensions": false,
+        "input_shape": [
+          64,
+          2048
+        ],
+        "global_tokens": 1048576,
+        "world_size": 8,
+        "accumulation": 1,
+        "optimizer_updates": 1,
+        "loss": 4.158151626586914,
+        "seconds": 0.4952000081539154,
+        "all_rank_parameters_equal": true,
+        "peak_allocated_bytes": 1394995200,
+        "synthetic_data": true
+      },
+      {
+        "method": "mhc",
+        "status": "passed",
+        "stage": "joint",
+        "model_hash": "9a676d288261d54be15b63342465eb35e60b9085c5668b817819c07c515096c2",
+        "full_dimensions": false,
+        "input_shape": [
+          64,
+          2048
+        ],
+        "global_tokens": 1048576,
+        "world_size": 8,
+        "accumulation": 1,
+        "optimizer_updates": 1,
+        "loss": 4.158151626586914,
+        "seconds": 0.5098873041570187,
+        "all_rank_parameters_equal": true,
+        "peak_allocated_bytes": 2929216000,
+        "synthetic_data": true
+      },
+      {
+        "method": "attnres",
+        "status": "passed",
+        "stage": "joint",
+        "model_hash": "a729cb58b77ddff262e95002623274b72111614ed70111c647541bcac3218f7d",
+        "full_dimensions": false,
+        "input_shape": [
+          64,
+          2048
+        ],
+        "global_tokens": 1048576,
+        "world_size": 8,
+        "accumulation": 1,
+        "optimizer_updates": 1,
+        "loss": 4.158961772918701,
+        "seconds": 1.0912858005613089,
+        "all_rank_parameters_equal": true,
+        "peak_allocated_bytes": 1153684992,
+        "synthetic_data": true
+      }
+    ]
+  },
+  "full_dimensions": {
+    "dense_full": {
+      "created_at": "2026-10-23T07:54:45.926822+00:00",
+      "source_hash": "2130db89fb45daf6f0690de5f7c719f3903d47c878837b4dfb76954395ad97fb",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "torch": "2.9.1+cu128",
+      "dtype": "torch.bfloat16",
+      "device": "NVIDIA A800-SXM4-80GB",
+      "seed": 42,
+      "results": [
+        {
+          "method": "dense_full",
+          "status": "passed",
+          "stage": "joint",
+          "model_hash": "2952c26c3e3d133acc8b703c624eb64c48c1128d5cf9e1b9cbdc221704a96067",
+          "full_dimensions": true,
+          "input_shape": [
+            8,
+            2048
+          ],
+          "global_tokens": 1048576,
+          "world_size": 8,
+          "accumulation": 8,
+          "optimizer_updates": 1,
+          "loss": 10.398283958435059,
+          "seconds": 10.487732807174325,
+          "all_rank_parameters_equal": true,
+          "peak_allocated_bytes": 45241212416,
+          "synthetic_data": true
+        }
+      ]
+    },
+    "residual_standard": {
+      "created_at": "2026-10-23T07:55:23.925192+00:00",
+      "source_hash": "2130db89fb45daf6f0690de5f7c719f3903d47c878837b4dfb76954395ad97fb",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "torch": "2.9.1+cu128",
+      "dtype": "torch.bfloat16",
+      "device": "NVIDIA A800-SXM4-80GB",
+      "seed": 42,
+      "results": [
+        {
+          "method": "residual_standard",
+          "status": "passed",
+          "stage": "joint",
+          "model_hash": "348c8f69afed2f0f67d4f0563b693d68f48d55b4f15953c4ed4fcc952ff5458c",
+          "full_dimensions": true,
+          "input_shape": [
+            8,
+            2048
+          ],
+          "global_tokens": 1048576,
+          "world_size": 8,
+          "accumulation": 8,
+          "optimizer_updates": 1,
+          "loss": 10.398287773132324,
+          "seconds": 10.63168060220778,
+          "all_rank_parameters_equal": true,
+          "peak_allocated_bytes": 44083057664,
+          "synthetic_data": true
+        }
+      ]
+    },
+    "hc": {
+      "created_at": "2026-10-23T07:56:10.483151+00:00",
+      "source_hash": "2130db89fb45daf6f0690de5f7c719f3903d47c878837b4dfb76954395ad97fb",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "torch": "2.9.1+cu128",
+      "dtype": "torch.bfloat16",
+      "device": "NVIDIA A800-SXM4-80GB",
+      "seed": 42,
+      "results": [
+        {
+          "method": "hc",
+          "status": "passed",
+          "stage": "joint",
+          "model_hash": "ce2c5196ce4b526bcbd1872270094653ff06a35a2ece53f2e4096457420fb89b",
+          "full_dimensions": true,
+          "input_shape": [
+            8,
+            2048
+          ],
+          "global_tokens": 1048576,
+          "world_size": 8,
+          "accumulation": 8,
+          "optimizer_updates": 1,
+          "loss": 10.398287773132324,
+          "seconds": 16.03769269026816,
+          "all_rank_parameters_equal": true,
+          "peak_allocated_bytes": 74169550848,
+          "synthetic_data": true
+        }
+      ]
+    },
+    "mhc": {
+      "created_at": "2026-10-23T07:56:56.704700+00:00",
+      "source_hash": "2130db89fb45daf6f0690de5f7c719f3903d47c878837b4dfb76954395ad97fb",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "torch": "2.9.1+cu128",
+      "dtype": "torch.bfloat16",
+      "device": "NVIDIA A800-SXM4-80GB",
+      "seed": 42,
+      "results": [
+        {
+          "method": "mhc",
+          "status": "passed",
+          "stage": "joint",
+          "model_hash": "c75f4a05151ce00a8a4848220fcf333064bef7a7f8e715bb00900b2047478a8e",
+          "full_dimensions": true,
+          "input_shape": [
+            8,
+            2048
+          ],
+          "global_tokens": 1048576,
+          "world_size": 8,
+          "accumulation": 8,
+          "optimizer_updates": 1,
+          "loss": 10.398287773132324,
+          "seconds": 16.69127330556512,
+          "all_rank_parameters_equal": true,
+          "peak_allocated_bytes": 67341805568,
+          "synthetic_data": true
+        }
+      ]
+    },
+    "attnres": {
+      "created_at": "2026-10-23T07:57:36.609099+00:00",
+      "source_hash": "2130db89fb45daf6f0690de5f7c719f3903d47c878837b4dfb76954395ad97fb",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "torch": "2.9.1+cu128",
+      "dtype": "torch.bfloat16",
+      "device": "NVIDIA A800-SXM4-80GB",
+      "seed": 42,
+      "results": [
+        {
+          "method": "attnres",
+          "status": "passed",
+          "stage": "joint",
+          "model_hash": "0f831ad7ade636f7b8ca73a4ec5eb7357e7b851debafc8193446c7ecbd66eada",
+          "full_dimensions": true,
+          "input_shape": [
+            8,
+            2048
+          ],
+          "global_tokens": 1048576,
+          "world_size": 8,
+          "accumulation": 8,
+          "optimizer_updates": 1,
+          "loss": 10.39828872680664,
+          "seconds": 11.669886456802487,
+          "all_rank_parameters_equal": true,
+          "peak_allocated_bytes": 48843128832,
+          "synthetic_data": true
+        }
+      ]
+    }
+  }
+}

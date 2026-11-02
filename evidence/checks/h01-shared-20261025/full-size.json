@@ -1,0 +1,33 @@
+{
+  "created_at": "2026-10-25T14:11:53.387977+00:00",
+  "source_hash": "e906ecf93b367c99e6006eb67aa711cf68a58ce72b15140af5894d30d82808ee",
+  "torch": "2.9.1+cu128",
+  "device": "NVIDIA H100 80GB HBM3",
+  "dtype": "torch.bfloat16",
+  "world_size": 1,
+  "mode": "target",
+  "seed": 42,
+  "results": [
+    {
+      "method": "deltanet_hybrid",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "924757d20560f545a9d2cd68c23da2e648fe81eadd2c745787345d9d415e8ab7",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 24,
+      "parameters": 1403810314,
+      "loss": 10.398693084716797,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 18.465404585003853,
+      "peak_allocated_bytes": 10785426432,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    }
+  ]
+}

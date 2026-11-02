@@ -18,9 +18,10 @@
  "params": 1378420488,
  "flops": 4.650307,
  "error": -0.473,
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/sparse.py",
+ "owner": "xuyuan & selen",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/f41786282acf98f54292774972f6e3509ddbeb51/reference/methods/sparse.py",
  "cohort": "reference-v1",
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#sparse-attention",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/f41786282acf98f54292774972f6e3509ddbeb51/reference/SOURCES.md",
  "costModel": "reference-aten-math-v1",
  "order": 10
 }

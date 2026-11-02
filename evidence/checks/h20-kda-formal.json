@@ -1,0 +1,121 @@
+{
+ "kind": "h20_formal_run_cumulative_audit",
+ "method": "A04 KDA v2 (kda)",
+ "date": "2026-10-23",
+ "run_dir": "personal CPFS nextt/runs/kda_h20_seed42_v2",
+ "experiments_record": "035",
+ "checks": [
+  "run_status.json: phase training_complete at 46875; trainer final_status",
+  "ledger (run_status/budget.json): 46875 optimizer steps, 49,152,000,000 input tokens, val/CORE step lists equal to the protocol",
+  "cumulative theory FLOPs / (49.152e9 x Dense 4.672398325e9) - 1 within 2%; budget_anomaly events counted",
+  "metrics.jsonl train events: strictly increasing steps, input_tokens == step x 1,048,576, finite loss/grad norm, last step 46875",
+  "189 validation events at 0, every 250, 46875 (41,943,040 tokens each) and the same 189 val_*.json files",
+  "6 CORE events at 8000/16000/24000/32000/40000/46875, each full_core with 22 tasks",
+  "exactly one final_bpb event; bpb_final.json (20,971,520 tokens per split) and core_final.json",
+  "every segment's provenance (provenance.json, resume_*.json): identical model/protocol/data/tokenizer fingerprints, parameter count, config, cost proof, validation source hash and science_hash; non-smoke; world x micro x accumulation x 2048 == 1,048,576"
+ ],
+ "result_checkpoint": "checkpoint_00046875 (final; latest.json); no best-checkpoint selection",
+ "naming": "periodic_val_bpb_46875 is the 189th scheduled val point; final_bpb is the independent final BPB",
+ "ok": true,
+ "problems": [],
+ "final_status": "matched",
+ "optimizer_steps": 46875,
+ "input_tokens": 49152000000,
+ "theory_flops": 230642969256506765625,
+ "dense_flops_per_token": 4672398325.44785,
+ "flops_per_token": 4692443222.178279,
+ "proof_relative_error": 0.0042900659006865904,
+ "cumulative_relative_error": 0.0042900659006865904,
+ "train_event_relative_error": {
+  "min": 0.0042900659006865904,
+  "max": 0.0042900659006865904
+ },
+ "budget_anomalies": 0,
+ "train_events": 4689,
+ "validation_events": 189,
+ "core_events": 6,
+ "final_bpb": {
+  "train": 0.66659525911803,
+  "val": 0.6643866894246494,
+  "tokens_per_split": 20971520
+ },
+ "core": {
+  "8000": 0.21557251174704506,
+  "16000": 0.2252050937888036,
+  "24000": 0.24937132092858788,
+  "32000": 0.2689115705744088,
+  "40000": 0.29862209470758555,
+  "46875": 0.31060639352177416
+ },
+ "core_final": 0.31060639352177416,
+ "last_loss": 2.1925592869520187,
+ "grad_norm_max_after_500": 0.6074214577674866,
+ "step_seconds_median": 7.023416222073138,
+ "mfu_median": 0.5916962692218527,
+ "gpu_hours_training": 734.5437010800073,
+ "training_seconds": 330544.6654860033,
+ "evaluation_seconds": 20723.075326518156,
+ "evaluation_forward_flops": 12400616888038172800,
+ "segments": [
+  {
+   "file": "provenance.json",
+   "step": 0,
+   "job": "gyyige-nextt-p8v2-kda-a01f3f02d7-normal-20261019-170049",
+   "world": 8,
+   "micro": 16,
+   "accumulation": 4,
+   "code": "db1fbcfabfb02443c1b0a805bed8c6af58344bc0d5210a7365436ed4d3aec54d",
+   "commit": null
+  },
+  {
+   "file": "resume_00021681.json",
+   "step": 21681,
+   "job": "gyyige-nextt-p8v2-kda-3e36a4ec4b-normal-20261021-144616",
+   "world": 8,
+   "micro": 16,
+   "accumulation": 4,
+   "code": "db1fbcfabfb02443c1b0a805bed8c6af58344bc0d5210a7365436ed4d3aec54d",
+   "commit": null
+  },
+  {
+   "file": "resume_00032000.json",
+   "step": 32000,
+   "job": "gyyige-nextt-p8v2-kda-f9eb2f5d58-normal-20261022-124843",
+   "world": 8,
+   "micro": 16,
+   "accumulation": 4,
+   "code": "db1fbcfabfb02443c1b0a805bed8c6af58344bc0d5210a7365436ed4d3aec54d",
+   "commit": null
+  }
+ ],
+ "fingerprints": {
+  "model_hash": "39e28f3a7ac2c5a0638d33beaa80679442af824fc2f8ab17598a91e8efe0fb90",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "data_manifest_sha256": "69fa9df6810b6c5e89f41c53b5134353e7ddfb676b4af3d694d9aa8a34358cc2",
+  "tokenizer_sha256": "06258dc0044b6198c6fa8ba75c5b3bbaeaeab44f4804b464d9ce5f5e3797ec54",
+  "reference_source_hash": "303ec29b4f049aed33fe95a92352b476031428e8552e03a9eb8b7efe980be21b",
+  "science_hash": "f77d313e80f677321a60ddb50b166a4366ffab81bb25674f6a1441196a662d45"
+ },
+ "parameters": 1412126344,
+ "device": "NVIDIA H20-3e",
+ "periodic_val_bpb": {
+  "0": 3.1687910773437005,
+  "8000": 0.779746595757551,
+  "16000": 0.7638677054150067,
+  "24000": 0.7384645078568097,
+  "32000": 0.7126652985272206,
+  "40000": 0.6867313881482413,
+  "46875": 0.6671225477448829
+ },
+ "periodic_val_bpb_minimum": {
+  "val_bpb": 0.6671225477448829,
+  "step": 46875
+ },
+ "wandb_mirror": {
+  "run": "kda-h20-seed42-v2",
+  "events_logged": 4885,
+  "finished": true,
+  "note": "trainer W&B stayed offline (backup); the CPU-pod mirror read metrics.jsonl"
+ },
+ "boundaries": "Single seed 42. Hardware 8xH20-3e, micro 16 x accumulation 4, code bundle db1fbcfa (commit 82bbe58: fused FLA causal convolution, no kernel recompute); three segments. The first KDA attempt (bundle eed81b3e) was aborted at step 2340 and is not part of this run (record 016). Optimizer kernel configurations were re-benchmarked in every segment, so segment boundaries are rounding-level, not bitwise, equal to a continuous run (record 031). Other H20 runs differ in floating-point reduction order (RetNet 8xH20, A06'' 16xH20, GDN 32xH20). Resources (step time, MFU, GPU-hours) are outcomes, not controls. Evaluation forward FLOPs are reported separately and not charged to the training budget."
+}

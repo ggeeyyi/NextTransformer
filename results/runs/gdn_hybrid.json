@@ -1,8 +1,8 @@
 {
- "id": "gdn_hybrid",
+ "id": "h02-b300-formal-20261027T0035",
  "methodId": "gdn_hybrid",
  "cohort": "reference-v1",
- "name": "Hybrid GDN + MHA",
+ "name": "H02 Hybrid GDN + MHA",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,7 +789,8 @@
    "value": 0.33371568816217145
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/gdn_hybrid.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/h02-b300-20261030/h02-b300-formal-20261027T0035-formal.json",
+ "hardware": "8 x B300 (1 node; device reports NVIDIA B30Z)",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -1129,7 +1130,7 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/gdn_hybrid.json"
+  "source": "Cumulative audit · evidence/checks/h02-b300-20261030/h02-b300-formal-20261027T0035-formal.json"
  },
- "comparisonNote": "Trained from a frozen source revision; all three recorded source hashes and the original cost proof verified. The metadata audit passes; the pilot and distributed fresh-process resume prerequisite evidence remain pending maintainer review. Single seed 42; FLA GDN and SDPA without FlashAttention."
+ "comparisonNote": "Frozen source fab8c03, kept by tag archive/hybrid-source-20261026; all three recorded source hashes and the original cost proof verified. Metadata audit passes; pilot and target-B300 distributed/fresh-process resume prerequisite evidence remains pending maintainer review. Single seed 42; FLA GDN and SDPA without flash. See experiment record 052."
 }

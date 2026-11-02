@@ -2,39 +2,19 @@
  "id": "circle-loop",
  "name": "Circle Loop",
  "methodId": "circle",
- "runIds": [
-  "circle"
- ],
- "arenaProtocol": "arena-v1",
+ "runIds": ["0ec8e0ba"],
+ "arenaProtocol": "nextt-arena-v1",
  "status": "legacy",
  "statusNote": "Researched and trained before the arena rules existed. The run uses the historical matrix-cost accounting at +4.2% against SSSL under the same accounting, candidates were judged on periodic validation BPB and subset CORE, and no checkpoint is published.",
  "submitted": "2026-10-26",
  "verification": "maintainer",
  "researcher": {
-  "people": [
-   {
-    "name": "NextTransformer contributors",
-    "role": "Proposed the ring design, made the design decisions, launched and monitored the runs"
-   }
-  ],
+  "people": [{"name": "Yue Su", "handle": "Selen-Suyue", "role": "Proposed the ring design, made the design decisions of 10-12 and 10-13, launched and monitored the runs"}],
   "llms": [
-   {
-    "name": "ChatGPT",
-    "version": null,
-    "role": "Novelty assessment against prior looped models and the first formalization of per-block halting"
-   },
-   {
-    "name": "Codex",
-    "version": "gpt-6-astra, gpt-6.1-sol, gpt-6-sol",
-    "role": "Implementation plans, halter, budget controller, loss and curriculum, code, tests, cost estimates, launch commands, and failure diagnosis"
-   }
+   {"name": "ChatGPT", "version": null, "role": "Novelty assessment against prior looped models and the first formalization of per-block halting"},
+   {"name": "Codex", "version": "gpt-6-astra, gpt-6.1-sol, gpt-6-sol", "role": "Implementation plans, halter, budget controller, loss and curriculum, code, tests, cost estimates, launch commands, and failure diagnosis"}
   ],
-  "framework": {
-   "name": "none",
-   "version": null,
-   "url": null,
-   "note": "Interactive ChatGPT and Codex desktop sessions; no auto-research framework"
-  },
+  "framework": {"name": "none", "version": null, "url": null, "note": "Interactive ChatGPT and Codex desktop sessions; no auto-research framework"},
   "involvement": "L3",
   "involvementNote": "The idea came from a person, who also kept Circle as the main line, pointed out that exited tokens were still computed, and set the 3 + 9 + 3 layout. The agents designed the halter, budget control, loss, and curriculum and did all implementation."
  },
@@ -46,29 +26,20 @@
   "formalAttempts": 4,
   "formalNote": "Two launches exited before training (mount path, reused output directory); one stopped at update 430 on a storage-quota error without a checkpoint; the fourth launch completed.",
   "gpuHours": null,
-  "hardware": "One 8-GPU node per run",
-  "computeNote": "Not metered. Candidates: GPT-2-backbone Circle-ST (stopped when the study moved to the d24 shell), a 2 + 8 + 2 d24 version (about 8,000 updates), and the final 3 + 9 + 3 design after a 128-update pilot. The formal run took under four and a half days on one 8-GPU node.",
+  "hardware": "8 × A800 80GB per run",
+  "computeNote": "Not metered. Candidates: GPT-2-backbone Circle-ST (stopped when the study moved to the d24 shell), a 2 + 8 + 2 d24 version (about 8,000 updates), and the final 3 + 9 + 3 design after a 128-update pilot. The formal run took under four and a half days on one 8 × A800 node.",
   "internet": true,
-  "selectionSignal": [
-   "validation-bpb",
-   "core",
-   "train-loss"
-  ]
+  "selectionSignal": ["validation-bpb", "core", "train-loss"]
  },
  "novelty": {
-  "closestPrior": [
-   "Universal Transformer · ACT",
-   "Mixture-of-Recursions · MoR",
-   "Zero Token Transformer",
-   "LoopFormer"
-  ],
+  "closestPrior": ["Universal Transformer · ACT", "Mixture-of-Recursions · MoR", "Zero Token Transformer", "LoopFormer"],
   "statement": "Ring reuse and token-adaptive depth exist already. Circle Loop exits per block inside a ring of nine distinct shared blocks: after one full circuit, a shared halter that reads only a token's current state and its change, with no depth input, decides after every block whether the token continues; exited states freeze and leave later ring attention, and a maximum-entropy depth target with a dual controller holds the mean ring depth at 17.5."
  },
  "artifacts": {
   "checkpointUrl": null,
   "logsUrl": null,
   "traceUrl": null,
-  "historyUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/arena/circle-loop/",
-  "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/native/circle.py"
+  "historyUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/main/docs/arena/circle-loop.md",
+  "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/main/nexttransformer/models/native/circle.py"
  }
 }

@@ -1,8 +1,8 @@
 {
- "id": "mor",
+ "id": "b156f21e",
  "methodId": "mor",
  "cohort": "native-v3",
- "name": "Mixture-of-Recursions · MoR",
+ "name": "native-v3-core8k-20261014-r2_mor_a800_seed42",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -813,7 +813,8 @@
   "boolq": 0.04313526655498305,
   "bigbench_language_identification": 0.17601758759669606
  },
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/mor.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/results/runs/mor.json",
+ "hardware": "8 × A800 80GB",
  "source": "Per-evaluation JSON",
  "protocol": "native-v3 · historical matrix FLOPs",
  "taskEvaluations": [
@@ -1131,7 +1132,7 @@
   "step": 46875,
   "final": true,
   "accounting": "Historical matrix FLOPs · 3 × forward + recompute",
-  "source": "Maintainer-verified final training logs"
+  "source": "Owner-verified final training logs"
  },
  "order": 1
 }

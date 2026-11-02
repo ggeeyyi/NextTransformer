@@ -1,0 +1,285 @@
+{
+  "recorded_at": "2026-10-26T01:51:37.888070+00:00",
+  "status": "passed",
+  "tolerance": {
+    "output": 0.01,
+    "gradient": 0.03
+  },
+  "device": "NVIDIA H100 80GB HBM3",
+  "capability": [
+    9,
+    0
+  ],
+  "hopper_shared_memory": true,
+  "torch": "2.9.1+cu128",
+  "triton": "3.5.1",
+  "fla_core": "0.5.2",
+  "backend_dispatch_disabled": true,
+  "source_hash": "5802219bf5a783fdbab7b2255d70c457cdda8d8124241e51100f4c5f09efd445",
+  "rows": [
+    {
+      "kind": "kda",
+      "batch": 2,
+      "length": 64,
+      "seed": 0,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.022737072062078e-07,
+          "grad_q": 3.0283475105397283e-07,
+          "grad_k": 3.336314537835221e-07,
+          "grad_v": 3.290145555822528e-07,
+          "grad_gate": 5.853917879340436e-07,
+          "grad_logit": 3.465819921835827e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 103497728
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.0059196716016378425,
+          "grad_q": 0.0059451768741558865,
+          "grad_k": 0.006033759462208214,
+          "grad_v": 0.005699719226912077,
+          "grad_gate": 0.006257051370435589,
+          "grad_logit": 0.006285258355275707
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 378235904
+      }
+    },
+    {
+      "kind": "kda",
+      "batch": 2,
+      "length": 64,
+      "seed": 1,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 2.9943571486846474e-07,
+          "grad_q": 3.01975829527848e-07,
+          "grad_k": 3.335779065525091e-07,
+          "grad_v": 3.269224065703786e-07,
+          "grad_gate": 5.940155002229392e-07,
+          "grad_logit": 3.310703242966482e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 103497728
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.005978296852574842,
+          "grad_q": 0.005977218108399998,
+          "grad_k": 0.006061084007645853,
+          "grad_v": 0.00573461709491291,
+          "grad_gate": 0.0061950041697621805,
+          "grad_logit": 0.006803754503680504
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 110330880
+      }
+    },
+    {
+      "kind": "kda",
+      "batch": 2,
+      "length": 65,
+      "seed": 0,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.0385542387257543e-07,
+          "grad_q": 3.0276253508946556e-07,
+          "grad_k": 3.3411432402311043e-07,
+          "grad_v": 3.307908874251728e-07,
+          "grad_gate": 5.930594464927458e-07,
+          "grad_logit": 3.422109066435734e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 129781760
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.0059442661987297776,
+          "grad_q": 0.005968874761856849,
+          "grad_k": 0.006055828213582438,
+          "grad_v": 0.005941869307881352,
+          "grad_gate": 0.006254078532568383,
+          "grad_logit": 0.006446679239920268
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 113042944
+      }
+    },
+    {
+      "kind": "kda",
+      "batch": 2,
+      "length": 65,
+      "seed": 1,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.01177581881424e-07,
+          "grad_q": 3.041154990294585e-07,
+          "grad_k": 3.3635156935168225e-07,
+          "grad_v": 3.297442922845573e-07,
+          "grad_gate": 5.935534725525565e-07,
+          "grad_logit": 3.441656089882178e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 129781760
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.005982140145184253,
+          "grad_q": 0.0059876996684375995,
+          "grad_k": 0.006073672868899569,
+          "grad_v": 0.005954356919095051,
+          "grad_gate": 0.006190338095226929,
+          "grad_logit": 0.006920149571768656
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 113042944
+      }
+    },
+    {
+      "kind": "kda",
+      "batch": 2,
+      "length": 1000,
+      "seed": 0,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.165767487317489e-07,
+          "grad_q": 3.172613862212421e-07,
+          "grad_k": 3.490425838188616e-07,
+          "grad_v": 3.411197357649584e-07,
+          "grad_gate": 5.84020011349954e-07,
+          "grad_logit": 3.578869187462524e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 750930944
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.006274250319404082,
+          "grad_q": 0.006278909680149826,
+          "grad_k": 0.006383714295860457,
+          "grad_v": 0.006055503376374,
+          "grad_gate": 0.0065519509105952875,
+          "grad_logit": 0.006954018015508712
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 735492608
+      }
+    },
+    {
+      "kind": "kda",
+      "batch": 2,
+      "length": 1000,
+      "seed": 1,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.151531088510052e-07,
+          "grad_q": 3.176952321252633e-07,
+          "grad_k": 3.4975000721380286e-07,
+          "grad_v": 3.4054966453183125e-07,
+          "grad_gate": 5.859723062309702e-07,
+          "grad_logit": 3.58755320157187e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 754928640
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.00624961891321615,
+          "grad_q": 0.006274560825914051,
+          "grad_k": 0.006371386120892789,
+          "grad_v": 0.006034148418833273,
+          "grad_gate": 0.006548774640509635,
+          "grad_logit": 0.0068716861164149455
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 739031552
+      }
+    },
+    {
+      "kind": "kda",
+      "batch": 2,
+      "length": 2048,
+      "seed": 0,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.178658381031421e-07,
+          "grad_q": 3.1901364482033805e-07,
+          "grad_k": 3.516258444261267e-07,
+          "grad_v": 3.4291262985284423e-07,
+          "grad_gate": 5.869772926551362e-07,
+          "grad_logit": 3.6162843421512956e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 1340088320
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.00627096396771188,
+          "grad_q": 0.006296635277600748,
+          "grad_k": 0.00639291229261939,
+          "grad_v": 0.006052506149844359,
+          "grad_gate": 0.006565937925714032,
+          "grad_logit": 0.006892675579925495
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 1416627200
+      }
+    },
+    {
+      "kind": "kda",
+      "batch": 2,
+      "length": 2048,
+      "seed": 1,
+      "gate_scale": 1.0,
+      "torch_chunk_fp32": {
+        "errors": {
+          "output": 3.170834344184398e-07,
+          "grad_q": 3.185519650091064e-07,
+          "grad_k": 3.511031910812631e-07,
+          "grad_v": 3.4249014411123553e-07,
+          "grad_gate": 5.852167833228593e-07,
+          "grad_logit": 3.5962877146395064e-07
+        },
+        "passed": true,
+        "output_dtype": "torch.float32",
+        "peak_bytes": 1340088320
+      },
+      "fla_bf16": {
+        "errors": {
+          "output": 0.0062691980142215884,
+          "grad_q": 0.0062830499453914055,
+          "grad_k": 0.006380413463794,
+          "grad_v": 0.006053883950184734,
+          "grad_gate": 0.0065527121425664895,
+          "grad_logit": 0.006958646686767391
+        },
+        "passed": true,
+        "output_dtype": "torch.bfloat16",
+        "peak_bytes": 1416627200
+      }
+    }
+  ]
+}

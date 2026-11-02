@@ -1,8 +1,8 @@
 {
- "id": "gla",
+ "id": "A03_gla",
  "methodId": "gla",
- "cohort": "frozen-replay-20261019",
- "name": "Gated Linear Attention · GLA",
+ "cohort": "xiangyue-20261019",
+ "name": "A03 GLA",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,7 +789,8 @@
    "value": 0.3110914073851192
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/gla.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/xiangyue-a01-a03-20261027/A03_gla-formal.json",
+ "hardware": "8 × H200",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -830,7 +831,7 @@
    "chunked": false,
    "activation_checkpointing": false
   },
-  "source_manifest": "evidence/audits/deltanet-gla-source-manifest.json"
+  "source_manifest": "evidence/checks/xiangyue-a01-a03-20261027/source-manifest.json"
  },
  "reportedAudit": "matched",
  "lastRecordedAt": 1792950286.0,
@@ -1151,9 +1152,9 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2-all-backends-replay",
-  "source": "Cumulative audit · evidence/audits/gla.json"
+  "source": "Cumulative audit · evidence/checks/xiangyue-a01-a03-20261027/A03_gla-formal.json"
  },
  "comparisonNote": "Frozen all-backends-replay accounting; original cumulative FLOPs and source fingerprints are retained.",
  "finalTrainBpb": 0.6685170939444487,
- "auditSha256": "248b9e5e4b5260a40117e89da44ee76668c8c95049e7c5fd3c1ab1872a29ff6e"
+ "auditSha256": "6d6232ae696760bb60d4d4c209974c01d69fd1988416085e7ebeecb8603953f5"
 }

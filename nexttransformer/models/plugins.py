@@ -1,6 +1,6 @@
 """Methods contributed as plugins: one package per method, added without editing shared files.
 
-A plugin lives in `nexttransformer/methods/<name>/`; NEXTTRANSFORMER_METHOD_PATHS may list more plugin roots
+A plugin lives in `nexttransformer/methods/<name>/`; NEXTT_METHOD_PATHS may list more plugin roots
 (separated by the path separator). Its `method.json` declares the method and is read without
 importing code:
 
@@ -44,8 +44,8 @@ SCALARS = (str, int, float, bool)
 
 
 def roots():
-    """Plugin roots: this package's methods/ directory, then those listed in NEXTTRANSFORMER_METHOD_PATHS."""
-    extra = [Path(path).resolve() for path in os.environ.get("NEXTTRANSFORMER_METHOD_PATHS", "").split(os.pathsep) if path]
+    """Plugin roots: this package's methods/ directory, then those listed in NEXTT_METHOD_PATHS."""
+    extra = [Path(path).resolve() for path in os.environ.get("NEXTT_METHOD_PATHS", "").split(os.pathsep) if path]
     return [ROOT, *extra]
 
 

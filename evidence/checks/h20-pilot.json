@@ -1,0 +1,998 @@
+{
+ "recorded_at": "2026-10-18T22:48:12.824072+00:00",
+ "status": "passed",
+ "scope": "P7 pilot (PLAN 9.2): one Koala H20 Normal job per method, 8x H20-3e, formal dimensions, seed 42, 512 full 1,048,576-token updates of real ClimbMix (536,870,912 input tokens, accounted separately from the 49.152B budget; pilot weights never enter formal runs). Full-size val (41,943,040 tokens) at steps 0 and 512 and one CORE pass over all examples of the 22 tasks at step 512, run for timing only: smoke-labelled, not formal, not used for any decision or tuning. The LR schedule is the formal 46,875-step one, so the pilot covers its 40-step warmup and the start of the constant phase, not the warmdown.",
+ "code_bundle": "eed81b3ef7bdf9bef88015d28d00812907c93d55447a037a8b43ddba8db502d3",
+ "science_hash": "178345f75842c0fad13c558f04262205b15d334d5f6c300dc4272a07c7b6bc2d",
+ "reference_source_hash": "ae7a22b5e7afd92a03cb7e89e62b6030b071cc7fd75871a1e39bd68772570b3b",
+ "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+ "data_manifest_sha256": "69fa9df6810b6c5e89f41c53b5134353e7ddfb676b4af3d694d9aa8a34358cc2",
+ "tokenizer_sha256": "06258dc0044b6198c6fa8ba75c5b3bbaeaeab44f4804b464d9ce5f5e3797ec54",
+ "software": {
+  "python": "3.10.20",
+  "torch": "2.9.1+cu128",
+  "cuda": "12.8",
+  "nccl": "2.27.5",
+  "fla_core": "0.5.2",
+  "fla_record_sha256": "2281535f71fed1297e028f6d623349ff8da5da0ae5ed58eb73e5aafd3170305c"
+ },
+ "command": "bash reference/koala/run.sh --site-config SITE.json --config reference/configs/METHOD.json --output RUN --micro-batch 8 --smoke-steps 512 --smoke-val-tokens 41943040 --smoke-core-per-task -1 --rolling-every 256 --log-every 10",
+ "projection_note": "Formal projection = 46,875 x steady step time + 189 val + 6 CORE + final BPB at the measured pilot speeds; checkpoint saves were not timed separately (each pilot job's wall time leaves under 3 minutes for environment setup plus two saves). Segments assume --max-wall-hours 45.5.",
+ "methods": {
+  "kda": {
+   "koala_job": "gyyige-nextt-p7-kda-5801acf385-normal-20261019-044835",
+   "job_wall_seconds_approx": 5580,
+   "model_hash": "39e28f3a7ac2c5a0638d33beaa80679442af824fc2f8ab17598a91e8efe0fb90",
+   "parameters": 1412126344,
+   "micro_batch": 8,
+   "accumulation": 8,
+   "world_size": 8,
+   "phase": "smoke_complete",
+   "final_status": "smoke",
+   "optimizer_steps": 512,
+   "input_tokens": 536870912,
+   "theory_flops": 2519236272199071232,
+   "theory_flops_per_token": 4692443222.178279,
+   "theory_relative_error": 0.0042900659006865904,
+   "all_losses_and_grad_norms_finite": true,
+   "train_curve": [
+    [
+     1,
+     10.398,
+     0.4064
+    ],
+    [
+     10,
+     7.3955,
+     8.58
+    ],
+    [
+     20,
+     5.9771,
+     0.2016
+    ],
+    [
+     30,
+     5.6268,
+     0.2191
+    ],
+    [
+     40,
+     5.2171,
+     0.158
+    ],
+    [
+     50,
+     4.9305,
+     0.1619
+    ],
+    [
+     60,
+     4.6682,
+     0.1677
+    ],
+    [
+     70,
+     4.4847,
+     0.1399
+    ],
+    [
+     80,
+     4.3094,
+     0.1599
+    ],
+    [
+     90,
+     4.1571,
+     0.2823
+    ],
+    [
+     100,
+     4.0517,
+     0.1479
+    ],
+    [
+     110,
+     3.9705,
+     0.2073
+    ],
+    [
+     120,
+     3.8688,
+     0.2424
+    ],
+    [
+     130,
+     3.8015,
+     0.1517
+    ],
+    [
+     140,
+     3.7915,
+     0.2167
+    ],
+    [
+     150,
+     3.6806,
+     0.1306
+    ],
+    [
+     160,
+     3.6676,
+     0.2337
+    ],
+    [
+     170,
+     3.6022,
+     0.1805
+    ],
+    [
+     180,
+     3.5668,
+     0.1289
+    ],
+    [
+     190,
+     3.5402,
+     0.1568
+    ],
+    [
+     200,
+     3.5124,
+     0.1564
+    ],
+    [
+     210,
+     3.4506,
+     0.1463
+    ],
+    [
+     220,
+     3.4255,
+     0.1574
+    ],
+    [
+     230,
+     3.4457,
+     0.1372
+    ],
+    [
+     240,
+     3.382,
+     0.1016
+    ],
+    [
+     250,
+     3.3639,
+     0.2195
+    ],
+    [
+     260,
+     3.2904,
+     0.146
+    ],
+    [
+     270,
+     3.3317,
+     0.1541
+    ],
+    [
+     280,
+     3.2685,
+     0.1567
+    ],
+    [
+     290,
+     3.2425,
+     0.1729
+    ],
+    [
+     300,
+     3.2608,
+     0.2043
+    ],
+    [
+     310,
+     3.2394,
+     0.158
+    ],
+    [
+     320,
+     3.2295,
+     0.2005
+    ],
+    [
+     330,
+     3.2149,
+     0.1372
+    ],
+    [
+     340,
+     3.1915,
+     0.4848
+    ],
+    [
+     350,
+     3.1666,
+     0.1605
+    ],
+    [
+     360,
+     3.1633,
+     0.2422
+    ],
+    [
+     370,
+     3.1515,
+     0.1852
+    ],
+    [
+     380,
+     3.1329,
+     0.1486
+    ],
+    [
+     390,
+     3.1354,
+     0.2046
+    ],
+    [
+     400,
+     3.1445,
+     0.3667
+    ],
+    [
+     410,
+     3.1325,
+     0.23
+    ],
+    [
+     420,
+     3.149,
+     0.1995
+    ],
+    [
+     430,
+     3.0929,
+     0.1474
+    ],
+    [
+     440,
+     3.1137,
+     0.3073
+    ],
+    [
+     450,
+     3.105,
+     0.2597
+    ],
+    [
+     460,
+     3.0655,
+     0.1627
+    ],
+    [
+     470,
+     3.0812,
+     0.2063
+    ],
+    [
+     480,
+     3.0423,
+     0.1376
+    ],
+    [
+     490,
+     3.0262,
+     0.1695
+    ],
+    [
+     500,
+     3.0177,
+     0.1755
+    ],
+    [
+     510,
+     3.049,
+     0.2303
+    ],
+    [
+     512,
+     3.0372,
+     0.1322
+    ]
+   ],
+   "loss_last5_mean": 3.03446,
+   "grad_norm_from_step50": {
+    "median": 0.165165,
+    "max": 0.484778,
+    "max_step": 340
+   },
+   "steady_step_seconds_median": 8.48777,
+   "mfu_theory_median": 0.489614,
+   "tokens_per_second_median": 123540,
+   "peak_memory_bytes": 73126182400,
+   "first_step_seconds": 103.299,
+   "training_seconds": 4451.57,
+   "evaluation_seconds": 964.792,
+   "evaluation_forward_flops": 130532809347770240,
+   "validation": {
+    "0": {
+     "val_bpb": 3.16879,
+     "input_tokens": 41943040,
+     "seconds": 159.006
+    },
+    "512": {
+     "val_bpb": 0.919442,
+     "input_tokens": 41943040,
+     "seconds": 109.868
+    }
+   },
+   "core_timing": {
+    "step": 512,
+    "tasks": 22,
+    "all_examples": true,
+    "seconds": 695.918,
+    "core_metric": 0.112275,
+    "full_core_label": false
+   },
+   "formal_projection": {
+    "training_hours": 110.5,
+    "evaluation_hours": 6.958,
+    "total_hours_excluding_checkpoints": 117.5,
+    "segments_at_45p5h": 3,
+    "gpu_hours": 939.8
+   }
+  },
+  "retnet": {
+   "koala_job": "gyyige-nextt-p7-retnet-c5a2a6853a-normal-20261019-044858",
+   "job_wall_seconds_approx": 3960,
+   "model_hash": "8bc4853d25752e241dfee6d7637b230317a74ca3f148e7a90a4f5e0057f9e742",
+   "parameters": 1410077320,
+   "micro_batch": 8,
+   "accumulation": 8,
+   "world_size": 8,
+   "phase": "smoke_complete",
+   "final_status": "smoke",
+   "optimizer_steps": 512,
+   "input_tokens": 536870912,
+   "theory_flops": 2485744461537850880,
+   "theory_flops_per_token": 4630059863.511195,
+   "theory_relative_error": -0.009061398234406104,
+   "all_losses_and_grad_norms_finite": true,
+   "train_curve": [
+    [
+     1,
+     10.397,
+     0.4062
+    ],
+    [
+     10,
+     7.023,
+     1.409
+    ],
+    [
+     20,
+     5.9772,
+     0.2005
+    ],
+    [
+     30,
+     5.6917,
+     0.2018
+    ],
+    [
+     40,
+     5.3606,
+     0.2591
+    ],
+    [
+     50,
+     5.0571,
+     0.2156
+    ],
+    [
+     60,
+     4.7743,
+     0.1725
+    ],
+    [
+     70,
+     4.5838,
+     0.1581
+    ],
+    [
+     80,
+     4.4371,
+     0.317
+    ],
+    [
+     90,
+     4.2923,
+     0.3424
+    ],
+    [
+     100,
+     4.1744,
+     0.1917
+    ],
+    [
+     110,
+     4.0865,
+     0.2481
+    ],
+    [
+     120,
+     3.9878,
+     0.1841
+    ],
+    [
+     130,
+     3.9112,
+     0.2111
+    ],
+    [
+     140,
+     3.8906,
+     0.1604
+    ],
+    [
+     150,
+     3.7646,
+     0.2879
+    ],
+    [
+     160,
+     3.7598,
+     0.1806
+    ],
+    [
+     170,
+     3.6798,
+     0.1601
+    ],
+    [
+     180,
+     3.6412,
+     0.179
+    ],
+    [
+     190,
+     3.6143,
+     0.1803
+    ],
+    [
+     200,
+     3.5864,
+     0.1726
+    ],
+    [
+     210,
+     3.5212,
+     0.2126
+    ],
+    [
+     220,
+     3.4824,
+     0.1943
+    ],
+    [
+     230,
+     3.5125,
+     0.2112
+    ],
+    [
+     240,
+     3.4481,
+     0.2614
+    ],
+    [
+     250,
+     3.4219,
+     0.1847
+    ],
+    [
+     260,
+     3.357,
+     0.4009
+    ],
+    [
+     270,
+     3.3998,
+     0.2021
+    ],
+    [
+     280,
+     3.3272,
+     0.2271
+    ],
+    [
+     290,
+     3.3008,
+     0.1733
+    ],
+    [
+     300,
+     3.3215,
+     0.2405
+    ],
+    [
+     310,
+     3.2984,
+     0.2088
+    ],
+    [
+     320,
+     3.2847,
+     0.2372
+    ],
+    [
+     330,
+     3.2804,
+     0.3561
+    ],
+    [
+     340,
+     3.2318,
+     0.1551
+    ],
+    [
+     350,
+     3.225,
+     0.2006
+    ],
+    [
+     360,
+     3.2188,
+     0.1504
+    ],
+    [
+     370,
+     3.2081,
+     0.1598
+    ],
+    [
+     380,
+     3.1917,
+     0.1673
+    ],
+    [
+     390,
+     3.1919,
+     0.161
+    ],
+    [
+     400,
+     3.1988,
+     0.1824
+    ],
+    [
+     410,
+     3.2047,
+     0.5031
+    ],
+    [
+     420,
+     3.2132,
+     0.1647
+    ],
+    [
+     430,
+     3.1567,
+     0.3333
+    ],
+    [
+     440,
+     3.1714,
+     0.1511
+    ],
+    [
+     450,
+     3.1631,
+     0.2636
+    ],
+    [
+     460,
+     3.1243,
+     0.2188
+    ],
+    [
+     470,
+     3.1371,
+     0.2395
+    ],
+    [
+     480,
+     3.1006,
+     0.1401
+    ],
+    [
+     490,
+     3.0802,
+     0.2044
+    ],
+    [
+     500,
+     3.0746,
+     0.155
+    ],
+    [
+     510,
+     3.1083,
+     0.1567
+    ],
+    [
+     512,
+     3.0921,
+     0.1558
+    ]
+   ],
+   "loss_last5_mean": 3.09115,
+   "grad_norm_from_step50": {
+    "median": 0.19296,
+    "max": 0.503147,
+    "max_step": 410
+   },
+   "steady_step_seconds_median": 5.89298,
+   "mfu_theory_median": 0.695825,
+   "tokens_per_second_median": 177937,
+   "peak_memory_bytes": 53372700160,
+   "first_step_seconds": 80.3836,
+   "training_seconds": 3097.85,
+   "evaluation_seconds": 747.434,
+   "evaluation_forward_flops": 128806671822293120,
+   "validation": {
+    "0": {
+     "val_bpb": 3.16863,
+     "input_tokens": 41943040,
+     "seconds": 146.241
+    },
+    "512": {
+     "val_bpb": 0.936645,
+     "input_tokens": 41943040,
+     "seconds": 81.0215
+    }
+   },
+   "core_timing": {
+    "step": 512,
+    "tasks": 22,
+    "all_examples": true,
+    "seconds": 520.171,
+    "core_metric": 0.101995,
+    "full_core_label": false
+   },
+   "formal_projection": {
+    "training_hours": 76.73,
+    "evaluation_hours": 5.143,
+    "total_hours_excluding_checkpoints": 81.87,
+    "segments_at_45p5h": 2,
+    "gpu_hours": 655.0
+   }
+  },
+  "elu_linear": {
+   "koala_job": "gyyige-nextt-p7-elu-linear-445724b4e8-normal-20261019-044923",
+   "job_wall_seconds_approx": 4020,
+   "model_hash": "108313abc66ba8da60c3c5fe0fa08456972b19cb29d3be12c3a82beda2f8c71d",
+   "parameters": 1462765468,
+   "micro_batch": 8,
+   "accumulation": 8,
+   "world_size": 8,
+   "phase": "smoke_complete",
+   "final_status": "smoke",
+   "optimizer_steps": 512,
+   "input_tokens": 536870912,
+   "theory_flops": 2497178299182767616,
+   "theory_flops_per_token": 4651357045.737594,
+   "theory_relative_error": -0.004503314624452526,
+   "all_losses_and_grad_norms_finite": true,
+   "train_curve": [
+    [
+     1,
+     10.399,
+     0.4058
+    ],
+    [
+     10,
+     6.9777,
+     0.5916
+    ],
+    [
+     20,
+     5.9687,
+     0.1858
+    ],
+    [
+     30,
+     5.7348,
+     0.122
+    ],
+    [
+     40,
+     5.6171,
+     0.1517
+    ],
+    [
+     50,
+     5.5236,
+     0.1185
+    ],
+    [
+     60,
+     5.3932,
+     0.1095
+    ],
+    [
+     70,
+     5.2958,
+     0.1328
+    ],
+    [
+     80,
+     5.1907,
+     0.1221
+    ],
+    [
+     90,
+     5.0793,
+     0.1233
+    ],
+    [
+     100,
+     5.0107,
+     0.2443
+    ],
+    [
+     110,
+     4.9024,
+     0.1402
+    ],
+    [
+     120,
+     4.792,
+     0.1619
+    ],
+    [
+     130,
+     4.6959,
+     0.159
+    ],
+    [
+     140,
+     4.6639,
+     0.1785
+    ],
+    [
+     150,
+     4.5468,
+     0.2909
+    ],
+    [
+     160,
+     4.4817,
+     0.1616
+    ],
+    [
+     170,
+     4.3845,
+     0.2149
+    ],
+    [
+     180,
+     4.3108,
+     0.1786
+    ],
+    [
+     190,
+     4.2715,
+     0.2637
+    ],
+    [
+     200,
+     4.1918,
+     0.2172
+    ],
+    [
+     210,
+     4.1123,
+     0.232
+    ],
+    [
+     220,
+     4.031,
+     0.2284
+    ],
+    [
+     230,
+     4.0212,
+     0.2643
+    ],
+    [
+     240,
+     3.9537,
+     0.2919
+    ],
+    [
+     250,
+     3.8909,
+     0.2452
+    ],
+    [
+     260,
+     3.7899,
+     0.2393
+    ],
+    [
+     270,
+     3.813,
+     0.2674
+    ],
+    [
+     280,
+     3.7215,
+     0.2782
+    ],
+    [
+     290,
+     3.6792,
+     0.2374
+    ],
+    [
+     300,
+     3.6648,
+     0.2518
+    ],
+    [
+     310,
+     3.6323,
+     0.2419
+    ],
+    [
+     320,
+     3.6071,
+     0.2341
+    ],
+    [
+     330,
+     3.5769,
+     0.2705
+    ],
+    [
+     340,
+     3.517,
+     0.2332
+    ],
+    [
+     350,
+     3.492,
+     0.1979
+    ],
+    [
+     360,
+     3.4853,
+     0.2926
+    ],
+    [
+     370,
+     3.4609,
+     0.2717
+    ],
+    [
+     380,
+     3.473,
+     0.2553
+    ],
+    [
+     390,
+     3.4452,
+     0.2153
+    ],
+    [
+     400,
+     3.4509,
+     0.3179
+    ],
+    [
+     410,
+     3.4306,
+     12.38
+    ],
+    [
+     420,
+     3.4813,
+     0.244
+    ],
+    [
+     430,
+     3.4078,
+     0.2759
+    ],
+    [
+     440,
+     3.4218,
+     0.2389
+    ],
+    [
+     450,
+     3.4115,
+     2.051
+    ],
+    [
+     460,
+     3.4005,
+     0.2074
+    ],
+    [
+     470,
+     3.3951,
+     0.1885
+    ],
+    [
+     480,
+     3.3641,
+     0.3463
+    ],
+    [
+     490,
+     3.3275,
+     0.1982
+    ],
+    [
+     500,
+     3.3777,
+     0.2902
+    ],
+    [
+     510,
+     3.4063,
+     0.156
+    ],
+    [
+     512,
+     3.3984,
+     0.2198
+    ]
+   ],
+   "loss_last5_mean": 3.37483,
+   "grad_norm_from_step50": {
+    "median": 0.235751,
+    "max": 12.3768,
+    "max_step": 410
+   },
+   "steady_step_seconds_median": 6.11951,
+   "mfu_theory_median": 0.673149,
+   "tokens_per_second_median": 171350,
+   "peak_memory_bytes": 60505626624,
+   "first_step_seconds": 72.9714,
+   "training_seconds": 3208.98,
+   "evaluation_seconds": 680.829,
+   "evaluation_forward_flops": 129344131446007840,
+   "validation": {
+    "0": {
+     "val_bpb": 3.16893,
+     "input_tokens": 41943040,
+     "seconds": 104.404
+    },
+    "512": {
+     "val_bpb": 1.02878,
+     "input_tokens": 41943040,
+     "seconds": 84.7606
+    }
+   },
+   "core_timing": {
+    "step": 512,
+    "tasks": 22,
+    "all_examples": true,
+    "seconds": 491.665,
+    "core_metric": 0.0715268,
+    "full_core_label": false
+   },
+   "formal_projection": {
+    "training_hours": 79.68,
+    "evaluation_hours": 5.293,
+    "total_hours_excluding_checkpoints": 84.97,
+    "segments_at_45p5h": 2,
+    "gpu_hours": 679.8
+   }
+  }
+ }
+}

@@ -15,11 +15,11 @@ import sys
 PATHS = {
     'runtime_dir': ('NANOCHAT_RUNTIME', None),
     'venv_dir': ('NANOCHAT_VENV', 'venv'),
-    'resources': ('NEXTTRANSFORMER_RESOURCES', 'resources'),
-    'data_dir': ('NEXTTRANSFORMER_DATA_DIR', None),
-    'data_manifest': ('NEXTTRANSFORMER_DATA_MANIFEST', None),
-    'source_manifest': ('NEXTTRANSFORMER_SOURCE_MANIFEST', None),
-    'core_archive': ('NEXTTRANSFORMER_CORE_ARCHIVE', None),
+    'resources': ('NEXTT_RESOURCES', 'resources'),
+    'data_dir': ('NEXTT_DATA_DIR', None),
+    'data_manifest': ('NEXTT_DATA_MANIFEST', None),
+    'source_manifest': ('NEXTT_SOURCE_MANIFEST', None),
+    'core_archive': ('NEXTT_CORE_ARCHIVE', None),
     'upstream_base_dir': ('NANOCHAT_BASE_DIR', 'upstream'),
     'hf_home': ('HF_HOME', 'huggingface'),
     'hf_hub_cache': ('HF_HUB_CACHE', None),
@@ -42,15 +42,15 @@ PATHS = {
     'wandb_netrc': ('NETRC', None),
 }
 VALUES = {
-    'run_name': ('NEXTTRANSFORMER_RUN_NAME', None),
+    'run_name': ('NEXTT_RUN_NAME', None),
     'gpus': ('GPUS', '8'),
     'micro_batch': ('MICRO_BATCH', None),
-    'python_version': ('NEXTTRANSFORMER_PYTHON_VERSION', '3.10.19'),
-    'index_url': ('NEXTTRANSFORMER_INDEX_URL', None),
+    'python_version': ('NEXTT_PYTHON_VERSION', '3.10.19'),
+    'index_url': ('NEXTT_INDEX_URL', None),
     'hf_endpoint': ('HF_ENDPOINT', None),
-    'core_url': ('NEXTTRANSFORMER_CORE_URL', None),
+    'core_url': ('NEXTT_CORE_URL', None),
     'wandb_mode': ('WANDB_MODE', 'disabled'),
-    'wandb_metrics': ('NEXTTRANSFORMER_WANDB_METRICS', 'core'),
+    'wandb_metrics': ('NEXTT_WANDB_METRICS', 'core'),
     'wandb_project': ('WANDB_PROJECT', None),
     'wandb_entity': ('WANDB_ENTITY', None),
     'wandb_group': ('WANDB_RUN_GROUP', None),
@@ -58,7 +58,7 @@ VALUES = {
 
 
 def add_runtime_arguments(parser, *, defaults=True):
-    parser.add_argument('--site-config', type=Path, default=os.environ.get('NEXTTRANSFORMER_SITE_CONFIG') if defaults else None,
+    parser.add_argument('--site-config', type=Path, default=os.environ.get('NEXTT_SITE_CONFIG') if defaults else None,
                         help='Optional local JSON file; paths in it are relative to that file')
     for name, (env, _) in PATHS.items():
         parser.add_argument('--'+name.replace('_', '-'), type=lambda p: Path(os.path.expandvars(p)).expanduser().resolve(),
@@ -79,7 +79,7 @@ def resolve(argv=None, environ=None):
     parser = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
     add_runtime_arguments(parser, defaults=False)
     args, _ = parser.parse_known_args(argv)
-    local = args.site_config or env.get('NEXTTRANSFORMER_SITE_CONFIG')
+    local = args.site_config or env.get('NEXTT_SITE_CONFIG')
     config, config_dir = {}, Path.cwd()
     if local:
         local = Path(os.path.expandvars(str(local))).expanduser().resolve()
@@ -124,7 +124,7 @@ def resolve(argv=None, environ=None):
             raise ValueError(f'{name} must be positive')
     exports = {({**PATHS, **VALUES})[name][0]: value for name, value in values.items()}
     if local:
-        exports['NEXTTRANSFORMER_SITE_CONFIG'] = str(local)
+        exports['NEXTT_SITE_CONFIG'] = str(local)
     exports['UV_PROJECT_ENVIRONMENT'] = values['venv_dir']
     # The caller chooses the persistent native/upstream resource root explicitly.
     exports['OMP_NUM_THREADS'] = env.get('OMP_NUM_THREADS', '4')

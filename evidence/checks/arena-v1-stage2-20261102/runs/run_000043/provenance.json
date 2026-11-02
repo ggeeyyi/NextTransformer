@@ -1,0 +1,13 @@
+{
+  "accumulation": 4,
+  "cuda": "12.8",
+  "device": "NVIDIA H20-3e",
+  "micro_batch": 16,
+  "native_source_sha256": "3acf94071b0a70c32c63aabf7bc215c10108c279d4c02ec77e92932d0fe8ba32",
+  "parameters": 1355882760,
+  "python": "3.10.20",
+  "submission_sha256": "0708bc358f1ad23cbaa506547db84ea5abde40d6ebe2e15da85d7a387128849b",
+  "synthetic": false,
+  "torch": "2.9.1+cu128",
+  "world_size": 8
+}

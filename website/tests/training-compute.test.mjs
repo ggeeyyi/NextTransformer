@@ -3,7 +3,7 @@ import {test} from 'node:test';
 import {runs} from './results.mjs';
 import {computeFromSummary,getTrainingCompute,trainingComputeDelta,LEGACY_ACCOUNTING,trainingComputeSchema} from '../app/lib/training-compute.ts';
 const native=runs().filter(r=>r.cohort==='native-v3');
-test('maintainer-verified final costs preserve six-decimal values and Dense-relative differences',()=>{
+test('owner-verified final costs preserve six-decimal values and Dense-relative differences',()=>{
  const dense=native.find(r=>r.methodId==='dense');
  for(const [id,value,delta]of [['dense',4.775226,0],['loopformer',4.775756,.01],['mor',4.957654,3.82],['circle',4.976652,4.22]]){
   const run=native.find(r=>r.methodId===id),cost=getTrainingCompute(run);

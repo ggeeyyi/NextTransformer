@@ -1,0 +1,490 @@
+{
+  "schema": "nextt-repository-validation-v1",
+  "date": "2026-10-23",
+  "status": "passed",
+  "scope": "Full-attention Dense (dense_full) and Residual rows R00-R03: implementation, calibration, admission, bounded A800 checks, ModelArts launcher",
+  "base_commit": "bc7d8543cda415a19d5a7b89eb989b69c0d38a3f",
+  "owner": "@selen",
+  "science_hash": "e6e8b8473fc1312a27213d367212d1a32d4978feb4e8be9e5326f41687743034",
+  "validation_source_hash": "2130db89fb45daf6f0690de5f7c719f3903d47c878837b4dfb76954395ad97fb",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "torch": "2.9.1+cu128",
+  "hardware": "NVIDIA A800-SXM4-80GB",
+  "admitted_configurations": 25,
+  "calibration": {
+    "dense_full": {
+      "physical_layers": 23,
+      "ffn": 6144,
+      "parameters": 1355810568,
+      "flops_per_token": 4674661693.46476,
+      "relative_error": 0.00048441247069686
+    },
+    "residual_standard": {
+      "physical_layers": 23,
+      "ffn": 6144,
+      "parameters": 1355810568,
+      "flops_per_token": 4674297661.463183,
+      "relative_error": 0.0004065013046914423
+    },
+    "hc": {
+      "physical_layers": 23,
+      "ffn": 6144,
+      "parameters": 1356235700,
+      "flops_per_token": 4698482827.1407995,
+      "relative_error": 0.005582679359951381
+    },
+    "mhc": {
+      "physical_layers": 23,
+      "ffn": 6016,
+      "parameters": 1353550818,
+      "flops_per_token": 4674357257.47247,
+      "relative_error": 0.00041925621237193234
+    },
+    "attnres": {
+      "physical_layers": 23,
+      "ffn": 6144,
+      "parameters": 1355882760,
+      "flops_per_token": 4679857323.887021,
+      "relative_error": 0.0015963960946021594
+    }
+  },
+  "mhc_selection": {
+    "trials": [
+      {
+        "field": "layers",
+        "value": 23,
+        "flops_per_token": 4728904000.042661
+      },
+      {
+        "field": "layers",
+        "value": 22,
+        "flops_per_token": 4536450307.06482
+      }
+    ],
+    "note": "23 layers/FFN 6144 +1.21% and 22 layers -2.91% exceed 1%; FFN 6016 at 23 layers is the only within-1% candidate 128 from 6144"
+  },
+  "pre_v2_proofs_identical_to": "reference/results/costs/layout-20261023",
+  "cpu": {
+    "passed": 363,
+    "skipped": 34,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 100.325,
+    "command": "CUDA_VISIBLE_DEVICES= NANOCHAT_DTYPE=float32 TORCH_COMPILE_DISABLE=1 OMP_NUM_THREADS=1 python -m pytest tests reference/tests -q -m \"not slow\"",
+    "new_suites": [
+      "reference/tests/test_residual.py",
+      "tests/test_reference_modelarts.py"
+    ]
+  },
+  "gpu": {
+    "passed": 22,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 14.367,
+    "command": "CUDA_VISIBLE_DEVICES=0 NANOCHAT_DTYPE=float32 python -m pytest reference/tests/test_paper_alignment.py"
+  },
+  "full_size": [
+    {
+      "method": "dense_full",
+      "status": "passed",
+      "test_shape": [
+        1,
+        2048
+      ],
+      "parameters": 1355810568,
+      "causal_max_abs": 0.0,
+      "peak_allocated_bytes": 9482984448
+    },
+    {
+      "method": "residual_standard",
+      "status": "passed",
+      "test_shape": [
+        1,
+        2048
+      ],
+      "parameters": 1355810568,
+      "causal_max_abs": 0.0,
+      "peak_allocated_bytes": 9336707584
+    },
+    {
+      "method": "hc",
+      "status": "passed",
+      "test_shape": [
+        1,
+        2048
+      ],
+      "parameters": 1356235700,
+      "causal_max_abs": 0.0,
+      "peak_allocated_bytes": 13099407872
+    },
+    {
+      "method": "mhc",
+      "status": "passed",
+      "test_shape": [
+        1,
+        2048
+      ],
+      "parameters": 1353550818,
+      "causal_max_abs": 0.0,
+      "peak_allocated_bytes": 12295295488
+    },
+    {
+      "method": "attnres",
+      "status": "passed",
+      "test_shape": [
+        1,
+        2048
+      ],
+      "parameters": 1355882760,
+      "causal_max_abs": 0.0,
+      "peak_allocated_bytes": 9934579200
+    }
+  ],
+  "eight_rank_small": [
+    {
+      "method": "dense_full",
+      "status": "passed",
+      "global_tokens": 1048576,
+      "accumulation": 1,
+      "all_rank_parameters_equal": true
+    },
+    {
+      "method": "residual_standard",
+      "status": "passed",
+      "global_tokens": 1048576,
+      "accumulation": 1,
+      "all_rank_parameters_equal": true
+    },
+    {
+      "method": "hc",
+      "status": "passed",
+      "global_tokens": 1048576,
+      "accumulation": 1,
+      "all_rank_parameters_equal": true
+    },
+    {
+      "method": "mhc",
+      "status": "passed",
+      "global_tokens": 1048576,
+      "accumulation": 1,
+      "all_rank_parameters_equal": true
+    },
+    {
+      "method": "attnres",
+      "status": "passed",
+      "global_tokens": 1048576,
+      "accumulation": 1,
+      "all_rank_parameters_equal": true
+    }
+  ],
+  "eight_rank_full": {
+    "dense_full": {
+      "status": "passed",
+      "input_shape": [
+        8,
+        2048
+      ],
+      "accumulation": 8,
+      "global_tokens": 1048576,
+      "all_rank_parameters_equal": true,
+      "peak_allocated_bytes": 45241212416,
+      "seconds": 10.487732807174325
+    },
+    "residual_standard": {
+      "status": "passed",
+      "input_shape": [
+        8,
+        2048
+      ],
+      "accumulation": 8,
+      "global_tokens": 1048576,
+      "all_rank_parameters_equal": true,
+      "peak_allocated_bytes": 44083057664,
+      "seconds": 10.63168060220778
+    },
+    "hc": {
+      "status": "passed",
+      "input_shape": [
+        8,
+        2048
+      ],
+      "accumulation": 8,
+      "global_tokens": 1048576,
+      "all_rank_parameters_equal": true,
+      "peak_allocated_bytes": 74169550848,
+      "seconds": 16.03769269026816
+    },
+    "mhc": {
+      "status": "passed",
+      "input_shape": [
+        8,
+        2048
+      ],
+      "accumulation": 8,
+      "global_tokens": 1048576,
+      "all_rank_parameters_equal": true,
+      "peak_allocated_bytes": 67341805568,
+      "seconds": 16.69127330556512
+    },
+    "attnres": {
+      "status": "passed",
+      "input_shape": [
+        8,
+        2048
+      ],
+      "accumulation": 8,
+      "global_tokens": 1048576,
+      "all_rank_parameters_equal": true,
+      "peak_allocated_bytes": 48843128832,
+      "seconds": 11.669886456802487
+    }
+  },
+  "trainer_smoke": {
+    "entry": "runs/train_reference_modelarts.py -> torch.distributed.run (8 ranks) -> reference.train",
+    "data": "ClimbMix + 32,768-vocabulary tokenizer from verified native-d24 resources",
+    "note": "2 updates, resume to 4, and an uninterrupted 4-update run per method; smoke outputs are never formal results",
+    "methods": {
+      "dense_full": {
+        "micro_batch": 8,
+        "accumulation": 8,
+        "world_size": 8,
+        "tokens_per_update": 1048576,
+        "parameters": 1355810568,
+        "model_hash": "2952c26c3e3d133acc8b703c624eb64c48c1128d5cf9e1b9cbdc221704a96067",
+        "theory_relative_error": 0.00048441247069686,
+        "straight_loss": [
+          10.397674158215523,
+          10.348302587866783,
+          10.245183765888214,
+          10.077612593770027
+        ],
+        "resumed_loss": [
+          10.397674158215523,
+          10.348302587866783,
+          10.245183795690536,
+          10.077612593770027
+        ],
+        "max_abs_loss_difference_after_resume": 2.9802322387695312e-08,
+        "resumed_from": [
+          "resume_00000002.json"
+        ],
+        "steady_step_seconds": 4.485241770744324,
+        "steady_tokens_per_second": 233783.60712670998,
+        "steady_mfu_theory": 0.4378442599339929,
+        "peak_allocated_gib": 45.65,
+        "validation_steps": {
+          "resume": [
+            0,
+            2,
+            4
+          ],
+          "straight": [
+            0,
+            4
+          ]
+        },
+        "final_status": {
+          "resume": "smoke",
+          "straight": "smoke"
+        },
+        "projected_training_hours": 58.4
+      },
+      "residual_standard": {
+        "micro_batch": 8,
+        "accumulation": 8,
+        "world_size": 8,
+        "tokens_per_update": 1048576,
+        "parameters": 1355810568,
+        "model_hash": "348c8f69afed2f0f67d4f0563b693d68f48d55b4f15953c4ed4fcc952ff5458c",
+        "theory_relative_error": 0.0004065013046914423,
+        "straight_loss": [
+          10.397680267691612,
+          10.34808911383152,
+          10.241328835487366,
+          10.038949713110924
+        ],
+        "resumed_loss": [
+          10.397680267691612,
+          10.34808911383152,
+          10.241329327225685,
+          10.038951754570007
+        ],
+        "max_abs_loss_difference_after_resume": 2.041459083557129e-06,
+        "resumed_from": [
+          "resume_00000002.json"
+        ],
+        "steady_step_seconds": 4.286606088280678,
+        "steady_tokens_per_second": 244616.83168573465,
+        "steady_mfu_theory": 0.45809771005735683,
+        "peak_allocated_gib": 44.57,
+        "validation_steps": {
+          "resume": [
+            0,
+            2,
+            4
+          ],
+          "straight": [
+            0,
+            4
+          ]
+        },
+        "final_status": {
+          "resume": "smoke",
+          "straight": "smoke"
+        },
+        "projected_training_hours": 55.8
+      },
+      "hc": {
+        "micro_batch": 8,
+        "accumulation": 8,
+        "world_size": 8,
+        "tokens_per_update": 1048576,
+        "parameters": 1356235700,
+        "model_hash": "ce2c5196ce4b526bcbd1872270094653ff06a35a2ece53f2e4096457420fb89b",
+        "theory_relative_error": 0.005582679359951381,
+        "straight_loss": [
+          10.397680267691612,
+          10.34808897972107,
+          10.241325408220291,
+          10.039591178297997
+        ],
+        "resumed_loss": [
+          10.397680267691612,
+          10.34808897972107,
+          10.241325706243515,
+          10.039589822292328
+        ],
+        "max_abs_loss_difference_after_resume": 1.3560056686401367e-06,
+        "resumed_from": [
+          "resume_00000002.json"
+        ],
+        "steady_step_seconds": 9.237117672339082,
+        "steady_tokens_per_second": 113517.66180699448,
+        "steady_mfu_theory": 0.21368621176976788,
+        "peak_allocated_gib": 72.6,
+        "validation_steps": {
+          "resume": [
+            0,
+            2,
+            4
+          ],
+          "straight": [
+            0,
+            4
+          ]
+        },
+        "final_status": {
+          "resume": "smoke",
+          "straight": "smoke"
+        },
+        "projected_training_hours": 120.3
+      },
+      "mhc": {
+        "micro_batch": 8,
+        "accumulation": 8,
+        "world_size": 8,
+        "tokens_per_update": 1048576,
+        "parameters": 1353550818,
+        "model_hash": "c75f4a05151ce00a8a4848220fcf333064bef7a7f8e715bb00900b2047478a8e",
+        "theory_relative_error": 0.00041925621237193234,
+        "straight_loss": [
+          10.397680267691612,
+          10.347879722714424,
+          10.237400248646736,
+          10.001637041568756
+        ],
+        "resumed_loss": [
+          10.397680267691612,
+          10.347879722714424,
+          10.23740029335022,
+          10.0016278475523
+        ],
+        "max_abs_loss_difference_after_resume": 9.194016456604004e-06,
+        "resumed_from": [
+          "resume_00000002.json"
+        ],
+        "steady_step_seconds": 8.951189514249563,
+        "steady_tokens_per_second": 117143.76042767864,
+        "steady_mfu_theory": 0.21937972224468594,
+        "peak_allocated_gib": 66.2,
+        "validation_steps": {
+          "resume": [
+            0,
+            2,
+            4
+          ],
+          "straight": [
+            0,
+            4
+          ]
+        },
+        "final_status": {
+          "resume": "smoke",
+          "straight": "smoke"
+        },
+        "projected_training_hours": 116.6
+      },
+      "attnres": {
+        "micro_batch": 8,
+        "accumulation": 8,
+        "world_size": 8,
+        "tokens_per_update": 1048576,
+        "parameters": 1355882760,
+        "model_hash": "0f831ad7ade636f7b8ca73a4ec5eb7357e7b851debafc8193446c7ecbd66eada",
+        "theory_relative_error": 0.0015963960946021594,
+        "straight_loss": [
+          10.397681206464767,
+          10.347570016980171,
+          10.234623223543167,
+          10.00752341747284
+        ],
+        "resumed_loss": [
+          10.397681206464767,
+          10.347570016980171,
+          10.234623283147812,
+          10.007529318332672
+        ],
+        "max_abs_loss_difference_after_resume": 5.900859832763672e-06,
+        "resumed_from": [
+          "resume_00000002.json"
+        ],
+        "steady_step_seconds": 5.760884681716561,
+        "steady_tokens_per_second": 182016.4884271833,
+        "steady_mfu_theory": 0.34127051139188735,
+        "peak_allocated_gib": 49.01,
+        "validation_steps": {
+          "resume": [
+            0,
+            2,
+            4
+          ],
+          "straight": [
+            0,
+            4
+          ]
+        },
+        "final_status": {
+          "resume": "smoke",
+          "straight": "smoke"
+        },
+        "projected_training_hours": 75.0
+      }
+    },
+    "hc_micro_batch_4": {
+      "micro_batch": 4,
+      "accumulation": 16,
+      "tokens_per_update": 1048576,
+      "steady_step_seconds": 9.696820497512817,
+      "steady_tokens_per_second": 108136.06380245506,
+      "peak_allocated_gib": 44.47,
+      "note": "Same global batch; recommended for the formal HC run for memory headroom"
+    }
+  },
+  "limitations": [
+    "No pilot or formal 49.152B training",
+    "Cumulative cost audit not run",
+    "Resumed and uninterrupted losses agree within the reported difference; bitwise equality is not claimed",
+    "Steady throughput from one smoke update; evaluation, checkpoint and long-run variation excluded"
+  ]
+}

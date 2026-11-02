@@ -1,8 +1,8 @@
 {
- "id": "attnres",
+ "id": "nextt-v2-residual-20261023_attnres_a800_seed42",
  "methodId": "attnres",
  "cohort": "reference-v1",
- "name": "Block Attention Residuals · AttnRes",
+ "name": "R03 Block AttnRes",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,7 +789,8 @@
    "value": 0.3399712587714711
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/attnres.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/residual-20261028/a800-attnres-formal.json",
+ "hardware": "A800 ×8",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -1129,6 +1130,6 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/attnres.json"
+  "source": "Cumulative audit · evidence/checks/residual-20261028/a800-attnres-formal.json"
  }
 }

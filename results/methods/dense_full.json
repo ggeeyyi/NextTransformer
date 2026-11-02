@@ -11,16 +11,17 @@
   "Native nanochat shell: value embeddings, learned residual and x0 scalars, backout",
   "Depth calibrated to 23 layers within 1% of the SSSL compute anchor"
  ],
- "limitations": "Single seed 42. The preregistered pilot was skipped by the maintainers' decision; the formal run started from random initialization. It has one layer fewer than SSSL. Parameters, memory and speed are outcomes, not controls.",
+ "limitations": "Single seed 42 on 8 × A800. The preregistered pilot was skipped by the owner's decision; the formal run started from random initialization. It has one layer fewer than SSSL. Parameters, memory and speed are outcomes, not controls.",
  "diagram": "dense_full",
  "blocks": 23,
  "ffn": 6144,
  "params": 1355810568,
  "flops": 4.674662,
  "error": 0.048,
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/backbone.py",
+ "owner": "selen",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/4dd6ebb9f4f1f8b4571963c5df2aaa384eea7825/models/reference/model.py",
  "cohort": "reference-v1",
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#full-attention-dense-and-residual-family",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/4dd6ebb9f4f1f8b4571963c5df2aaa384eea7825/reference/SOURCES.md#full-attention-dense-and-residual-family",
  "costModel": "reference-aten-math-v2",
  "order": 1
 }

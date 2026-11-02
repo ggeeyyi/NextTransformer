@@ -16,7 +16,7 @@ REPO = Path(__file__).resolve().parents[1]
 
 
 def test_the_plugin_suite_passes_with_the_test_plugins_registered():
-    env = dict(os.environ, NEXTTRANSFORMER_METHOD_PATHS=str(REPO/"tests"/"plugins"))
+    env = dict(os.environ, NEXTT_METHOD_PATHS=str(REPO/"tests"/"plugins"))
     result = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/plugin_suite.py"],
                             cwd=REPO, env=env, capture_output=True, text=True)
     assert result.returncode == 0, result.stdout[-4000:] + result.stderr[-2000:]
@@ -38,7 +38,7 @@ def write_plugin(root, name, **spec):
 ])
 def test_declarations_are_checked_before_any_code_runs(tmp_path, monkeypatch, name, spec, problem):
     write_plugin(tmp_path, name, **spec)
-    monkeypatch.setenv("NEXTTRANSFORMER_METHOD_PATHS", str(tmp_path))
+    monkeypatch.setenv("NEXTT_METHOD_PATHS", str(tmp_path))
     with pytest.raises(ValueError, match=problem):
         discover(("gdn",))
 

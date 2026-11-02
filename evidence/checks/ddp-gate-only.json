@@ -1,0 +1,34 @@
+{
+  "created_at": "2026-10-18T05:23:40.427767+00:00",
+  "source_hash": "d7e8e34d66b6b0eafce84a87c5360af44eaf9c189cdf163ea46ba5fbaf35f6d6",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "torch": "2.9.1+cu128",
+  "dtype": "torch.bfloat16",
+  "device": "NVIDIA A800-SXM4-80GB",
+  "seed": 42,
+  "results": [
+    {
+      "method": "ouro",
+      "status": "passed",
+      "stage": "gate_only",
+      "model_hash": "bb32a5986474463493074bf7636584d4cab339c18bcee30d848a19dee388c688",
+      "full_dimensions": false,
+      "input_shape": [
+        32,
+        2048
+      ],
+      "global_tokens": 1048576,
+      "world_size": 8,
+      "accumulation": 2,
+      "optimizer_updates": 1,
+      "loss": 0.6785222291946411,
+      "seconds": 4.840934915468097,
+      "all_rank_parameters_equal": true,
+      "peak_allocated_bytes": 206942208,
+      "synthetic_data": true
+    }
+  ],
+  "invocation_stage": "gate_only",
+  "stage_field_semantics": "trainable-parameter stage; sparse burnin also trains backbone and indexer jointly",
+  "science_hash": "2653a4b47a9952339ef23f2d210d3a5ee0c18c3359dc4b10329e3240478beb66"
+}

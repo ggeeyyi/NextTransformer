@@ -1,0 +1,111 @@
+{
+ "kind": "h20_formal_run_cumulative_audit",
+ "method": "A05 RetNet (retnet)",
+ "date": "2026-10-22",
+ "run_dir": "personal CPFS nextt/runs/retnet_h20_seed42",
+ "experiments_record": "027",
+ "checks": [
+  "run_status.json: phase training_complete at 46875; trainer final_status",
+  "ledger (run_status/budget.json): 46875 optimizer steps, 49,152,000,000 input tokens, val/CORE step lists equal to the protocol",
+  "cumulative theory FLOPs / (49.152e9 x Dense 4.672398325e9) - 1 within 2%; budget_anomaly events counted",
+  "metrics.jsonl train events: strictly increasing steps, input_tokens == step x 1,048,576, finite loss/grad norm, last step 46875",
+  "189 validation events at 0, every 250, 46875 (41,943,040 tokens each) and the same 189 val_*.json files",
+  "6 CORE events at 8000/16000/24000/32000/40000/46875, each full_core with 22 tasks",
+  "exactly one final_bpb event; bpb_final.json (20,971,520 tokens per split) and core_final.json",
+  "every segment's provenance (provenance.json, resume_*.json): identical model/protocol/data/tokenizer fingerprints, parameter count, config, cost proof, validation source hash and science_hash; non-smoke; world x micro x accumulation x 2048 == 1,048,576"
+ ],
+ "result_checkpoint": "checkpoint_00046875 (final; latest.json); no best-checkpoint selection",
+ "naming": "periodic_val_bpb_46875 is the 189th scheduled val point; final_bpb is the independent final BPB",
+ "ok": true,
+ "problems": [],
+ "final_status": "matched",
+ "optimizer_steps": 46875,
+ "input_tokens": 49152000000,
+ "theory_flops": 227576702411302265625,
+ "dense_flops_per_token": 4672398325.44785,
+ "flops_per_token": 4630059863.511195,
+ "proof_relative_error": -0.009061398234406104,
+ "cumulative_relative_error": -0.009061398234405993,
+ "train_event_relative_error": {
+  "min": -0.009061398234406104,
+  "max": -0.009061398234406104
+ },
+ "budget_anomalies": 0,
+ "train_events": 4689,
+ "validation_events": 189,
+ "core_events": 6,
+ "final_bpb": {
+  "train": 0.6819516799496542,
+  "val": 0.6796920482626081,
+  "tokens_per_split": 20971520
+ },
+ "core": {
+  "8000": 0.18499686650520406,
+  "16000": 0.18923701849338012,
+  "24000": 0.22361141784621327,
+  "32000": 0.23487211378740944,
+  "40000": 0.27985951353957633,
+  "46875": 0.29364787857781705
+ },
+ "core_final": 0.29364787857781705,
+ "last_loss": 2.2442365400493145,
+ "grad_norm_max_after_500": 0.6063531637191772,
+ "step_seconds_median": 5.86771495686844,
+ "mfu_median": 0.698820776855931,
+ "gpu_hours_training": 613.5986314222279,
+ "training_seconds": 276119.38414000254,
+ "evaluation_seconds": 18465.283014915884,
+ "evaluation_forward_flops": 12236633823117846400,
+ "segments": [
+  {
+   "file": "provenance.json",
+   "step": 0,
+   "job": "gyyige-nextt-p8-retnet-44fb525bfb-normal-20261019-112520",
+   "world": 8,
+   "micro": 8,
+   "accumulation": 8,
+   "code": "eed81b3ef7bdf9bef88015d28d00812907c93d55447a037a8b43ddba8db502d3",
+   "commit": null
+  },
+  {
+   "file": "resume_00025736.json",
+   "step": 25736,
+   "job": "gyyige-nextt-p8-retnet-938f6f03c6-normal-20261021-085920",
+   "world": 8,
+   "micro": 8,
+   "accumulation": 8,
+   "code": "eed81b3ef7bdf9bef88015d28d00812907c93d55447a037a8b43ddba8db502d3",
+   "commit": null
+  }
+ ],
+ "fingerprints": {
+  "model_hash": "8bc4853d25752e241dfee6d7637b230317a74ca3f148e7a90a4f5e0057f9e742",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "data_manifest_sha256": "69fa9df6810b6c5e89f41c53b5134353e7ddfb676b4af3d694d9aa8a34358cc2",
+  "tokenizer_sha256": "06258dc0044b6198c6fa8ba75c5b3bbaeaeab44f4804b464d9ce5f5e3797ec54",
+  "reference_source_hash": "ae7a22b5e7afd92a03cb7e89e62b6030b071cc7fd75871a1e39bd68772570b3b",
+  "science_hash": "178345f75842c0fad13c558f04262205b15d334d5f6c300dc4272a07c7b6bc2d"
+ },
+ "parameters": 1410077320,
+ "device": "NVIDIA H20-3e",
+ "periodic_val_bpb": {
+  "0": 3.1686315782618815,
+  "8000": 0.7989238572584987,
+  "16000": 0.7835288196050343,
+  "24000": 0.7569909665348611,
+  "32000": 0.7296220301102612,
+  "40000": 0.702205360383803,
+  "46875": 0.6825158972693791
+ },
+ "periodic_val_bpb_minimum": {
+  "val_bpb": 0.6825158972693791,
+  "step": 46875
+ },
+ "wandb_mirror": {
+  "run": "retnet-h20-seed42",
+  "events_logged": 4885,
+  "finished": true,
+  "note": "trainer W&B stayed offline (backup); the CPU-pod mirror read metrics.jsonl"
+ },
+ "boundaries": "Single seed 42. Hardware 8xH20-3e, micro 8 x accumulation 8, code bundle eed81b3e; other H20 runs differ only in floating-point reduction order (KDA v2 8xH20, A06'' 16xH20). Resources (step time, MFU, GPU-hours) are outcomes, not controls. Evaluation forward FLOPs are reported separately and not charged to the training budget. No method ranking until the other runs of this protocol finish."
+}

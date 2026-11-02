@@ -9,18 +9,18 @@ source "$REPO_ROOT/launch/env.sh" "$@"
 # An explicit index override wins; otherwise retain the caller's uv/pip settings.
 INDEX_ARGS=()
 PIP_INDEX_ARGS=()
-if [[ -n "${NEXTTRANSFORMER_INDEX_URL:-}" ]]; then
+if [[ -n "${NEXTT_INDEX_URL:-}" ]]; then
   unset UV_INDEX_URL UV_EXTRA_INDEX_URL UV_INDEX
-  INDEX_ARGS=(--default-index "$NEXTTRANSFORMER_INDEX_URL")
-  PIP_INDEX_ARGS=(--index-url "$NEXTTRANSFORMER_INDEX_URL")
+  INDEX_ARGS=(--default-index "$NEXTT_INDEX_URL")
+  PIP_INDEX_ARGS=(--index-url "$NEXTT_INDEX_URL")
 fi
 UV_BIN="$NANOCHAT_RUNTIME/tools/uv"
 if [[ ! -x "$UV_BIN" ]]; then
-  "${NEXTTRANSFORMER_BOOTSTRAP_PYTHON:-python3}" -m pip install "${PIP_INDEX_ARGS[@]}" --target "$NANOCHAT_RUNTIME/tools/uv-bootstrap" 'uv==0.9.5'
+  "${NEXTT_BOOTSTRAP_PYTHON:-python3}" -m pip install "${PIP_INDEX_ARGS[@]}" --target "$NANOCHAT_RUNTIME/tools/uv-bootstrap" 'uv==0.9.5'
   cp "$NANOCHAT_RUNTIME/tools/uv-bootstrap/bin/uv" "$UV_BIN"
 fi
-"$UV_BIN" python install "$NEXTTRANSFORMER_PYTHON_VERSION"
-MANAGED_PYTHON="$("$UV_BIN" python find --managed-python "$NEXTTRANSFORMER_PYTHON_VERSION")"
+"$UV_BIN" python install "$NEXTT_PYTHON_VERSION"
+MANAGED_PYTHON="$("$UV_BIN" python find --managed-python "$NEXTT_PYTHON_VERSION")"
 if [[ ! -x "$NANOCHAT_VENV/bin/python" ]]; then
   "$UV_BIN" venv --python "$MANAGED_PYTHON" "$NANOCHAT_VENV"
 else

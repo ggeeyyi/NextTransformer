@@ -10,7 +10,7 @@ LOOPED = members("looped")
 SPARSE = members("sparse")
 LINEAR = members("linear")
 RESIDUAL = members("residual")
-# Hybrids: a registered mixer kind per physical layer.
+# v2 hybrids (docs/plans/V2.md §3): a registered mixer kind per physical layer.
 HYBRID = members("hybrid")
 MLA = frozenset(("mla_nope",))
 MLA_CONFIG = MLA | {"kda_hybrid"}
@@ -47,12 +47,12 @@ def frozen_options(options):
 def hybrid_layout(method, layers):
     """Mixer kind of each physical layer, 0-based.
 
-    deltanet_hybrid: full attention at one-based 2 and N/2+1, DeltaNet elsewhere.
-    gdn_hybrid (Qwen3-Next 3:1): GDN, GDN, GDN, attention, repeated.
-    kda_hybrid: KDA, KDA, KDA, MLA-NoPE, repeated; VE disabled throughout.
-    gdn_hybrid_swa (Gated DeltaNet H1, official lit_gpt gated_delta_per_layer=2):
+    deltanet_hybrid (H01): full attention at one-based 2 and N/2+1, DeltaNet elsewhere.
+    gdn_hybrid (H02, Qwen3-Next 3:1): GDN, GDN, GDN, attention, repeated.
+    kda_hybrid (H04): KDA, KDA, KDA, MLA-NoPE, repeated; VE disabled throughout.
+    gdn_hybrid_swa (H03, Gated DeltaNet H1, official lit_gpt gated_delta_per_layer=2):
     GDN at even 0-based positions, sliding-window attention at odd ones.
-    "attention" is the Dense baseline's full causal MHA; "swa" is the same attention with a window.
+    "attention" is B01's full causal MHA; "swa" is the same attention with a window.
     """
     if layers % LAYER_MULTIPLE[method]:
         raise ValueError(f"{method} needs a layer count that is a multiple of {LAYER_MULTIPLE[method]}")
@@ -200,7 +200,7 @@ class ModelConfig:
     def n_kv_head(self): return self.heads
     @property
     def value_embeddings(self):
-        """The kda_hybrid and control shells remove both VE tables and every per-layer VE gate."""
+        """The H04/control shell removes both VE tables and every per-layer VE gate."""
         return self.method not in NO_VE
     @property
     def has_sparse(self):
@@ -261,12 +261,12 @@ def candidate_config(method):
     changes={"ut_act":dict(core_layers=6),"huginn":dict(core_layers=8,max_loops=4),
              "ouro":dict(core_layers=4),"deeploop":dict(pre_layers=0,post_layers=0,core_layers=12),
              "nsa":dict(block_size=32,compression_size=32),"seer":dict(block_size=64),
-             # The stabilized ELU+1 variants and GDN:
+             # A06 stabilized variants (2026-10-20) and A07 GDN (2026-10-22):
              # registered on their training algorithm.
              "elu_norm":dict(backend="fla_chunk64"),"elu_qknorm":dict(backend="fla_chunk64"),
              "gdn":dict(backend="fla_chunk64"),
              "deltanet_hybrid":dict(backend="fla_chunk64",window_pattern="L"),
-             # Hybrids: GDN layers with the Dense baseline's attention windows set per layer.
+             # v2 hybrids (2026-10-24): A07's GDN layers with B01's attention windows set per layer.
              "gdn_hybrid":dict(backend="fla_chunk64",window_pattern="L"),
              "gdn_hybrid_swa":dict(backend="fla_chunk64",window_pattern="L")}
     changes.update(kda_hybrid=dict(backend="fla_chunk64",window_pattern="L",qk_nope_dim=128,qk_rope_dim=0),

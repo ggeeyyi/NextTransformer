@@ -1,8 +1,8 @@
 {
- "id": "gdn_hybrid_swa",
+ "id": "h03-b300-fix-20261028T1845",
  "methodId": "gdn_hybrid_swa",
  "cohort": "reference-v1",
- "name": "Hybrid GDN + SWA",
+ "name": "H03 Hybrid GDN + SWA",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,7 +789,8 @@
    "value": 0.33661439149215727
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/gdn_hybrid_swa.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/h03-b300-20261031/h03-b300-fix-20261028T1845-formal.json",
+ "hardware": "8 x B300 (1 node; device reports NVIDIA B30Z)",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -1129,7 +1130,7 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/gdn_hybrid_swa.json"
+  "source": "Cumulative audit · evidence/checks/h03-b300-20261031/h03-b300-fix-20261028T1845-formal.json"
  },
- "comparisonNote": "Trained from a frozen source revision with an additional launch-environment patch; model and cost proofs match the frozen revision and the metadata audit passes. The pilot, distributed resume prerequisite evidence and the patch diff remain pending maintainer review. Window 2048 spans the full 2K context. Single seed 42; FLA GDN and SDPA without FlashAttention."
+ "comparisonNote": "Frozen base source fab8c03 (tag archive/hybrid-source-20261026) with B300 cluster fix package; model/cost proofs match fab8c03 and metadata audit passes; pilot, target-B300 resume prerequisite evidence and cluster patch diff remain pending maintainer review. Window 2048 spans the full 2K context. Single seed 42; FLA GDN and SDPA without flash. See experiment record 053."
 }

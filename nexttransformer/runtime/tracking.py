@@ -90,7 +90,7 @@ class RunTracker:
         except ImportError as exc:
             raise RuntimeError('W&B requested: install with setup_environment.sh --tracking') from exc
         previous = json.loads(self.path.read_text()) if self.path.exists() else None
-        project = args.wandb_project or (previous['project'] if previous and args.resume else 'nexttransformer')
+        project = args.wandb_project or (previous['project'] if previous and args.resume else 'nextt')
         entity = args.wandb_entity or (previous.get('entity') if previous and args.resume else None)
         same_run = bool(args.resume and previous and previous['mode'] == 'online' and
                         args.wandb_mode == 'online' and state['step'] >= previous['last_step'])

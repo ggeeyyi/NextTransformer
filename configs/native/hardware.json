@@ -1,0 +1,22 @@
+{
+  "a800": {
+    "status": "see_docs_NATIVE_VALIDATION_rerun_preflight_on_new_hardware_or_architecture",
+    "world_size": 8,
+    "micro_batch": {
+      "dense": 8,
+      "mor": 8,
+      "loopformer": 8,
+      "circle": 8
+    }
+  },
+  "h200": {
+    "status": "unmeasured_estimate_run_preflight_first",
+    "world_size": 8,
+    "micro_batch": {
+      "dense": 16,
+      "mor": 16,
+      "loopformer": 16,
+      "circle": 16
+    }
+  }
+}

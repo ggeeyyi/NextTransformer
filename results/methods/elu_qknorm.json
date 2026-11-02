@@ -1,9 +1,9 @@
 {
  "id": "elu_qknorm",
- "name": "ELU-Norm",
+ "name": "ELU+1 · q/k-normalized",
  "family": "linear",
  "tagline": "Stabilize positive features by fixing the q/k scale.",
- "description": "Per-head parameter-free RMSNorm of q and k (FP32) with a fixed temperature of 8 precedes the ELU+1 feature map. The state is read without the φ(q)ᵀz denominator and normalized by a per-head RMSNorm with a learned gain. Attention runs in IEEE FP32 so gradients stay accurate when the state is nearly rank one.",
+ "description": "Registered after the original ELU+1 runs failed: per-head parameter-free RMSNorm of q and k (FP32) with a fixed temperature of 8 precedes the ELU+1 feature map. The state is read without the φ(q)ᵀz denominator and normalized by a per-head RMSNorm with a learned gain. Attention runs in IEEE FP32 so gradients stay accurate when the state is nearly rank one.",
  "paperTitle": "Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention",
  "paperUrl": "https://arxiv.org/abs/2006.16236",
  "mechanism": [
@@ -11,16 +11,17 @@
   "S = Σφ(k)vᵀ read as φ(q)ᵀS without a denominator",
   "Per-head output RMSNorm with gain; IEEE FP32 chunked attention"
  ],
- "limitations": "Uses NormAttention-style output normalization and fixed pre-feature q/k normalization without a learned affine map. The pilot used a documented post-hoc substitution for its final numerical check.",
+ "limitations": "A native stabilization registered after failures (NormAttention-style output normalization, pre-feature q/k normalization as in ReBased without its learned affine map). Report it as A06″ together with the failed ELU+1 attempts; its pilot's final numerical check was a documented post-hoc substitution.",
  "diagram": "state",
  "blocks": 25,
  "ffn": 6144,
  "params": 1462768668,
  "flops": 4.652243,
  "error": -0.431,
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/linear.py",
+ "owner": "geyi",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/a3a9fde474983a5bb7b742bb997b5b3789626a93/reference/methods/linear.py",
  "cohort": "reference-v1",
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#linear-attention",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/a3a9fde474983a5bb7b742bb997b5b3789626a93/reference/SOURCES.md",
  "costModel": "reference-aten-math-v2",
  "order": 18
 }

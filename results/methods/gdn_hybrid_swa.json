@@ -13,7 +13,7 @@
   "Packed rows use native BOS best-fit packing. GDN state resets at each row boundary, not at every BOS; causal attention may cross document boundaries inside a row.",
   "Single-stage, from-scratch BF16 training uses the shared Muon+AdamW protocol: seed 42, 49.152B input tokens, 1,048,576 tokens per update, and 46,875 updates. CORE evaluates all 22 tasks at steps 8000, 16000, 24000, 32000, 40000, and 46875; periodic validation and independent final BPB remain separate."
  ],
- "limitations": "A repository adaptation of the Gated DeltaNet H1 1:1 GDN + SWA layout. Because the registered 2048-key sliding window equals the 2048-token training context, the window never truncates keys during 2K training or evaluation, making this run a 1:1 GDN/full-attention comparison rather than a sub-context local-window test. Unlike the official lit_gpt SWA, the attention layers retain native QK normalization and VE. The completed run used FLA for GDN and deterministic SDPA with FlashAttention disabled for SWA; do not infer FlashAttention throughput from this result. Theoretical training FLOPs include forward, backward, and optimizer work, not measured hardware speed. Single-seed 2K-context results do not establish statistical superiority, long-context quality, or inference memory/speed gains. BPB, CORE and per-run provenance belong in the associated run record; this card alone does not establish a matched run or an accepted full-Dense comparison. The recorded software source hashes reflect a launch-environment patch on top of the frozen training source while model and protocol hashes and cost proofs are identical; the patch diff, a separate 512-update pilot, and distributed fresh-process resume acceptance on the training cluster have not been evidenced. The submitted run completed; final acceptance remains subject to maintainer review.",
+ "limitations": "A repository adaptation of the Gated DeltaNet H1 1:1 GDN + SWA layout. Because the registered 2048-key sliding window equals the 2048-token training context, the window never truncates keys during 2K training or evaluation, making this run a 1:1 GDN/full-attention comparison rather than a sub-context local-window test. Unlike the official lit_gpt SWA, the attention layers retain native QK normalization and VE. The completed 8 x B300 run used FLA for GDN and deterministic SDPA with FlashAttention disabled for SWA; do not infer FA throughput from this result. Theoretical training FLOPs include forward, backward, and optimizer work, not measured hardware speed. Single-seed 2K-context results do not establish statistical superiority, long-context quality, or inference memory/speed gains. BPB, CORE, hardware, and per-run provenance belong in the associated run record; this card alone does not establish a matched run or an accepted full-Dense comparison. Recorded software source hashes in the run metadata reflect a B300 cluster fix package on top of frozen commit fab8c03 while preserving identical model/protocol hashes and cost proofs; the cluster patch diff, a separate 512-update pilot, and target-B300 distributed/fresh-process resume acceptance have not been evidenced. The submitted run completed; final acceptance remains subject to maintainer review. The device reports NVIDIA B30Z; B300 is the owner-supplied hardware label.",
  "diagram": "custom",
  "architecture": {
   "kind": "custom",
@@ -29,9 +29,10 @@
  "params": 1329681662,
  "flops": 4.647087059586152,
  "error": -0.5417189224609209,
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/lm.py",
+ "owner": "xiangnan-wu",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/fab8c032e9ebc91cc14933d8e7e0275f6c60224f/nexttransformer/models/lm.py",
  "cohort": "reference-v1",
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#hybrids",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/fab8c032e9ebc91cc14933d8e7e0275f6c60224f/docs/methods/SOURCES.md",
  "costModel": "reference-aten-math-v2",
  "order": 30
 }

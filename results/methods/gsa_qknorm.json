@@ -11,16 +11,17 @@
   "Per-head QK RMSNorm × 1.2, SiLU features and softmax slot addressing",
   "24 layers; chunk128 FP64 recurrence with the native output normalization and shell"
  ],
- "limitations": "Single seed 42 with the QK-normalized common-shell adaptation. The contribution includes the result and frozen-source fingerprints. A trainable implementation for this run is not included.",
+ "limitations": "QK-normalized common-shell adaptation; single seed 42.",
  "diagram": "state",
  "blocks": 24,
  "ffn": 6144,
  "params": 1412436746,
  "flops": 4.689437744486418,
  "error": 0.3646825003288612,
+ "owner": "xiangyue",
  "codeUrl": "",
  "cohort": "reference-v1",
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/results/runs/gsa_qknorm/",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/main/docs/methods/SOURCES.md#gsa--qk-norm",
  "costModel": "reference-aten-math-v2",
  "order": 13
 }

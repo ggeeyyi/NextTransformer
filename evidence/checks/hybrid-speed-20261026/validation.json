@@ -1,0 +1,44 @@
+{
+  "status": "bounded_validated",
+  "formal_run": false,
+  "matched": false,
+  "final_science_hash": "ab0ee36a68c1527ce44bd6741713a46282efa285fd568b9b46e730c93438a55c",
+  "tests": [
+    {
+      "name": "production-cpu-r2",
+      "tests": 245,
+      "skipped": 38,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 344.113
+    },
+    {
+      "name": "production-gpu-final",
+      "tests": 38,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 23.149
+    }
+  ],
+  "cpu_regression_scope": "207 CPU checks passed before the final native-boundary fixes; CPU operator counts are unchanged in fresh full-graph audits; final GPU-path regressions are recorded separately.",
+  "source_aware_cost_audits": 34,
+  "model_protocol_parameter_and_operator_counts_unchanged": true,
+  "numerical_scope": "Frozen baseline vs current full architectures at BF16/T=2048/B=1, identical real packed row and weights, activated output projections, non-unit gains, every trainable parameter gradient. QSA also switches evaluation/burnin/joint.",
+  "checkpoint_scope": "Existing CPU trainer/checkpoint/resume regressions passed. No new multi-rank hardware or formal-training acceptance is claimed.",
+  "performance_scope": "Six serial CUDA 0 benchmarks, same eight logical data streams and full token batch, no foreign compute observed.",
+  "execution_changes": [
+    "KDA retains native RMSNorm and fuses only subsequent gain/SiLU arithmetic with BF16 rounding preserved.",
+    "Sparse integer/bool mask packing is fused with torch.compile.",
+    "MoBA forms its block mask directly from selected blocks.",
+    "QSA uses unchanged native floating-point arithmetic and the shared fused integer/boolean mask preparation."
+  ],
+  "rejected_prototypes": [
+    "Whole-QSA fusion exceeded the unchanged indexer-gradient tolerance.",
+    "QSA core fusion including scores exceeded the unchanged indexer-gradient tolerance.",
+    "KDA fused RMSNorm exceeded the full-model gradient tolerance; native norm was restored.",
+    "QSA inference-only full-core compilation failed FlexAttention lowering.",
+    "QSA full-core compilation passed module checks but exceeded the full-model smear gradient tolerance; retained native floating-point arithmetic."
+  ],
+  "runtime_evidence": "/DATA/wxn/runtime/nexttransformer/runs/hybrid-speed-20261026T1250Z"
+}

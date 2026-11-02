@@ -1,0 +1,92 @@
+{
+  "status": "passed",
+  "scope": "Linear rebase, public Gym interfaces, source-aware theory audit and bounded CPU validation",
+  "created_at": "2026-10-27T14:09:37.713975+00:00",
+  "main_base": "1a47b0b5cc6bc241df69e792ef2976f76d342362",
+  "previous_hybrid": "fab8c032e9ebc91cc14933d8e7e0275f6c60224f",
+  "tested_commit": "da9f04b",
+  "source_hash": "70606cd15bc9d3660e7dbca2293648282dfe1261cf4c443278cf2f7bdef6074f",
+  "gym_adapter_sha256": "437ab60b711385ddb3594011122464d1f82e243b67a06221517e555cedd58245",
+  "integration": "Four original Hybrid commits replayed on main, followed by one interface adaptation commit; no merge commit",
+  "protocol": {
+    "unchanged": true,
+    "total_tokens": 49152000000,
+    "tokens_per_update": 1048576,
+    "updates": 46875,
+    "sequence_len": 2048,
+    "seed": 42,
+    "validation_events": 189,
+    "core22_events": 6,
+    "preflight_tolerance": 0.01,
+    "cumulative_tolerance": 0.02
+  },
+  "costs": {
+    "status": "passed",
+    "methods": 33,
+    "all_model_protocol_hashes_and_counts_unchanged": true,
+    "comparison": "cost-comparison.json",
+    "proofs": "../../costs/hybrid-main-20261027/summary.json",
+    "unknown_floating_operators": 0
+  },
+  "regressions": {
+    "command": "python -m pytest tests -q",
+    "passed": 553,
+    "skipped": 58,
+    "seconds": 124.24,
+    "log_sha256": "2429d80f6f8fe12676b20e9d84f4cd78739fce675a6c7cc61bd43244884ebea0"
+  },
+  "gym": {
+    "command": "python -m pytest nextt_gym/tests -q",
+    "passed": 95,
+    "seconds": 565.07,
+    "log_sha256": "ae62b73744d3a50ad0f65d6971173f25cee9aa85aa95803d9b91f37dd2366251",
+    "scope": [
+      "All six Hybrid import/layout/stage/optimizer checks",
+      "14 full-size generic audits exactly reproduce public totals, forward/backward/optimizer and operator counts",
+      "H05 burnin=512 and joint=46363; S is the 512-update prefix",
+      "Synthetic CPU execution, service and fresh-process resume regressions"
+    ]
+  },
+  "numeric_compatibility": {
+    "status": "passed",
+    "methods": 33,
+    "method_stage_cases": 38,
+    "comparison": "bitwise",
+    "evidence": "numerics.json"
+  },
+  "checkpoint": {
+    "status": "passed",
+    "evidence": "checkpoint.json",
+    "scope": "Read-only public load_model and exact weights; no training resume"
+  },
+  "exports": {
+    "result_records": "passed",
+    "arena": "passed"
+  },
+  "website": {
+    "tests_passed": 26,
+    "typecheck": "passed",
+    "production_build": "passed"
+  },
+  "pinned_runtime_files_unchanged": 6,
+  "environment": {
+    "python": "3.10.12",
+    "torch": "2.9.1+cu128",
+    "cuda_visible_devices": "",
+    "nanochat_dtype": "float32",
+    "torch_compile_disable": "1",
+    "omp_num_threads": 1
+  },
+  "initial_attempt": {
+    "gym_passed": 76,
+    "gym_failed": 1,
+    "gym_errors": 3,
+    "gym_deselected": 15,
+    "reason": "Integration fixtures cloned the pre-rebase HEAD, which did not contain nextt_gym; rerun on the rebased HEAD passed."
+  },
+  "limits": [
+    "CUDA-only regressions were skipped; historical GPU checks are not new-source GPU acceptance.",
+    "No new multi-rank run, real-data training resume, throughput measurement or formal training was launched.",
+    "Frozen runs continue to resume from their original source, environment and proofs."
+  ]
+}

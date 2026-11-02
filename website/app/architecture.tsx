@@ -2,7 +2,6 @@
 
 import { useId, type CSSProperties, type ReactNode } from 'react';
 import CircleArchitecture from './circle-architecture';
-import { fitLabels, nodeWidth } from './lib/node-labels';
 
 type ArchitectureProps = { methodId: string; large?: boolean; nodes?: string[]; loop?: boolean };
 const C = {
@@ -86,6 +85,7 @@ const DESCRIPTIONS: Record<string, [string, string]> = {
     "A spectrum of memory horizons",
     "Different heads retain information over different time scales."
   ],
+  "elu_linear": ["Two compact accumulators", "Positive features compress history into a matrix and a normalizing state."],
   "elu_qknorm": ["A fixed q/k scale", "RMS-normalized, temperature-scaled q/k feed positive features; the state is read without a denominator and normalized per head."],
   "gdn": ["Scalar gate + delta update", "One learned decay per head shrinks the memory; the delta rule then corrects it."],
   "mqa": ["One shared key/value head", "All twelve query heads read the same key and value projections."],
@@ -164,7 +164,6 @@ export default function Architecture({ methodId, large = false, nodes, loop = tr
   }
 
   let body: ReactNode;
-  let viewBox = methodId==='mla_qknorm'||methodId==='mla_nope_qknorm'?'0 25 600 330':'0 35 600 250';
   switch (figure) {
     case 'sssl':
     case 'dense_full':
@@ -207,11 +206,8 @@ export default function Architecture({ methodId, large = false, nodes, loop = tr
           </g>)}
           <Path d={`M207 ${104+lane*48}H250 M342 ${104+lane*48}H385`} color={C[['blue','purple','rose'][lane] as keyof typeof C]} dashed={lane===0} arrow={false}/>
         </g>)}
-        <Text x={534} y={77} size={12} anchor="middle" color={C.muted}>OUTPUT</Text>
-        {[0,1,2].map(lane=><g key={lane}>
-          <Path d={`M480 ${104+lane*48}H500`} color={C.purple}/>
-          <Text x={534} y={109+lane*48} size={13} anchor="middle" color={C.purple} weight={600}>Σ pₜhₜ</Text>
-        </g>)}
+        <Path d="M484 95V215H525" color={C.purple}/>
+        <Text x={529} y={107} size={12} color={C.purple}>Σ pₜhₜ</Text>
         <Caption y={247}>Weighted state mixture · remainder + ponder cost</Caption>
         <Caption y={270}>The reference backend still evaluates all candidate passes.</Caption>
       </>;
@@ -498,6 +494,19 @@ export default function Architecture({ methodId, large = false, nodes, loop = tr
         <Caption y={259}>y = RMSNorm(φ(q)ᵀS) · gain — no denominator; IEEE FP32 attention</Caption>
       </>;
       break;
+    case 'elu_linear':
+      body=<>
+        <Box x={26} y={115} w={142} h={60} title="Positive features" sub="φ(k) = ELU(k) + 1" tone="blue"/>
+        <Path d="M170 145H197V101H220 M197 145V205H220" color={C.blue}/>
+        <Box x={227} y={72} w={154} h={61} title="S accumulator" sub="S += φ(k)vᵀ" tone="purple"/>
+        <Box x={227} y={176} w={154} h={61} title="z accumulator" sub="z += φ(k)" tone="rose"/>
+        <Path d="M383 103H413V139H437" color={C.purple}/>
+        <Path d="M383 206H413V169H437" color={C.rose}/>
+        <Box x={444} y={125} w={131} h={62} title="Normalize" sub="numerator / mass" tone="blue"/>
+        <Text x={508} y={79} size={15} anchor="middle" color={C.blue}>φ(q)</Text><Path d="M508 85V117" color={C.blue}/>
+        <Caption y={264}>y = φ(q)ᵀS / [φ(q)ᵀz + ε]</Caption>
+      </>;
+      break;
     case 'mqa':
     case 'gqa': {
       const groups = methodId === 'mqa' ? 1 : 3;
@@ -614,29 +623,21 @@ export default function Architecture({ methodId, large = false, nodes, loop = tr
       break;
     default: {
       const labels=(nodes?.length?nodes:['Input','Mixer','MLP','Output']).filter(Boolean).slice(0,8);
-      const cols=labels.length<=4?labels.length:Math.ceil(labels.length/2), rows=Math.ceil(labels.length/cols);
-      const gap=24, width=nodeWidth(cols), left=(600-cols*width-(cols-1)*gap)/2;
-      const {size,lines}=fitLabels(labels,width-10), lead=size*1.25;
-      const h=lines.some(l=>l.length>1)?58:52, top=60, bottom=top+(rows-1)*(h+40)+h, loopY=bottom+24;
-      const captionY=(loop&&labels.length>1?loopY:bottom)+40;
-      viewBox=`0 ${top-24} 600 ${captionY+16-(top-24)}`;
-      const pos=labels.map((name,i)=>({name,lines:lines[i],x:left+(i%cols)*(width+gap),y:top+Math.floor(i/cols)*(h+40)}));
+      const cols=labels.length<=4?labels.length:Math.ceil(labels.length/2);
+      const width=Math.min(125,480/cols);
+      const pos=labels.map((name,i)=>({name,x:40+(i%cols)*(520/cols),y:labels.length<=4?113:Math.floor(i/cols)*91+84}));
       body=<>
-        {pos.map((p,i)=>{const tone=i===0?'blue':i===labels.length-1?'rose':'purple', next=pos[i+1];
-          return <g key={i}>
-            <rect x={p.x} y={p.y} width={width} height={h} rx={7} fill={C[`${tone}Light`]} stroke={C[tone]} strokeWidth={1.2}><title>{p.name}</title></rect>
-            <Text x={p.x+width/2} y={p.y+h/2+size*.36-(p.lines.length-1)*lead/2} size={size} anchor="middle" weight={600}>
-              {p.lines.map((line,j)=><tspan key={j} x={p.x+width/2} dy={j?lead:0}>{line}</tspan>)}
-            </Text>
-            {next&&<Path d={next.y===p.y?`M${p.x+width+3} ${p.y+h/2}H${next.x-6}`:`M${p.x+width/2} ${p.y+h+3}V${p.y+h+20}H${next.x+width/2}V${next.y-6}`} color={C.purple}/>}
-          </g>;})}
-        {loop&&pos.length>1&&<Path d={`M${pos.at(-1)!.x+width/2} ${pos.at(-1)!.y+h+3}V${loopY}H${pos[0].x+width/2}V${pos[0].y+h+6}`} color={C.purple} flow/>}
-        <Caption y={captionY}>{loop?'A recurring path is shown; exact sharing follows the submitted implementation.':'One-way flow through the submitted nodes.'}</Caption>
+        {pos.map((p,i)=><g key={i}>
+          <Box x={p.x} y={p.y} w={width} h={53} title={p.name.length>16?p.name.slice(0,15)+'…':p.name} tone={i===0?'blue':i===labels.length-1?'rose':'purple'}/>
+          {i<pos.length-1&&<Path d={pos[i+1].y===p.y?`M${p.x+width+2} ${p.y+26}H${pos[i+1].x-7}`:`M${p.x+width/2} ${p.y+55}V${p.y+71}H${pos[i+1].x+width/2}V${pos[i+1].y-7}`} color={C.purple}/ >}
+        </g>)}
+        {loop&&pos.length>1&&<Path d={`M${pos.at(-1)!.x+width/2} ${pos.at(-1)!.y+55}V254H${pos[0].x+width/2}V${pos[0].y+58}`} color={C.purple} flow/ >}
+        <Caption y={276}>{loop?'A recurring path is shown; exact sharing follows the submitted implementation.':'One-way flow through the submitted nodes.'}</Caption>
       </>;
     }
   }
 
-  return <figure className="architecture-figure"><figcaption><strong>{description[0]}</strong><span>{description[1]}</span></figcaption><div className="architecture-canvas"><svg viewBox={viewBox} className={`architecture-diagram${large?' architecture-large':''}`}
+  return <figure className="architecture-figure"><figcaption><strong>{description[0]}</strong><span>{description[1]}</span></figcaption><div className="architecture-canvas"><svg viewBox={methodId==='mla_qknorm'||methodId==='mla_nope_qknorm'?'0 25 600 330':'0 35 600 250'} className={`architecture-diagram${large?' architecture-large':''}`}
     style={{display:'block',width:'100%',height:'auto',overflow:'hidden',fontFamily:'Inter, ui-sans-serif, system-ui, -apple-system, sans-serif'} as CSSProperties}
     role="img" aria-label={`${label} — illustrative model mechanism`}>
     <defs><marker id={arrowId} markerWidth="7" markerHeight="7" refX="5.2" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">

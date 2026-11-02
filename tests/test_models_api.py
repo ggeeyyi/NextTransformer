@@ -39,7 +39,10 @@ def test_load_model_restores_the_saved_model(config, tmp_path, monkeypatch):
     optimizer = torch.optim.SGD(model.parameters(), lr=.1)
     save_checkpoint(tmp_path, model, optimizer, Stream(), config, NativeTrainConfig(), dict(step=3, software=dict(torch=torch.__version__)), 0, 1)
     assert config_from_dict(asdict(config)) == config
+    from environments.eval.checkpoint import read_model_payload
     checkpoint = tmp_path/"checkpoint_00000003"
+    payload = read_model_payload(checkpoint)
+    assert payload["model_config"] == asdict(config)
     monkeypatch.setenv("TORCH_FORCE_WEIGHTS_ONLY_LOAD", "1")
     with torch.serialization.safe_globals([torch.torch_version.TorchVersion]):
         loaded, saved = load_model(checkpoint)

@@ -1,0 +1,44 @@
+{
+ "state": "succeeded",
+ "segments": [
+  {
+   "n": 1,
+   "job": "gyyige-nextt-gym-run-000022-323a2b8a4a-normal-20261031-010857",
+   "submitted": 1793380153.673904,
+   "job_state": "Succeeded",
+   "status": [
+    "segment_complete",
+    230,
+    "1153420394280497408"
+   ],
+   "finished": 1793386119.0276308
+  },
+  {
+   "n": 2,
+   "job": "gyyige-nextt-gym-run-000022-4eecbc8ee3-normal-20261031-024853",
+   "submitted": 1793386149.2917886,
+   "job_state": "Succeeded",
+   "status": [
+    "segment_complete",
+    458,
+    "2297037312441221808"
+   ],
+   "finished": 1793396003.9768784
+  },
+  {
+   "n": 3,
+   "job": "gyyige-nextt-gym-run-000022-adc06d835f-normal-20261031-053335",
+   "submitted": 1793396030.2631373,
+   "job_state": "Succeeded",
+   "status": [
+    "training_complete",
+    512,
+    "2574741487928393768"
+   ],
+   "finished": 1793396591.5549502
+  }
+ ],
+ "phase": "training_complete",
+ "step": 512,
+ "consumed_flops": "2574741487928393768"
+}

@@ -1,0 +1,2 @@
+# Unified diff context lines contain a required prefix space, including empty lines.
+evidence/checks/xiangyue-a01-a03-20261027/source.patch whitespace=-blank-at-eol

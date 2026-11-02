@@ -15,7 +15,7 @@ test('every published card names a model card and its runs, with a known involve
   assert.ok(known.has(card.methodId),card.id);
   assert.ok(card.runIds.every(id=>ids.has(id)),card.id);
   assert.ok(card.researcher.involvement in LEVELS,card.id);
-  assert.equal(card.arenaProtocol,'arena-v1');
+  assert.equal(card.arenaProtocol,'nextt-arena-v1');
  }
 });
 

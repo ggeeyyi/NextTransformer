@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "configurations": 34,
+  "source_config_commit": "45e9cf38b54105fa64f663f2cba2e5911937a063",
+  "source_hash": "ab0ee36a68c1527ce44bd6741713a46282efa285fd568b9b46e730c93438a55c",
+  "proofs_directory": "evidence/costs/hybrid-kernels-20261026-release",
+  "scientific_configuration_and_all_cost_records_unchanged": true,
+  "audit_reused_exact_source_and_model_keyed_graph_cache": true,
+  "selection_provenance": "Original tracked configuration calibration; all referenced historical proof files are in this repository.",
+  "scope": "Pre-publication provenance correction. Executed code, model/Protocol identities, every stage and operator count, and numerical/performance evidence are unchanged."
+}

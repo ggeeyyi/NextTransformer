@@ -8,10 +8,10 @@ import pytest
 from nexttransformer.export_frozen import REPO, check_audit
 
 
-@pytest.mark.parametrize("job", ["deltanet", "gla"])
+@pytest.mark.parametrize("job", ["A01_deltanet", "A03_gla"])
 def test_historical_run_matches_its_cumulative_audit(job):
-    run = json.loads((REPO / "results/runs" / f"{job}.json").read_text())
-    path = REPO / f"evidence/audits/{job}.json"
+    run = json.loads((REPO / "results/runs" / f"{job.split('_', 1)[1]}.json").read_text())
+    path = REPO / f"evidence/checks/xiangyue-a01-a03-20261027/{job}-formal.json"
     audit = json.loads(path.read_text())
     check_audit(run, audit)
     assert run["auditSha256"] == hashlib.sha256(path.read_bytes()).hexdigest()

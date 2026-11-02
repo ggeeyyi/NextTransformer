@@ -1,8 +1,8 @@
 {
- "id": "mla_qknorm",
+ "id": "mla_qknorm_h20_seed42",
  "methodId": "mla_qknorm",
  "cohort": "reference-v1",
- "name": "Multi-head Latent Attention · MLA + QK-norm",
+ "name": "MLA + QK-norm",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,7 +789,8 @@
    "value": 0.32532955282602843
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/mla_qknorm.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/others-20261028/h20-mla-qknorm-formal.json",
+ "hardware": "H20 ×32 (4 nodes)",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -1129,7 +1130,7 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/mla_qknorm.json"
+  "source": "Cumulative audit · evidence/checks/others-20261028/h20-mla-qknorm-formal.json"
  },
- "comparisonNote": "Trained from a frozen source revision; the implementation is not yet in the current code."
+ "comparisonNote": "Trained from the frozen Others branch (gy/others-attention); the implementation is not yet in the current code."
 }

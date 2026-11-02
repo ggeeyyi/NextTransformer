@@ -1,4 +1,4 @@
-"""Plugin-mode tests, run by tests/test_plugins.py with NEXTTRANSFORMER_METHOD_PATHS=tests/plugins.
+"""Plugin-mode tests, run by tests/test_plugins.py with NEXTT_METHOD_PATHS=tests/plugins.
 
 The three test plugins cover the mixer, ffn, model and stages hooks. The file is not named test_*.py, so
 the ordinary run never collects it without the plugins registered.

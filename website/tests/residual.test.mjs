@@ -7,16 +7,16 @@ import {bpbDifference} from '../app/lib/chart-series.ts';
 
 const CORE_STEPS=[8000,16000,24000,32000,40000,46875];
 const VAL_STEPS=[...Array.from({length:188},(_,i)=>i*250),46875];
-const audits={residual_standard:'residual_standard.json',attnres:'attnres.json'};
+const audits={residual_standard:'a800-residual-standard-formal.json',attnres:'a800-attnres-formal.json'};
 
 test('published Residual records retain the full protocol and agree with their cumulative audits',()=>{
  const all=runs(),cards=methods();
  for(const [id,file] of Object.entries(audits)){
   const run=all.find(r=>r.methodId===id);
-  const audit=JSON.parse(readFileSync(new URL('../../evidence/audits/'+file,import.meta.url),'utf8'));
+  const audit=JSON.parse(readFileSync(new URL('../../evidence/checks/residual-20261028/'+file,import.meta.url),'utf8'));
   assert.ok(run,id+' run missing');
   assert.equal(audit.ok,true);
-  assert.equal(run.id,id);
+  assert.equal(run.id,'nextt-v2-residual-20261023_'+id+'_a800_seed42');
   assert.equal(cards.find(m=>m.id===id).family,'residual');
   assert.equal(run.status,'finished');assert.equal(run.complete,true);assert.equal(run.reportedAudit,'matched');
   assert.equal(run.step,audit.optimizer_steps);
@@ -30,7 +30,8 @@ test('published Residual records retain the full protocol and agree with their c
   assert.equal(run.trainingCompute.trainingFlopsEstimate,audit.theory_flops);
   assert.equal(run.proof.model_hash,audit.fingerprints.model_hash);
   assert.equal(run.proof.science_hash,audit.fingerprints.science_hash);
-  assert.ok(/^[a-f0-9]{40}$/.test(run.proof.src_head));
+  assert.equal(run.proof.src_head,audit.segments[0].commit);
+  assert.equal(run.proof.src_head,'4dd6ebb9f4f1f8b4571963c5df2aaa384eea7825');
   assert.equal(run.baselineAcceptance,undefined);
  }
 });

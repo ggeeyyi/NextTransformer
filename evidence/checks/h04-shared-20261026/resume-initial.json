@@ -1,0 +1,105 @@
+{
+  "status": "failed",
+  "steps": 12,
+  "input_tokens": 12582912,
+  "theory_flops": 59042911669234668,
+  "world_size": 8,
+  "micro_batch": 8,
+  "accumulation": 8,
+  "context": 2048,
+  "backend": "sdpa-noflash",
+  "science_hash": "61e4010d69a0bc38727ba6ab98e1f9a4d48f870285f589a359636c931e7995d2",
+  "checks": {
+    "model_config": true,
+    "train_config": true,
+    "weights": false,
+    "losses": false,
+    "step": true,
+    "input_tokens": true,
+    "next_global_sequence": true,
+    "theory_flops": true,
+    "smoke_val_steps": true,
+    "data_manifest_sha256": true,
+    "model_hash": true,
+    "software": true,
+    "resumed_from_step_1": true,
+    "continuous_validation": true,
+    "continuous_core_smoke": true,
+    "segmented_validation": true,
+    "segmented_core_smoke": true,
+    "all_rank_states": false
+  },
+  "rank_checks": [
+    {
+      "rank": 0,
+      "optimizer": false,
+      "rng": true,
+      "data": true,
+      "routing_rng": true,
+      "rows": 768
+    },
+    {
+      "rank": 1,
+      "optimizer": false,
+      "rng": true,
+      "data": true,
+      "routing_rng": true,
+      "rows": 768
+    },
+    {
+      "rank": 2,
+      "optimizer": false,
+      "rng": true,
+      "data": true,
+      "routing_rng": true,
+      "rows": 768
+    },
+    {
+      "rank": 3,
+      "optimizer": false,
+      "rng": true,
+      "data": true,
+      "routing_rng": true,
+      "rows": 768
+    },
+    {
+      "rank": 4,
+      "optimizer": false,
+      "rng": true,
+      "data": true,
+      "routing_rng": true,
+      "rows": 768
+    },
+    {
+      "rank": 5,
+      "optimizer": false,
+      "rng": true,
+      "data": true,
+      "routing_rng": true,
+      "rows": 768
+    },
+    {
+      "rank": 6,
+      "optimizer": false,
+      "rng": true,
+      "data": true,
+      "routing_rng": true,
+      "rows": 768
+    },
+    {
+      "rank": 7,
+      "optimizer": false,
+      "rng": true,
+      "data": true,
+      "routing_rng": true,
+      "rows": 768
+    }
+  ],
+  "weight_max_abs": 0.2421875,
+  "loss_max_abs": 0.0037430748343467712,
+  "mean_step_seconds": 2.9025943419999547,
+  "tokens_per_second": 361254.752283954,
+  "validation_tokens": 41943040,
+  "core_scope": "all 22 tasks, 32 examples/task smoke; no quality claim",
+  "formal_run": false
+}

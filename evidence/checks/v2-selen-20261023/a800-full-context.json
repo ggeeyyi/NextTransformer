@@ -1,0 +1,117 @@
+{
+  "created_at": "2026-10-23T07:53:45.969132+00:00",
+  "source_hash": "2130db89fb45daf6f0690de5f7c719f3903d47c878837b4dfb76954395ad97fb",
+  "torch": "2.9.1+cu128",
+  "device": "NVIDIA A800-SXM4-80GB",
+  "dtype": "torch.bfloat16",
+  "world_size": 5,
+  "mode": "target",
+  "seed": 42,
+  "results": [
+    {
+      "method": "dense_full",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "2952c26c3e3d133acc8b703c624eb64c48c1128d5cf9e1b9cbdc221704a96067",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1355810568,
+      "loss": 10.399824142456055,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 0.502437636256218,
+      "peak_allocated_bytes": 9482984448,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "residual_standard",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "348c8f69afed2f0f67d4f0563b693d68f48d55b4f15953c4ed4fcc952ff5458c",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1355810568,
+      "loss": 10.398662567138672,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 0.5025125555694103,
+      "peak_allocated_bytes": 9336707584,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "hc",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "ce2c5196ce4b526bcbd1872270094653ff06a35a2ece53f2e4096457420fb89b",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1356235700,
+      "loss": 10.398662567138672,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 0.7021652683615685,
+      "peak_allocated_bytes": 13099407872,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "mhc",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "c75f4a05151ce00a8a4848220fcf333064bef7a7f8e715bb00900b2047478a8e",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1353550818,
+      "loss": 10.397985458374023,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 0.8580631352961063,
+      "peak_allocated_bytes": 12295295488,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "attnres",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "0f831ad7ade636f7b8ca73a4ec5eb7357e7b851debafc8193446c7ecbd66eada",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1355882760,
+      "loss": 10.398660659790039,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 0.5569470766931772,
+      "peak_allocated_bytes": 9934579200,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    }
+  ]
+}

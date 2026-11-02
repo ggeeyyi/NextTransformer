@@ -1,0 +1,518 @@
+{
+ "recorded_at": "2026-10-20T14:45:00Z",
+ "status": "passed",
+ "scope": "A06'' elu_qknorm registration checks on one H20-3e (debug pod gyyige-nextt-a06pp-check-5fd139c559-debug-20261020-214848); bounded forward/backward and timing only; no training run",
+ "science_hash": "534914e0b83109acc1139e9b98d7f1a04234662be983c7705183c8d4a5b3486e",
+ "validation_source_hash": "69b020b100f924224412e7b5241c29066ec06a1dedd4188739f9952df95f3eb2",
+ "torch": "2.9.1+cu128",
+ "fla_core": "0.5.2",
+ "triton": "3.5.1",
+ "method": {
+  "definition": "q,k <- RMSNorm_FP32(q,k) * 8 per head (parameter-free, FP32 eps), phi=ELU+1 (stable FP32), S=sum phi(k)v^T, o=phi(q)^T S, per-head RMSNorm (BF16 eps) * gain, BF16 before c_proj",
+  "temperature": 8.0,
+  "attention_backend": "IEEE FP32 chunk forward/backward (_ELUChunkFP32), TF32 off",
+  "model_hash": "53b06e1137ade47487cbffe7cd31e3ba2966e6bb36440a6f958ecb421f0de93c"
+ },
+ "cost": {
+  "method": "elu_qknorm",
+  "status": "theoretical_preflight_passed",
+  "parameters": 1462768668,
+  "ffn": 6144,
+  "physical_layers": 25,
+  "core_layers": 9,
+  "flops_per_token": 4652242983.277505,
+  "relative_error": -0.004313703748366371,
+  "elapsed_seconds": 25.361711318138987,
+  "dense_flops_per_token": 4672398325.44785,
+  "cost_record": "costs/elu-qknorm-20261020/elu_qknorm.json",
+  "note": "+1,000,800 FLOPs/token over elu_norm for the q/k RMSNorm and temperature; the other 18 proofs are unchanged except provenance"
+ },
+ "backend_study": {
+  "source_hash_note": "run on the committed tree 71e4aa5 (helpers unchanged by this registration); path rebuilt explicitly in the script",
+  "criterion": "output relative L2 <= 1%, every raw q/k/v/gain gradient <= 3% vs an independent FP64 path from the same BF16 projections",
+  "cases": {
+   "random": {
+    "rank1": 0.6744590270041538,
+    "ieee_fp32": {
+     "output": 0.002430780930727325,
+     "max_grad": 0.0029301481478662514,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.0030441452537473307,
+     "max_grad": 0.0050191302953558345,
+     "passed": true
+    },
+    "fla_tf32": {
+     "output": 0.0024330724644666185,
+     "max_grad": 0.0029680955291978175,
+     "passed": true
+    }
+   },
+   "dilute_0.1": {
+    "rank1": 0.9999692991302451,
+    "ieee_fp32": {
+     "output": 0.002345517379917095,
+     "max_grad": 0.0028935855676793243,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.002871890322744598,
+     "max_grad": 0.33270776521037765,
+     "passed": false
+    },
+    "fla_tf32": {
+     "output": 0.002344851006056982,
+     "max_grad": 0.03602690096304107,
+     "passed": false
+    }
+   },
+   "dilute_0.03": {
+    "rank1": 0.999997048048993,
+    "ieee_fp32": {
+     "output": 0.002182124759997447,
+     "max_grad": 0.002823763595134308,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.0027754941148239796,
+     "max_grad": 1.0913988393155498,
+     "passed": false
+    },
+    "fla_tf32": {
+     "output": 0.0021824506206593397,
+     "max_grad": 0.11770158586753789,
+     "passed": false
+    }
+   },
+   "dilute_0.01": {
+    "rank1": 0.9999996876248851,
+    "ieee_fp32": {
+     "output": 0.0023825515826607813,
+     "max_grad": 0.0029385001470100583,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.002911499020235383,
+     "max_grad": 3.3082867545303327,
+     "passed": false
+    },
+    "fla_tf32": {
+     "output": 0.0023815393008346877,
+     "max_grad": 0.3567539919795659,
+     "passed": false
+    }
+   },
+   "peaked": {
+    "rank1": 0.08773671079405979,
+    "ieee_fp32": {
+     "output": 0.002459972879421742,
+     "max_grad": 0.002964508373854856,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.003692732224415465,
+     "max_grad": 0.004601067222980098,
+     "passed": true
+    },
+    "fla_tf32": {
+     "output": 0.0024771202018154764,
+     "max_grad": 0.002997210609210202,
+     "passed": true
+    }
+   },
+   "peaked_dilute": {
+    "rank1": 0.9999745783511751,
+    "ieee_fp32": {
+     "output": 0.002496018357000434,
+     "max_grad": 0.0030115337663502717,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.0030850932947093707,
+     "max_grad": 0.16935200094879485,
+     "passed": false
+    },
+    "fla_tf32": {
+     "output": 0.0024984240723948804,
+     "max_grad": 0.018048098752925477,
+     "passed": true
+    }
+   },
+   "large_v": {
+    "rank1": 0.6732806743168409,
+    "ieee_fp32": {
+     "output": 0.002364171753091942,
+     "max_grad": 0.002926816518685996,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.0029922348316758405,
+     "max_grad": 0.004987346253793407,
+     "passed": true
+    },
+    "fla_tf32": {
+     "output": 0.0023666211211758126,
+     "max_grad": 0.002942874759690414,
+     "passed": true
+    }
+   },
+   "pilot4000_layer0": {
+    "rank1": 0.8483721021186879,
+    "ieee_fp32": {
+     "output": 0.0024578985065525473,
+     "max_grad": 0.003083321187790012,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.0030290818012330737,
+     "max_grad": 0.005420970938303634,
+     "passed": true
+    },
+    "fla_tf32": {
+     "output": 0.00245983000936177,
+     "max_grad": 0.0030966954380502337,
+     "passed": true
+    }
+   },
+   "pilot4000_layer3": {
+    "rank1": 0.9798641570217983,
+    "ieee_fp32": {
+     "output": 0.0023680049858342054,
+     "max_grad": 0.002933443634025763,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.002939315414537988,
+     "max_grad": 0.011493073713259059,
+     "passed": true
+    },
+    "fla_tf32": {
+     "output": 0.0023693014468311783,
+     "max_grad": 0.003144821272689824,
+     "passed": true
+    }
+   },
+   "pilot4000_layer6": {
+    "rank1": 0.9132022744628323,
+    "ieee_fp32": {
+     "output": 0.0023602552677206086,
+     "max_grad": 0.003149185625397939,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.0031132259809060745,
+     "max_grad": 0.007015062297516839,
+     "passed": true
+    },
+    "fla_tf32": {
+     "output": 0.0023649637901221473,
+     "max_grad": 0.003217835761799292,
+     "passed": true
+    }
+   },
+   "pilot4000_layer9": {
+    "rank1": 0.9173520020571253,
+    "ieee_fp32": {
+     "output": 0.0024408942408943755,
+     "max_grad": 0.0030156278161318564,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.003023312871416648,
+     "max_grad": 0.021310795196082026,
+     "passed": true
+    },
+    "fla_tf32": {
+     "output": 0.002442381735438092,
+     "max_grad": 0.003644751727136636,
+     "passed": true
+    }
+   },
+   "pilot4000_layer12": {
+    "rank1": 0.8232512384247179,
+    "ieee_fp32": {
+     "output": 0.002556549743871028,
+     "max_grad": 0.0030554270964333156,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.003145866940651797,
+     "max_grad": 0.01032547044576594,
+     "passed": true
+    },
+    "fla_tf32": {
+     "output": 0.0025588730477169664,
+     "max_grad": 0.003228791515604683,
+     "passed": true
+    }
+   },
+   "pilot4000_layer15": {
+    "rank1": 0.8333923075490581,
+    "ieee_fp32": {
+     "output": 0.0024113226184158854,
+     "max_grad": 0.002986590531871586,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.0030725282795105824,
+     "max_grad": 0.006613524727148393,
+     "passed": true
+    },
+    "fla_tf32": {
+     "output": 0.002415316439544771,
+     "max_grad": 0.0030381311793402557,
+     "passed": true
+    }
+   },
+   "pilot4000_layer18": {
+    "rank1": 0.8991595684279079,
+    "ieee_fp32": {
+     "output": 0.0024351941737749045,
+     "max_grad": 0.00305152158352646,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.003099478175820632,
+     "max_grad": 0.009145183447588408,
+     "passed": true
+    },
+    "fla_tf32": {
+     "output": 0.002437223077051083,
+     "max_grad": 0.003106051084062892,
+     "passed": true
+    }
+   },
+   "pilot4000_layer21": {
+    "rank1": 0.9054140374857452,
+    "ieee_fp32": {
+     "output": 0.0023399301405181935,
+     "max_grad": 0.0030212394965179663,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.003031045756885007,
+     "max_grad": 0.0076819180327506046,
+     "passed": true
+    },
+    "fla_tf32": {
+     "output": 0.0023461271680729904,
+     "max_grad": 0.0031200832639638855,
+     "passed": true
+    }
+   },
+   "pilot4000_layer24": {
+    "rank1": 0.7937042109221224,
+    "ieee_fp32": {
+     "output": 0.002375425812653077,
+     "max_grad": 0.0029983418000305156,
+     "passed": true
+    },
+    "fla_bf16": {
+     "output": 0.0030861189944847356,
+     "max_grad": 0.006832781115879107,
+     "passed": true
+    },
+    "fla_tf32": {
+     "output": 0.0023791019624746917,
+     "max_grad": 0.0030210206902897656,
+     "passed": true
+    }
+   }
+  },
+  "timing_mb16_one_layer_fwd_bwd": {
+   "ieee_fp32": {
+    "shape": [
+     16,
+     2048,
+     12,
+     128
+    ],
+    "median_ms": 22.090551909059286,
+    "min_ms": 22.07691501826048,
+    "peak_gib": 6.259771347045898
+   },
+   "fla_bf16": {
+    "shape": [
+     16,
+     2048,
+     12,
+     128
+    ],
+    "median_ms": 11.61191426217556,
+    "min_ms": 11.593617033213377,
+    "peak_gib": 3.787111282348633
+   },
+   "fla_tf32": {
+    "shape": [
+     16,
+     2048,
+     12,
+     128
+    ],
+    "median_ms": 14.110622927546501,
+    "min_ms": 14.092223718762398,
+    "peak_gib": 4.537111282348633
+   }
+  },
+  "decision": "IEEE FP32: the only backend within tolerance in every case, including fully diluted outputs (rank-1 fraction 1.0), which the ELU models reached in training (record 021); FLA BF16 fails at rank-1 1.0 (33-331%), FLA TF32 fails there too (3.6-36%)."
+ },
+ "fla_check_random": {
+  "status": "passed",
+  "rows": [
+   {
+    "kind": "elu_qknorm",
+    "length": 2048,
+    "seed": 0,
+    "errors": {
+     "output": 0.002381196767523735,
+     "grad_q": 0.0034636166482287763,
+     "grad_k": 0.0033573274803953643,
+     "grad_v": 0.0024057216799138713
+    }
+   },
+   {
+    "kind": "elu_qknorm",
+    "length": 2048,
+    "seed": 1,
+    "errors": {
+     "output": 0.0023790305555920926,
+     "grad_q": 0.0034640682717525396,
+     "grad_k": 0.003348977944256885,
+     "grad_v": 0.002398597775996942
+    }
+   },
+   {
+    "kind": "elu_qknorm",
+    "length": 1000,
+    "seed": 0,
+    "errors": {
+     "output": 0.002361135575475979,
+     "grad_q": 0.0034580708064943263,
+     "grad_k": 0.0033687901759541106,
+     "grad_v": 0.002442750234843173
+    }
+   },
+   {
+    "kind": "elu_qknorm",
+    "length": 1000,
+    "seed": 1,
+    "errors": {
+     "output": 0.0024121540914598914,
+     "grad_q": 0.0034637046891105817,
+     "grad_k": 0.003365188941298899,
+     "grad_v": 0.0024117810094656466
+    }
+   }
+  ],
+  "note": "production BF16 inputs through the ELU path (label fla_bf16 is the fla_check training-dtype case; ELU kinds always use the IEEE FP32 chunk)"
+ },
+ "full_context": {
+  "method": "elu_qknorm",
+  "status": "passed",
+  "mode": "target",
+  "model_hash": "53b06e1137ade47487cbffe7cd31e3ba2966e6bb36440a6f958ecb421f0de93c",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "configured_context": 2048,
+  "test_shape": [
+   8,
+   2048
+  ],
+  "width": 1536,
+  "physical_layers": 25,
+  "parameters": 1462768668,
+  "loss": 10.397546768188477,
+  "causal_max_abs": 0.0,
+  "elapsed_seconds": 1.9385699178092182,
+  "peak_allocated_bytes": 83123211264,
+  "scope": "full-config-full-context",
+  "full_global_update": false,
+  "validation_source_hash": "69b020b100f924224412e7b5241c29066ec06a1dedd4188739f9952df95f3eb2"
+ },
+ "gpu_regression": {
+  "passed": 62,
+  "failed": 0,
+  "command": "NANOCHAT_DTYPE=float32 python -m pytest reference/tests/test_reference.py -k 'elu or qknorm or fused or chunk'",
+  "device": "H20-3e (CUDA tests included)",
+  "validation_source_hash": "69b020b100f924224412e7b5241c29066ec06a1dedd4188739f9952df95f3eb2"
+ },
+ "speed_and_utilization": {
+  "elu_qknorm-8x8": {
+   "method": "elu_qknorm",
+   "micro_batch": 8,
+   "accumulation": 8,
+   "status": "ok",
+   "theory_flops_per_rank_update": 609778792304149.1,
+   "model_hash": "53b06e1137ade47487cbffe7cd31e3ba2966e6bb36440a6f958ecb421f0de93c",
+   "median_seconds": 7.519052505493164,
+   "min_seconds": 7.518068313598633,
+   "max_seconds": 7.5209736824035645,
+   "tokens_per_second": 17431.9836048815,
+   "mfu_theory": 0.5479582662866113,
+   "peak_gib": 91.37555837631226,
+   "utilization_samples": 187,
+   "nonzero_samples": 187,
+   "median_active_utilization": 100.0,
+   "zero_fraction": 0.0,
+   "median_power_w": 367.31
+  },
+  "elu_qknorm-16x4": {
+   "method": "elu_qknorm",
+   "micro_batch": 16,
+   "accumulation": 4,
+   "status": "oom",
+   "theory_flops_per_rank_update": 609778792304149.1,
+   "model_hash": "53b06e1137ade47487cbffe7cd31e3ba2966e6bb36440a6f958ecb421f0de93c"
+  },
+  "elu_norm-8x8": {
+   "method": "elu_norm",
+   "micro_batch": 8,
+   "accumulation": 8,
+   "status": "ok",
+   "theory_flops_per_rank_update": 609647615446549.1,
+   "model_hash": "d29b3f56167a6fb2cae26c018bffc26f18ba770773546f59dd59646bd867abdc",
+   "median_seconds": 7.290450096130371,
+   "min_seconds": 7.2622294425964355,
+   "max_seconds": 7.294835090637207,
+   "tokens_per_second": 17978.5881902642,
+   "mfu_theory": 0.5650187012589974,
+   "peak_gib": 86.65387868881226,
+   "utilization_samples": 182,
+   "nonzero_samples": 182,
+   "median_active_utilization": 100.0,
+   "zero_fraction": 0.0,
+   "median_power_w": 367.89
+  },
+  "retnet-8x8": {
+   "method": "retnet",
+   "micro_batch": 8,
+   "accumulation": 8,
+   "status": "ok",
+   "theory_flops_per_rank_update": 606871206430139.4,
+   "model_hash": "8bc4853d25752e241dfee6d7637b230317a74ca3f148e7a90a4f5e0057f9e742",
+   "median_seconds": 5.950880765914917,
+   "min_seconds": 5.950282573699951,
+   "max_seconds": 5.951213121414185,
+   "tokens_per_second": 22025.64715306447,
+   "mfu_theory": 0.6890544922382663,
+   "peak_gib": 51.75179100036621,
+   "utilization_samples": 149,
+   "nonzero_samples": 149,
+   "median_active_utilization": 100.0,
+   "zero_fraction": 0.0,
+   "median_power_w": 335.48
+  }
+ },
+ "speed_scope": "One rank's share of a formal update (64 real ClimbMix train rows of rank 0/8, 131,072 tokens), forward/backward and unsharded Muon+AdamW, 2 warmup + 5 timed updates; nvidia-smi every 200 ms over the timed window; mfu_theory = audited FLOPs/8 / time / 148 TFLOPS. No DDP, eval or checkpoint I/O.",
+ "utilization_gate": {
+  "rule": "Koala team rule: median non-zero GPU utilization >= 80% in the active window",
+  "elu_qknorm_8x8": 100.0,
+  "passed": true
+ },
+ "limits": [
+  "Micro-batch 16 does not fit (OOM); formal runs use 8x8.",
+  "Theory MFU 54.8% vs RetNet 68.9% on the same benchmark: the IEEE FP32 attention costs about 1 s per update; chosen for gradient accuracy under dilution.",
+  "No eight-GPU update/resume, pilot or formal training is covered by this record."
+ ],
+ "speed_and_utilization_note": "elu_qknorm 8x8 re-measured on the final source; 16x4 OOM, elu_norm and retnet references measured in the same pod on the pre-docstring tree (identical numerics)."
+}

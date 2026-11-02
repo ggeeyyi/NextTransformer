@@ -17,9 +17,10 @@
  "blocks": 15,
  "flops": 4.779192,
  "cohort": "native-v3",
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/native/circle.py",
+ "owner": "selen",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/f41786282acf98f54292774972f6e3509ddbeb51/nanochat/native_experiment/circle.py",
  "error": 0.08306170888994355,
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#historical-native-track",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/f41786282acf98f54292774972f6e3509ddbeb51/docs/COMMON_CORE_README.md",
  "costModel": "native-v3-matrix-estimate",
  "order": 22
 }

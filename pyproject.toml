@@ -3,8 +3,8 @@ requires = ["hatchling>=1.27,<2"]
 build-backend = "hatchling.build"
 
 [project]
-name = "nexttransformer"
-version = "0.1.0"
+name = "nextt-nanochat"
+version = "0.2.0"
 description = "Compute-controlled research on next-generation language model architectures"
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
@@ -37,9 +37,11 @@ packages = ["nexttransformer", "nanochat"]
 
 [tool.pytest.ini_options]
 markers = [
-    "slow: full-size cost-audit reproductions and multi-rank data-layout runs; skipped by default, run with -m slow",
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "audit: full-scale cost audits; CI runs them when audit code, models, configurations or proofs change",
+    "audit_full: methods outside the representative audit set; CI runs them on full runs and audit-code changes",
+    "ddp: multi-rank data-layout runs; CI runs them when the trainer, data, protocol or models change",
 ]
-addopts = "-m 'not slow'"
 testpaths = ["tests"]
 norecursedirs = [".agent-work", "local", "scratch", "node_modules", ".venv"]
 python_files = ["test_*.py"]

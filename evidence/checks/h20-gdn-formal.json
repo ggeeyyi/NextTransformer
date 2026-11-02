@@ -1,0 +1,101 @@
+{
+ "kind": "h20_formal_run_cumulative_audit",
+ "method": "A07 GDN (gdn)",
+ "date": "2026-10-24",
+ "run_dir": "personal CPFS nextt/runs/gdn_h20_seed42",
+ "experiments_record": "037",
+ "checks": [
+  "run_status.json: phase training_complete at 46875; trainer final_status",
+  "ledger (run_status/budget.json): 46875 optimizer steps, 49,152,000,000 input tokens, val/CORE step lists equal to the protocol",
+  "cumulative theory FLOPs / (49.152e9 x Dense 4.672398325e9) - 1 within 2%; budget_anomaly events counted",
+  "metrics.jsonl train events: strictly increasing steps, input_tokens == step x 1,048,576, finite loss/grad norm, last step 46875",
+  "189 validation events at 0, every 250, 46875 (41,943,040 tokens each) and the same 189 val_*.json files",
+  "6 CORE events at 8000/16000/24000/32000/40000/46875, each full_core with 22 tasks",
+  "exactly one final_bpb event; bpb_final.json (20,971,520 tokens per split) and core_final.json",
+  "every segment's provenance (provenance.json, resume_*.json): identical model/protocol/data/tokenizer fingerprints, parameter count, config, cost proof, validation source hash and science_hash; non-smoke; world x micro x accumulation x 2048 == 1,048,576"
+ ],
+ "result_checkpoint": "checkpoint_00046875 (final; latest.json); no best-checkpoint selection",
+ "naming": "periodic_val_bpb_46875 is the 189th scheduled val point; final_bpb is the independent final BPB",
+ "ok": true,
+ "problems": [],
+ "final_status": "matched",
+ "optimizer_steps": 46875,
+ "input_tokens": 49152000000,
+ "theory_flops": 230385112016420109375,
+ "dense_flops_per_token": 4672398325.44785,
+ "flops_per_token": 4687197103.198651,
+ "proof_relative_error": 0.0031672765719055196,
+ "cumulative_relative_error": 0.0031672765719055196,
+ "train_event_relative_error": {
+  "min": 0.0031672765719055196,
+  "max": 0.0031672765719055196
+ },
+ "budget_anomalies": 0,
+ "train_events": 4689,
+ "validation_events": 189,
+ "core_events": 6,
+ "final_bpb": {
+  "train": 0.669411259984648,
+  "val": 0.667271564072002,
+  "tokens_per_split": 20971520
+ },
+ "core": {
+  "8000": 0.20210474569553832,
+  "16000": 0.20360953491792244,
+  "24000": 0.25451277489956214,
+  "32000": 0.2673534738990313,
+  "40000": 0.29420271423939054,
+  "46875": 0.3054997381638131
+ },
+ "core_final": 0.3054997381638131,
+ "last_loss": 2.202188767492771,
+ "grad_norm_max_after_500": 0.578446626663208,
+ "step_seconds_median": 1.8029012698680162,
+ "mfu_median": 0.5756115391303211,
+ "gpu_hours_training": 772.4998507659344,
+ "training_seconds": 86906.23321116762,
+ "evaluation_seconds": 5541.461845246609,
+ "evaluation_forward_flops": 12386003455896448000,
+ "segments": [
+  {
+   "file": "provenance.json",
+   "step": 0,
+   "job": "gyyige-nextt-a07-gdn-2627391868-normal-20261023-042659",
+   "world": 32,
+   "micro": 16,
+   "accumulation": 1,
+   "code": "b41faaab206fa7d4121bfc2ef2203bd5fcbc5cccb347158cef8466502bc7e1f8",
+   "commit": null
+  }
+ ],
+ "fingerprints": {
+  "model_hash": "adba6d54c08ab1ce92ccce4090c6b3f457c6751d80f61a596525a7b73f3e7bd5",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "data_manifest_sha256": "69fa9df6810b6c5e89f41c53b5134353e7ddfb676b4af3d694d9aa8a34358cc2",
+  "tokenizer_sha256": "06258dc0044b6198c6fa8ba75c5b3bbaeaeab44f4804b464d9ce5f5e3797ec54",
+  "reference_source_hash": "6ba2fbd044fbcad17e58a4f0e5618e44bf6504acb6d51da3d6e62bf7d9498477",
+  "science_hash": "b0a4afc1f2bc713e8d6d89010430688fc8071d564a608269b2f52beadaab6259"
+ },
+ "parameters": 1411349680,
+ "device": "NVIDIA H20-3e",
+ "periodic_val_bpb": {
+  "0": 3.1687824620648284,
+  "8000": 0.7826000576158294,
+  "16000": 0.7669850975057548,
+  "24000": 0.7418560171651802,
+  "32000": 0.7157524207192294,
+  "40000": 0.6895603430308096,
+  "46875": 0.6699782798455667
+ },
+ "periodic_val_bpb_minimum": {
+  "val_bpb": 0.6699782798455667,
+  "step": 46875
+ },
+ "wandb_mirror": {
+  "run": "gdn-h20-seed42",
+  "events_logged": 4885,
+  "finished": true,
+  "note": "trainer W&B stayed offline (backup); the CPU-pod mirror read metrics.jsonl"
+ },
+ "boundaries": "Single seed 42. Hardware 4x8 H20-3e (32 ranks sharing the eight frozen streams), micro 16 x accumulation 1, code bundle b41faaab (commit c77bf36: DDP warm-up, per-rank kernel caches, fixed optimizer kernel configurations); one segment, so there is no resume boundary. The earlier sixteen-rank attempt performed no update (record 025). Other H20 runs differ in floating-point reduction order. Resources are outcomes, not controls. Evaluation forward FLOPs are reported separately and not charged to the training budget."
+}

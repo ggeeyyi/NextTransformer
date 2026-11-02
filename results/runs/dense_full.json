@@ -1,8 +1,8 @@
 {
- "id": "dense_full",
+ "id": "nextt-v2-dense-20261023_dense_full_a800_seed42",
  "methodId": "dense_full",
  "cohort": "reference-v1",
- "name": "Dense Baseline",
+ "name": "B01 Dense Baseline",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,7 +789,8 @@
    "value": 0.33095152996093863
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/dense_full.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/a800-dense-full-formal.json",
+ "hardware": "A800 ×8",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -1129,13 +1130,13 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/dense_full.json"
+  "source": "Cumulative audit · evidence/checks/a800-dense-full-formal.json"
  },
  "baselineAcceptance": {
   "status": "accepted",
   "planVersion": "v2",
   "protocolHash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
   "sourceCommit": "4dd6ebb9f4f1f8b4571963c5df2aaa384eea7825",
-  "reportUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/dense_full.json"
+  "reportUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/a800-dense-full-formal.json"
  }
 }

@@ -1,0 +1,141 @@
+{
+  "created_at": "2026-10-18T19:47:10.795824+00:00",
+  "source_hash": "cfba45089af1b05925a40dfcf87c1acf46b9d4a2035d3f75cd1945c0d7f97a05",
+  "torch": "2.9.1+cu128",
+  "device": "NVIDIA H20-3e",
+  "dtype": "torch.bfloat16",
+  "world_size": 1,
+  "mode": "target",
+  "seed": 42,
+  "backend": "fla_chunk64",
+  "scope_note": "single H20-3e process, sequential models; forward/backward, finite gradients, nonzero-branch causal prefix; no optimizer state (not a microbatch limit)",
+  "command": "NANOCHAT_DTYPE=bfloat16 HF_HUB_OFFLINE=1 FLA_DISABLE_BACKEND_DISPATCH=1 python -m reference.validate --mode target --device cuda --sequence-length 2048 --config-dir reference/configs --methods kda retnet elu_linear --micro-batch {1,8}",
+  "results": [
+    {
+      "method": "kda",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "39e28f3a7ac2c5a0638d33beaa80679442af824fc2f8ab17598a91e8efe0fb90",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1412126344,
+      "loss": 10.397615432739258,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 8.011850425973535,
+      "peak_allocated_bytes": 12749588992,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "retnet",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "8bc4853d25752e241dfee6d7637b230317a74ca3f148e7a90a4f5e0057f9e742",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1410077320,
+      "loss": 10.399240493774414,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 1.1456432472914457,
+      "peak_allocated_bytes": 10307254272,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "elu_linear",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "108313abc66ba8da60c3c5fe0fa08456972b19cb29d3be12c3a82beda2f8c71d",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 25,
+      "parameters": 1462765468,
+      "loss": 10.398296356201172,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 1.0711661982350051,
+      "peak_allocated_bytes": 11154274304,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "kda",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "39e28f3a7ac2c5a0638d33beaa80679442af824fc2f8ab17598a91e8efe0fb90",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        8,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1412126344,
+      "loss": 10.398487091064453,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 6.913238222245127,
+      "peak_allocated_bytes": 60532935168,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "retnet",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "8bc4853d25752e241dfee6d7637b230317a74ca3f148e7a90a4f5e0057f9e742",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        8,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1410077320,
+      "loss": 10.398143768310547,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 2.1515929931774735,
+      "peak_allocated_bytes": 40835618816,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "elu_linear",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "108313abc66ba8da60c3c5fe0fa08456972b19cb29d3be12c3a82beda2f8c71d",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        8,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 25,
+      "parameters": 1462765468,
+      "loss": 10.39741039276123,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 2.1060445527546108,
+      "peak_allocated_bytes": 46970329088,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    }
+  ]
+}

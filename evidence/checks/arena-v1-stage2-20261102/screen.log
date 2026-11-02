@@ -1,0 +1,15 @@
+2026-11-01 21:19:48 run_000041 attnres_gate 0.8873 vs anchor 0.8875 (-0.0003) continues
+2026-11-01 23:15:53 run_000045 attnres_ve_all 0.8922 vs anchor 0.8875 (+0.0047) continues
+2026-11-01 23:19:53 run_000044 attnres_deep 0.8975 vs anchor 0.8875 (+0.0100) continues
+2026-11-01 23:23:53 run_000042 attnres_canon 0.8893 vs anchor 0.8875 (+0.0018) continues
+2026-11-01 23:27:53 run_000043 attnres_full 0.8889 vs anchor 0.8875 (+0.0014) continues
+2026-11-01 23:31:53 run_000046 dense_full_gate ended cancelled before update 512
+2026-11-02 05:44:08 run_000051 attnres_moe16 ended cancelled before update 512
+2026-11-02 05:52:09 run_000047 attnres_moe 0.8955 vs anchor 0.8875 (+0.0080) continues
+2026-11-02 05:52:09 run_000048 attnres_gate_canon 0.8862 vs anchor 0.8875 (-0.0013) continues
+2026-11-02 06:06:09 run_000049 attnres_full_gate 0.8875 vs anchor 0.8875 (-0.0000) continues
+2026-11-02 06:12:09 run_000050 attnres_full_canon 0.8879 vs anchor 0.8875 (+0.0004) continues
+2026-11-02 06:22:10 run_000052 attnres_canon_abcd 0.8882 vs anchor 0.8875 (+0.0007) continues
+2026-11-02 08:34:15 run_000053 attnres_moe16-mb8 0.8907 vs anchor 0.8875 (+0.0031) continues
+2026-11-02 11:50:24 run_000054 attnres_full_canon_abcd 0.8868 vs anchor 0.8875 (-0.0007) continues
+2026-11-02 11:50:24 all screened

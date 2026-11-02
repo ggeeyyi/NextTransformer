@@ -1,10 +1,10 @@
 {
-  "runtime_dir": "/path/to/runtime",
-  "venv_dir": "/path/to/runtime/venv-native",
-  "resources": "/path/to/runtime/native-resources",
-  "upstream_base_dir": "/path/to/runtime/native-resources",
-  "data_dir": "/path/to/datasets/climbmix-400b-shuffle",
+  "runtime_dir": "/persistent/nextt-runtime",
+  "venv_dir": "/persistent/nextt-runtime/venv-native",
+  "resources": "/persistent/nextt-runtime/native-resources",
+  "upstream_base_dir": "/persistent/nextt-runtime/native-resources",
+  "data_dir": "/persistent/datasets/climbmix-400b-shuffle",
   "wandb_mode": "disabled",
-  "wandb_project": "nexttransformer",
+  "wandb_project": "nextt",
   "wandb_group": "native-d24"
 }

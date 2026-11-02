@@ -1,8 +1,8 @@
 {
- "id": "gqa",
+ "id": "f3_gqa",
  "methodId": "gqa",
  "cohort": "reference-v1",
- "name": "Grouped-Query Attention · GQA",
+ "name": "GQA",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,7 +789,8 @@
    "value": 0.32624500367937076
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/gqa.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/others-20261028/h800-gqa-formal.json",
+ "hardware": "H800/H200 ×8",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -1129,7 +1130,7 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/gqa.json"
+  "source": "Cumulative audit · evidence/checks/others-20261028/h800-gqa-formal.json"
  },
- "comparisonNote": "Trained from a frozen source revision; the implementation is not yet in the current code."
+ "comparisonNote": "Trained from the frozen Others branch (gy/others-attention); the implementation is not yet in the current code."
 }

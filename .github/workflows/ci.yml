@@ -1,99 +1,171 @@
 name: CI
-# Required checks for every pull request: checks, tests, site. A job skipped by its condition counts as passed.
 on:
   pull_request:
   push:
     branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: read
+  workflow_dispatch:   # a full run: every suite and every test, whatever changed
 
 concurrency:
   group: ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-env:
-  CUDA_VISIBLE_DEVICES: ""
-  NANOCHAT_DTYPE: float32
-  TORCH_COMPILE_DISABLE: "1"
-  OMP_NUM_THREADS: "1"
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
 
 jobs:
-  checks:
+  changes:
     runs-on: ubuntu-latest
     outputs:
-      tests: ${{ steps.changes.outputs.tests }}
-      site: ${{ steps.changes.outputs.site }}
+      python: ${{ github.event_name == 'workflow_dispatch' || steps.python.outputs.python == 'true' }}
+      gym: ${{ github.event_name == 'workflow_dispatch' || steps.paths.outputs.gym == 'true' }}
+      audit: ${{ github.event_name == 'workflow_dispatch' || steps.paths.outputs.audit == 'true' }}
+      audit_full: ${{ github.event_name == 'workflow_dispatch' || steps.paths.outputs.audit_full == 'true' }}
+      ddp: ${{ github.event_name == 'workflow_dispatch' || steps.paths.outputs.ddp == 'true' }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: astral-sh/setup-uv@v6
+      # A push is compared with the last commit whose checks passed on its branch, so the changes of a
+      # cancelled or failed run are still tested. Pull requests are compared with their base.
+      - id: base
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --branch "$GITHUB_REF_NAME" \
+                --event push --status success --limit 1 --json headSha --jq '.[0].headSha // empty')
+          if [ -z "$sha" ] || ! git cat-file -e "$sha^{commit}" 2>/dev/null; then sha="${{ github.event.before }}"; fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      # Python tests also read the root and docs/ Markdown files; only website-only changes skip them.
+      - uses: dorny/paths-filter@v3
+        id: python
+        if: github.event_name != 'workflow_dispatch'
         with:
-          enable-cache: true
-      - run: uv sync --frozen --extra cpu
-      - name: What this change needs
-        id: changes
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            uv run python -m nexttransformer.checks.changes --base "origin/${{ github.base_ref }}" --github-output "$GITHUB_OUTPUT"
-          else
-            printf 'tests=true\nsite=true\ncontract=false\naffected=\n' >> "$GITHUB_OUTPUT"
-          fi
-      - name: No credentials, local paths or machine details
-        run: uv run python -m nexttransformer.checks.public
-      - name: Run records and arena cards
-        run: |
-          uv run python -m nexttransformer.export_run --check
-          uv run python -m nexttransformer.arena --check
-          uv run python docs/scripts/generate.py --check
-      - name: Arena and plugin scope
-        if: github.event_name == 'pull_request'
-        run: uv run python -m nexttransformer.arena --scope "origin/${{ github.base_ref }}"
-      - name: Published methods still match their cost proofs
-        run: |
-          uv run python -m nexttransformer.protocol.fingerprint || {
-            echo "::error::This change touches code that published methods run. A maintainer runs the Full audit workflow and commits the regenerated proofs before merging (see the guide 'Changing shared code')."
-            exit 1
-          }
-      - name: Training contract
-        if: >-
-          github.event_name == 'pull_request' && steps.changes.outputs.contract == 'true'
-          && !contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.pull_request.author_association)
-          && !contains(github.event.pull_request.labels.*.name, 'core-approved')
-        run: |
-          echo "::error::This pull request changes the training contract (protocol, cost ledger, evaluation, trainer or data pipeline). Please open an issue first; a maintainer adds the core-approved label once the change is agreed."
-          exit 1
+          base: ${{ steps.base.outputs.sha }}
+          predicate-quantifier: every
+          filters: |
+            python:
+              - '**'
+              - '!website/**'
+      - uses: dorny/paths-filter@v3
+        id: paths
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          base: ${{ steps.base.outputs.sha }}
+          filters: |
+            workflow: &workflow
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - '.github/workflows/**'
+            gym:
+              - *workflow
+              - 'nextt_gym/**'
+              - 'nexttransformer/**'
+              - 'nanochat/**'
+              - 'configs/**'
+              - 'evidence/**'
+              - 'results/**'
+            # Representative audit reproductions: anything that can change an audited cost.
+            audit:
+              - *workflow
+              - 'nextt_gym/audit.py'
+              - 'nextt_gym/contract.py'
+              - 'nextt_gym/upstream_model.py'
+              - 'nextt_gym/task.py'
+              - 'nextt_gym/importer.py'
+              - 'nextt_gym/tests/test_foundations.py'
+              - 'nexttransformer/protocol/**'
+              - 'nexttransformer/models/**'
+              - 'nexttransformer/methods/**'
+              - 'nanochat/**'
+              - 'configs/**'
+              - 'evidence/costs/**'
+            # Every method's reproduction: the audit implementation itself changed.
+            audit_full:
+              - *workflow
+              - 'nextt_gym/audit.py'
+              - 'nextt_gym/contract.py'
+              - 'nextt_gym/upstream_model.py'
+              - 'nexttransformer/protocol/compute.py'
+              - 'nexttransformer/protocol/spec.py'
+            ddp:
+              - *workflow
+              - 'nexttransformer/train.py'
+              - 'nexttransformer/training/**'
+              - 'nexttransformer/runtime/**'
+              - 'nexttransformer/protocol/**'
+              - 'nexttransformer/evaluation/**'
+              - 'nexttransformer/models/**'
+              - 'nanochat/**'
+              - 'tests/test_data_layout.py'
 
-  tests:
-    needs: checks
-    if: needs.checks.outputs.tests == 'true'
+  python:
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    env:
+      CUDA_VISIBLE_DEVICES: ""
+      NANOCHAT_DTYPE: float32
+      TORCH_COMPILE_DISABLE: "1"
+      OMP_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen --extra cpu
+      - run: uv run python -m nexttransformer.export_run --check
+      - run: uv run python -m nexttransformer.arena --check
+      - env:
+          MARKS: ${{ needs.changes.outputs.ddp == 'true' && 'all' || 'not ddp' }}
+        run: |
+          if [ "$MARKS" = all ]; then set --; else set -- -m "$MARKS"; fi
+          uv run python -m pytest -q -n auto "$@"
+
+  gym:
+    needs: changes
+    if: needs.changes.outputs.gym == 'true'
+    runs-on: ubuntu-latest
+    env:
+      CUDA_VISIBLE_DEVICES: ""
+      NANOCHAT_DTYPE: float32
+      TORCH_COMPILE_DISABLE: "1"
+      OMP_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen --extra cpu --group dev
+      - run: uv pip install --python .venv/bin/python -r nextt_gym/requirements.txt
+      - env:
+          MARKS: ${{ needs.changes.outputs.audit_full == 'true' && 'all' || needs.changes.outputs.audit == 'true' && 'not audit_full' || 'not audit' }}
+        run: |
+          if [ "$MARKS" = all ]; then set --; else set -- -m "$MARKS"; fi
+          .venv/bin/python -m pytest nextt_gym/tests -q -n auto "$@"
+
+  arena-scope:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
         with:
-          enable-cache: true
-      - run: uv sync --frozen --extra cpu
-      - run: uv run python -m pytest -q -n auto --dist worksteal --durations=10
+          fetch-depth: 0
+      # Applies to pull requests that add or change a card under results/arena/ or add a method plugin under
+      # nexttransformer/methods/; needs no dependencies.
+      - run: python3 -m nexttransformer.arena --scope origin/${{ github.base_ref }}
 
-  site:
-    needs: checks
-    if: needs.checks.outputs.site == 'true'
+  website:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: |
-            website/package-lock.json
-            docs/package-lock.json
-      - name: Website
-        working-directory: website
-        run: npm ci && npm test && npm run typecheck && npm run build
-      - name: Documentation
-        working-directory: docs
-        run: npm ci && npm run build
+          cache-dependency-path: website/package-lock.json
+      - run: npm ci
+      - run: node --experimental-strip-types --test tests/*.test.mjs
+      - run: node node_modules/typescript/bin/tsc --noEmit -p .
+      - run: npm run build

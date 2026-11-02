@@ -10,13 +10,13 @@ const VAL_STEPS=[...Array.from({length:188},(_,i)=>i*250),46875];
 const tasks=JSON.parse(readFileSync(new URL('../data/core-tasks.json',import.meta.url),'utf8')).tasks;
 const ids=['mla_qknorm','mla_nope_qknorm'];
 
-test('published frozen-source Others records retain the full protocol and agree with their cumulative audits',()=>{
+test('published H20 Others records retain the full protocol and agree with their cumulative audits',()=>{
  const all=runs(),cards=methods();
  for(const id of ids){
   const run=all.find(r=>r.methodId===id);
-  const audit=JSON.parse(readFileSync(new URL('../../evidence/audits/'+id+'.json',import.meta.url),'utf8'));
+  const audit=JSON.parse(readFileSync(new URL('../../evidence/checks/others-20261028/h20-'+id.replaceAll('_','-')+'-formal.json',import.meta.url),'utf8'));
   assert.ok(run,id+' run missing');
-  assert.equal(run.id,id);
+  assert.equal(run.id,id+'_h20_seed42');
   assert.equal(cards.find(m=>m.id===id).family,'others');
   assert.equal(run.status,'finished');assert.equal(run.complete,true);assert.equal(run.reportedAudit,'matched');
   assert.equal(run.step,audit.optimizer_steps);
@@ -32,8 +32,9 @@ test('published frozen-source Others records retain the full protocol and agree 
   assert.equal(run.trainingCompute.accounting,'reference-aten-math-v2');
   assert.equal(run.proof.model_hash,audit.fingerprints.model_hash);
   assert.equal(run.proof.science_hash,audit.fingerprints.science_hash);
+  assert.equal(run.proof.src_head,'a0c795c47eff3bf6fabb50034ddf84ab12028817');
   assert.equal(run.proof.code_snapshot,audit.segment_provenance[0].code);
-  assert.match(run.comparisonNote,/frozen source revision/);
+  assert.match(run.comparisonNote,/frozen Others branch/);
   for(const e of run.taskEvaluations){
    assert.deepEqual(Object.keys(e.raw).sort(),tasks.map(t=>t.id).sort());
    assert.deepEqual(e.centered,audit.core_tasks_centered[e.step]);
@@ -43,7 +44,7 @@ test('published frozen-source Others records retain the full protocol and agree 
  }
 });
 
-test('frozen-source Others results appear in final and replay rankings with measured Dense differences',()=>{
+test('H20 Others results appear in final and replay rankings with measured Dense differences',()=>{
  const all=runs(),dense=all.find(r=>r.baselineAcceptance);
  for(const id of ids){
   const run=all.find(r=>r.methodId===id);

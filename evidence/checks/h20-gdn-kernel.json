@@ -1,0 +1,377 @@
+{
+ "recorded_at": "2026-10-22T11:50:21Z",
+ "status": "passed",
+ "scope": "A07 gdn training-kernel study on one H20-3e (debug pod gyyige-nextt-a07-kernel-b2d2c2b22e-debug-20261022-183922); accuracy against the authors' FLA code, kernel options, one-rank update profile; bounded, no training run",
+ "science_hash": "b0a4afc1f2bc713e8d6d89010430688fc8071d564a608269b2f52beadaab6259",
+ "fla_core": "0.5.2",
+ "triton": "3.5.1",
+ "torch": "2.9.1+cu128",
+ "accuracy_against_fla": {
+  "naive_recurrent": {
+   "recurrent_vs_fla": 1.1312455122202335e-07,
+   "chunk_vs_fla": 1.1312455122142819e-07,
+   "recurrent_vs_chunk": 2.0987711112464852e-15,
+   "fla_dtype": "float32"
+  },
+  "layer_fp32": {
+   "production_vs_fla_layer": 0.0005151132323630445,
+   "production_vs_fp32_reference": 0.0005057932082288991,
+   "fla_layer_vs_fp32_reference": 0.0004507418697278354,
+   "output_rms": 0.5996724367141724
+  },
+  "layer_bf16": {
+   "production_vs_fla_layer": 0.006049972762534369,
+   "production_vs_fp32_reference": 0.007139724889138547,
+   "fla_layer_vs_fp32_reference": 0.007706473786725497,
+   "output_rms": 0.5996747612953186
+  },
+  "note": "GatedDeltaNet(hidden 1536, 12 heads x 128, expand_v=1, use_gate, conv 4) from flash-linear-attention 0.5.2 with our weights, forward [2,2048,1536]; norm_eps = FP32 epsilon (the framework norm() of BF16/FP32 activations); reference = our mixer on the audited torch chunk path in FP32 with TF32 off"
+ },
+ "kernel_options": {
+  "shape": "attention core [16, 2048, 12, 128] BF16 (q/k/v/beta), FP32 log decay; numerics on [2, 2048, 12, 128] against the FP64 torch chunk form; GDN init gate spread",
+  "current_torch_l2_chunk_kda": {
+   "errors": {
+    "output": 0.006946166782948927,
+    "grad_q": 0.006939989722873838,
+    "grad_k": 0.007773610741857722,
+    "grad_v": 0.006630429942687146,
+    "grad_gate": 0.006311435168212813,
+    "grad_logit": 0.007905104113942433
+   },
+   "fwd_bwd_ms_micro16": 16.306940000504255,
+   "fwd_ms_micro16": 3.930897917598486
+  },
+  "chunk_kda_in_kernel_l2": {
+   "errors": {
+    "output": 0.006243961548535095,
+    "grad_q": 0.005757535960923218,
+    "grad_k": 0.006494783555692663,
+    "grad_v": 0.005875818081448403,
+    "grad_gate": 0.005605111375026702,
+    "grad_logit": 0.007197852858798718
+   },
+   "fwd_bwd_ms_micro16": 12.38137437030673,
+   "fwd_ms_micro16": 3.239877987653017
+  },
+  "native_gdn_guard_bypassed_measurement_only": {
+   "errors": {
+    "output": 0.005916462827943789,
+    "grad_q": 0.005942092483422939,
+    "grad_k": 0.006846750153531221,
+    "grad_v": 0.0055312337803019645,
+    "grad_gate": 0.006494817625931493,
+    "grad_logit": 0.0068996194673282465
+   },
+   "fwd_bwd_ms_micro16": 5.676751025021076,
+   "fwd_ms_micro16": 2.011772245168686
+  },
+  "output_norm_unfused": {
+   "output": 0.005312397878056918,
+   "grad_o": 0.005656410477323051,
+   "grad_gate": 0.005594367851196027,
+   "fwd_bwd_ms_micro16": 2.1223812364041805
+  },
+  "output_norm_fla_fused": {
+   "output": 0.0016581312776578834,
+   "grad_o": 0.002349148894421425,
+   "grad_gate": 0.0023490307019208294,
+   "fwd_bwd_ms_micro16": 0.8447682484984398
+  },
+  "output_norm_note": "this study's FP64 reference used epsilon finfo(bfloat16); the production fused norm uses the FP32 epsilon of the framework norm() (found by the CUDA mixer test, see record 025)"
+ },
+ "native_gdn_kernel": {
+  "adopted": false,
+  "reason": "FLA issue #640: dk/db/dg of the chunked GDN backward are wrong on H20 + Triton 3.4-3.5 (head dim 100/128 in the report); no maintainer root cause; the guard covers Triton [3.4.0, 3.7.1) on Hopper; fixes need Triton >= 3.7.1 (not paired with torch 2.9.1) or the TileLang backend (new dependency); related #984 (delta-rule WY backward, BT=64, Hopper + Triton >= 3.4). Our guard-bypassed measurement showed no error at BK=128, which does not establish safety."
+ },
+ "adopted": [
+  "chunk_kda(use_qk_l2norm_in_kernel=True, scale=d^-1/2, disable_recompute=True) with the head gate broadcast",
+  "fla.modules.fused_norm_gate.rms_norm_gated(activation='silu', eps=FP32 epsilon) for RMSNorm x gain x SiLU(gate)",
+  "16 GPUs: micro 16 x accumulation 2 (16x2 is 2.5% faster than 8x4 on the fused path)"
+ ],
+ "production_fla_check": {
+  "random": {
+   "status": "passed",
+   "rows": [
+    {
+     "kind": "gdn",
+     "length": 2048,
+     "seed": 0,
+     "gate_scale": 1.0,
+     "output": 0.006247,
+     "grad_q": 0.005768,
+     "grad_k": 0.006515,
+     "grad_v": 0.005904,
+     "grad_gate": 0.006209,
+     "grad_logit": 0.007264
+    },
+    {
+     "kind": "gdn",
+     "length": 2048,
+     "seed": 1,
+     "gate_scale": 1.0,
+     "output": 0.006256,
+     "grad_q": 0.005767,
+     "grad_k": 0.006507,
+     "grad_v": 0.005901,
+     "grad_gate": 0.006263,
+     "grad_logit": 0.007088
+    },
+    {
+     "kind": "gdn",
+     "length": 1000,
+     "seed": 0,
+     "gate_scale": 1.0,
+     "output": 0.006201,
+     "grad_q": 0.005726,
+     "grad_k": 0.006413,
+     "grad_v": 0.005845,
+     "grad_gate": 0.006371,
+     "grad_logit": 0.007012
+    },
+    {
+     "kind": "gdn",
+     "length": 1000,
+     "seed": 1,
+     "gate_scale": 1.0,
+     "output": 0.006204,
+     "grad_q": 0.005705,
+     "grad_k": 0.006402,
+     "grad_v": 0.005839,
+     "grad_gate": 0.006439,
+     "grad_logit": 0.007221
+    },
+    {
+     "kind": "kda",
+     "length": 2048,
+     "seed": 0,
+     "gate_scale": 1.0,
+     "output": 0.006264,
+     "grad_q": 0.006289,
+     "grad_k": 0.006382,
+     "grad_v": 0.006046,
+     "grad_gate": 0.006554,
+     "grad_logit": 0.00695
+    },
+    {
+     "kind": "kda",
+     "length": 2048,
+     "seed": 1,
+     "gate_scale": 1.0,
+     "output": 0.006276,
+     "grad_q": 0.006297,
+     "grad_k": 0.006393,
+     "grad_v": 0.006047,
+     "grad_gate": 0.006572,
+     "grad_logit": 0.0069
+    },
+    {
+     "kind": "kda",
+     "length": 1000,
+     "seed": 0,
+     "gate_scale": 1.0,
+     "output": 0.006274,
+     "grad_q": 0.006283,
+     "grad_k": 0.006382,
+     "grad_v": 0.006066,
+     "grad_gate": 0.006554,
+     "grad_logit": 0.006841
+    },
+    {
+     "kind": "kda",
+     "length": 1000,
+     "seed": 1,
+     "gate_scale": 1.0,
+     "output": 0.006266,
+     "grad_q": 0.00628,
+     "grad_k": 0.006385,
+     "grad_v": 0.006049,
+     "grad_gate": 0.006558,
+     "grad_logit": 0.006881
+    }
+   ]
+  },
+  "gate4": {
+   "status": "passed",
+   "rows": [
+    {
+     "kind": "gdn",
+     "length": 2048,
+     "seed": 0,
+     "gate_scale": 4.0,
+     "output": 0.00591,
+     "grad_q": 0.00542,
+     "grad_k": 0.00582,
+     "grad_v": 0.005603,
+     "grad_gate": 0.006095,
+     "grad_logit": 0.006756
+    },
+    {
+     "kind": "gdn",
+     "length": 2048,
+     "seed": 1,
+     "gate_scale": 4.0,
+     "output": 0.005925,
+     "grad_q": 0.00542,
+     "grad_k": 0.005811,
+     "grad_v": 0.00561,
+     "grad_gate": 0.006304,
+     "grad_logit": 0.006966
+    },
+    {
+     "kind": "gdn",
+     "length": 1000,
+     "seed": 0,
+     "gate_scale": 4.0,
+     "output": 0.005884,
+     "grad_q": 0.005394,
+     "grad_k": 0.005781,
+     "grad_v": 0.00557,
+     "grad_gate": 0.00657,
+     "grad_logit": 0.006734
+    },
+    {
+     "kind": "gdn",
+     "length": 1000,
+     "seed": 1,
+     "gate_scale": 4.0,
+     "output": 0.005903,
+     "grad_q": 0.00541,
+     "grad_k": 0.005815,
+     "grad_v": 0.005573,
+     "grad_gate": 0.006203,
+     "grad_logit": 0.006598
+    }
+   ]
+  },
+  "gate16": {
+   "status": "passed",
+   "rows": [
+    {
+     "kind": "gdn",
+     "length": 2048,
+     "seed": 0,
+     "gate_scale": 16.0,
+     "output": 0.005526,
+     "grad_q": 0.005011,
+     "grad_k": 0.005133,
+     "grad_v": 0.005292,
+     "grad_gate": 0.006142,
+     "grad_logit": 0.006451
+    },
+    {
+     "kind": "gdn",
+     "length": 2048,
+     "seed": 1,
+     "gate_scale": 16.0,
+     "output": 0.005554,
+     "grad_q": 0.005026,
+     "grad_k": 0.005142,
+     "grad_v": 0.005314,
+     "grad_gate": 0.006035,
+     "grad_logit": 0.006346
+    },
+    {
+     "kind": "gdn",
+     "length": 1000,
+     "seed": 0,
+     "gate_scale": 16.0,
+     "output": 0.00551,
+     "grad_q": 0.005018,
+     "grad_k": 0.005134,
+     "grad_v": 0.005296,
+     "grad_gate": 0.005715,
+     "grad_logit": 0.006479
+    },
+    {
+     "kind": "gdn",
+     "length": 1000,
+     "seed": 1,
+     "gate_scale": 16.0,
+     "output": 0.005524,
+     "grad_q": 0.005017,
+     "grad_k": 0.005162,
+     "grad_v": 0.005286,
+     "grad_gate": 0.005897,
+     "grad_logit": 0.006268
+    }
+   ]
+  }
+ },
+ "mixer_cuda_vs_fp64": {
+  "output": 0.00979,
+  "max_gradient": 0.0221,
+  "worst": "log_decay/dt_bias",
+  "test": "test_gdn_mixer_cuda_path_matches_the_fp64_audited_path (debug width 128, 2 heads x 64, T=130)"
+ },
+ "profile_one_rank_share_32_rows": {
+  "before": {
+   "micro16": {
+    "micro_batch": 16,
+    "accumulation": 2,
+    "rows": 32,
+    "steady_seconds": 3.5857557943090796,
+    "mfu_theory": 0.5788295881698222,
+    "peak_gib": 117.03862714767456,
+    "device_ms_by_category": {
+     "matmul": 2351.874021000003,
+     "elementwise_reduce": 635.9226199999925,
+     "fla_attention": 481.4794499999987,
+     "conv": 99.33464000000069,
+     "optimizer_compiled": 20.662574000002817
+    }
+   },
+   "micro8": {
+    "micro_batch": 8,
+    "accumulation": 4,
+    "rows": 32,
+    "steady_seconds": 3.663110383786261,
+    "mfu_theory": 0.5666063351200896,
+    "peak_gib": 66.11412763595581,
+    "device_ms_by_category": {
+     "matmul": 2369.3350310000137,
+     "elementwise_reduce": 672.2831739999873,
+     "fla_attention": 492.0514510000001,
+     "conv": 100.7590549999943,
+     "optimizer_compiled": 20.677408000003545
+    }
+   }
+  },
+  "after": {
+   "micro16": {
+    "micro_batch": 16,
+    "accumulation": 2,
+    "rows": 32,
+    "steady_seconds": 3.327847481239587,
+    "mfu_theory": 0.6236889044339141,
+    "peak_gib": 106.26420211791992,
+    "device_ms_by_category": {
+     "matmul": 2361.020526999987,
+     "fla_attention": 496.27914200000174,
+     "elementwise_reduce": 361.381728,
+     "conv": 99.38787099999742,
+     "optimizer_compiled": 20.6229869999988
+    }
+   },
+   "micro8": {
+    "micro_batch": 8,
+    "accumulation": 4,
+    "rows": 32,
+    "steady_seconds": 3.413759013172239,
+    "mfu_theory": 0.6079929900408463,
+    "peak_gib": 60.72300338745117,
+    "device_ms_by_category": {
+     "matmul": 2380.8139389999988,
+     "fla_attention": 507.07447300000274,
+     "elementwise_reduce": 390.9718029999933,
+     "conv": 100.86966400000246,
+     "optimizer_compiled": 20.687612000001128
+    }
+   }
+  }
+ },
+ "profile_scope": "One rank's share of a 16-GPU update (32 rows x 2048 tokens), synthetic tokens, unsharded Muon+AdamW, 4 warm-up updates then one profiled; theory MFU = audited FLOPs/16 / time / 148 TFLOPS; no DDP communication",
+ "limits": [
+  "Single-GPU measurements; multi-node communication is measured by the 16-GPU bounded check (record 025).",
+  "The cost proofs are unchanged: the CPU/audit path executes the same operators (results/costs/gdn-fused-20261022)."
+ ]
+}

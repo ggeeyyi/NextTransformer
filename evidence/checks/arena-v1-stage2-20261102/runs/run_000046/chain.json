@@ -1,0 +1,18 @@
+{
+ "state": "cancelled",
+ "segments": [
+  {
+   "n": 1,
+   "job": "gyyige-nextt-gym-run-000046-7546d49534-normal-20261101-164942",
+   "submitted": 1793522996.7158349,
+   "job_state": "Stopped",
+   "status": [
+    null,
+    null,
+    null
+   ],
+   "checkpoint": null,
+   "finished": 1793547049.2258842
+  }
+ ]
+}

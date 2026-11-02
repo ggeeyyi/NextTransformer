@@ -1,0 +1,27 @@
+{
+ "id": "elu_linear",
+ "name": "Linear Transformer · ELU+1",
+ "family": "linear",
+ "tagline": "Compress history into additive positive-feature states.",
+ "description": "ELU+1 maps queries and keys to positive features. The model accumulates a KV state S and a normalization state z, providing a basic linear-attention control without additional gates or convolutions.",
+ "paperTitle": "Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention",
+ "paperUrl": "https://arxiv.org/abs/2006.16236",
+ "mechanism": [
+  "Positive feature map φ(x) = ELU(x) + 1",
+  "S = Σφ(k)vᵀ and z = Σφ(k)",
+  "Causal readout φ(q)ᵀS / [φ(q)ᵀz + ε]"
+ ],
+ "limitations": "A positive-feature control, not an exact equivalent of softmax attention. Two formal H20 attempts failed (invalid numerics, then divergence), as did the stabilized ELU+1 without denominator; the A06 result is reported as the separately registered ELU+1 q/k-norm variant together with these failures.",
+ "diagram": "state",
+ "blocks": 25,
+ "ffn": 6144,
+ "params": 1462765468,
+ "flops": 4.637771,
+ "error": -0.741,
+ "owner": "geyi",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/f41786282acf98f54292774972f6e3509ddbeb51/reference/methods/linear.py",
+ "cohort": "reference-v1",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/f41786282acf98f54292774972f6e3509ddbeb51/reference/SOURCES.md",
+ "costModel": "reference-aten-math-v1",
+ "order": 17
+}

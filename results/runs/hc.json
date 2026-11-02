@@ -1,5 +1,5 @@
 {
- "id": "hc",
+ "id": "nextt-v2-residual-20261023_hc_a800_seed42",
  "methodId": "hc",
  "cohort": "reference-v1",
  "name": "Hyper-Connections · HC",
@@ -789,7 +789,8 @@
    "value": 0.3509431830252069
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/hc.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/hc-formal.json",
+ "hardware": "A800 ×8",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -1129,7 +1130,7 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/hc.json"
+  "source": "Cumulative audit · evidence/checks/hc-formal.json"
  },
  "comparisonNote": "Four training segments resumed from checkpoints 29,000, 33,000 and 38,500 with unchanged source, recipe and cost proof. The audit excludes superseded updates."
 }

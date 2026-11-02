@@ -1,0 +1,85 @@
+{
+  "recorded_at": "2026-10-18T19:53:47.723824+00:00",
+  "device": "NVIDIA H20-3e (143771 MiB, driver 580.105.08)",
+  "torch": "2.9.1+cu128",
+  "triton": "3.5.1",
+  "fla_core": "0.5.2",
+  "backend": "fla_chunk64",
+  "dtype": "bfloat16",
+  "scope": "one GPU runs one rank's share of a formal update (64 rows x 2048 tokens) including a full optimizer step with unsharded optimizer state; synthetic tokens; steady iteration (4th) after compile/autotune. Not a DDP measurement: 8-GPU communication and sharded optimizer state are measured separately.",
+  "mfu_definition": "audited theory FLOPs of 1/8 update / seconds / 148e12 (H20 dense BF16)",
+  "gpu_utilization": {
+    "sampling": "nvidia-smi 1 s over all six runs",
+    "active_samples": 181,
+    "median_percent": 100,
+    "p90_percent": 100,
+    "gate": "PASS (>=80%)"
+  },
+  "selected": {
+    "micro_batch": 8,
+    "accumulation": 8,
+    "reason": "16x4 is only 2-4% faster but needs 80-117 GiB; 8x8 keeps headroom and matches the A800 default"
+  },
+  "rows": [
+    {
+      "method": "kda",
+      "micro_batch": 8,
+      "accumulation": 8,
+      "seconds_per_rank_update": 8.506,
+      "tokens_per_second_per_gpu": 15409,
+      "mfu_theory": 0.4886,
+      "peak_allocated_gib": 66.11,
+      "projected_training_hours_at_this_rate": 110.8
+    },
+    {
+      "method": "kda",
+      "micro_batch": 16,
+      "accumulation": 4,
+      "seconds_per_rank_update": 8.326,
+      "tokens_per_second_per_gpu": 15742,
+      "mfu_theory": 0.4991,
+      "peak_allocated_gib": 117.0,
+      "projected_training_hours_at_this_rate": 108.4
+    },
+    {
+      "method": "retnet",
+      "micro_batch": 8,
+      "accumulation": 8,
+      "seconds_per_rank_update": 5.945,
+      "tokens_per_second_per_gpu": 22048,
+      "mfu_theory": 0.6898,
+      "peak_allocated_gib": 47.71,
+      "projected_training_hours_at_this_rate": 77.4
+    },
+    {
+      "method": "retnet",
+      "micro_batch": 16,
+      "accumulation": 4,
+      "seconds_per_rank_update": 5.806,
+      "tokens_per_second_per_gpu": 22577,
+      "mfu_theory": 0.7063,
+      "peak_allocated_gib": 80.21,
+      "projected_training_hours_at_this_rate": 75.6
+    },
+    {
+      "method": "elu_linear",
+      "micro_batch": 8,
+      "accumulation": 8,
+      "seconds_per_rank_update": 6.219,
+      "tokens_per_second_per_gpu": 21076,
+      "mfu_theory": 0.6624,
+      "peak_allocated_gib": 53.52,
+      "projected_training_hours_at_this_rate": 81.0
+    },
+    {
+      "method": "elu_linear",
+      "micro_batch": 16,
+      "accumulation": 4,
+      "seconds_per_rank_update": 5.962,
+      "tokens_per_second_per_gpu": 21986,
+      "mfu_theory": 0.691,
+      "peak_allocated_gib": 91.64,
+      "projected_training_hours_at_this_rate": 77.6
+    }
+  ]
+}

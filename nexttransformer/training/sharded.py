@@ -16,7 +16,7 @@ class ExperimentOptimizer(MuonAdamW):
         # launch configuration. By default each process benchmarks candidates
         # for some reductions, and near-equal timings pick different ones: after
         # a four-node resume one Muon reduction ran with R0_BLOCK 1024 instead
-        # of 2048. The candidates come from pointwise
+        # of 2048 (EXPERIMENTS record 031). The candidates come from pointwise
         # autotuning, from the persistent alternative that coalescing analysis
         # adds to looped reductions, and from scaling R0_BLOCK down at run time
         # by register use; all three are off. The compiled math is unchanged.

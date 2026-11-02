@@ -18,9 +18,10 @@
  "params": 744751182,
  "flops": 4.686943,
  "error": 0.311,
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/others.py",
+ "owner": "xuyuan",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/fe8089e3e615776cad622294d4e1a31beb8e6931/models/reference/model.py",
  "cohort": "reference-v1",
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#others",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/fe8089e3e615776cad622294d4e1a31beb8e6931/reference/SOURCES.md#others-mqa-gqa-and-mla",
  "costModel": "reference-aten-math-v2",
  "order": 33
 }

@@ -28,9 +28,10 @@
  "params": 1356235700,
  "flops": 4.698483,
  "error": 0.558,
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/residual.py",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/4dd6ebb9f4f1f8b4571963c5df2aaa384eea7825/models/reference/residual.py",
  "cohort": "reference-v1",
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#full-attention-dense-and-residual-family",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/main/docs/records/EXPERIMENTS.md#record-058",
  "costModel": "reference-aten-math-v2",
- "order": 40
+ "order": 40,
+ "owner": "selen"
 }

@@ -1,8 +1,8 @@
 {
- "id": "elu_qknorm",
+ "id": "elu_qknorm_h20_seed42",
  "methodId": "elu_qknorm",
  "cohort": "reference-v1",
- "name": "ELU+1 · q/k-normalized",
+ "name": "A06 ELU+1 q/k-norm",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,8 +789,9 @@
    "value": 0.2304385882908582
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/elu_qknorm.json",
- "source": "Run directory · cumulative audit",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/h20-elu-qknorm-formal.json",
+ "hardware": "H20 ×16 (2 nodes)",
+ "source": "H20 run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
   "protocol": "nextt-reference-50b-v1",
@@ -1129,7 +1130,7 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/elu_qknorm.json"
+  "source": "Cumulative audit · evidence/checks/h20-elu-qknorm-formal.json"
  },
  "order": 6
 }

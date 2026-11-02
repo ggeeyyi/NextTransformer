@@ -7,10 +7,10 @@ import {bpbDifference} from '../app/lib/chart-series.ts';
 
 const CORE_STEPS=[8000,16000,24000,32000,40000,46875];
 const VAL_STEPS=[...Array.from({length:188},(_,i)=>i*250),46875];
-const evidence=path=>JSON.parse(readFileSync(new URL(`../../evidence/audits/${path}`,import.meta.url),'utf8'));
+const evidence=path=>JSON.parse(readFileSync(new URL(`../../evidence/checks/${path}`,import.meta.url),'utf8'));
 const RECORDS=[
- ['GDN + MHA','gdn_hybrid',evidence('gdn_hybrid.json')],
- ['GDN + SWA','gdn_hybrid_swa',evidence('gdn_hybrid_swa.json')],
+ ['H02','gdn_hybrid',evidence('h02-b300-20261030/h02-b300-formal-20261027T0035-formal.json')],
+ ['H03','gdn_hybrid_swa',evidence('h03-b300-20261031/h03-b300-fix-20261028T1845-formal.json')],
 ];
 
 for(const [code,methodId,audit] of RECORDS){

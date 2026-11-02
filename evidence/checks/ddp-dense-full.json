@@ -1,0 +1,33 @@
+{
+  "created_at": "2026-10-18T05:27:20.730943+00:00",
+  "source_hash": "d7e8e34d66b6b0eafce84a87c5360af44eaf9c189cdf163ea46ba5fbaf35f6d6",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "torch": "2.9.1+cu128",
+  "dtype": "torch.bfloat16",
+  "device": "NVIDIA A800-SXM4-80GB",
+  "seed": 42,
+  "results": [
+    {
+      "method": "dense",
+      "status": "passed",
+      "stage": "joint",
+      "model_hash": "4de5fc8d5a1aa55c4be204b23a3326ac5a2de0653a8eb9442b89d4e7e8268fc8",
+      "full_dimensions": true,
+      "input_shape": [
+        8,
+        2048
+      ],
+      "global_tokens": 1048576,
+      "world_size": 8,
+      "accumulation": 8,
+      "optimizer_updates": 1,
+      "loss": 10.398271560668945,
+      "seconds": 59.93839476630092,
+      "all_rank_parameters_equal": true,
+      "peak_allocated_bytes": 46747866624,
+      "synthetic_data": true
+    }
+  ],
+  "science_hash_at_run": "2653a4b47a9952339ef23f2d210d3a5ee0c18c3359dc4b10329e3240478beb66",
+  "invocation_stage": "joint"
+}

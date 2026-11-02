@@ -45,7 +45,7 @@ def reduce_sum(tensor):
 def source_manifest():
     root=Path(__file__).resolve().parents[2]
     files={str(p.relative_to(root)):sha256(p) for folder in ('nexttransformer','nanochat','configs','launch','requirements')
-           for p in sorted((root/folder).rglob('*')) if p.is_file() and p.suffix in ('.py','.sh','.json','.txt') and '__pycache__' not in p.parts and p.name != 'gpu-environment.lock.txt' and not p.name.endswith(('.local.json','.local.toml'))}
+           for p in sorted((root/folder).rglob('*')) if p.is_file() and p.suffix in ('.py','.sh','.json','.txt') and '__pycache__' not in p.parts and p.name != 'environment-daxiao.lock.txt' and not p.name.endswith(('.local.json','.local.toml'))}
     for name in ('pyproject.toml','uv.lock'):
         files[name]=sha256(root/name)
     commit=subprocess.run(['git','rev-parse','HEAD'],cwd=root,capture_output=True,text=True).stdout.strip()

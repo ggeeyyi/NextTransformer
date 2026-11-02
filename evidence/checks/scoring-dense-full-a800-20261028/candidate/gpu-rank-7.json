@@ -1,0 +1,7 @@
+{
+  "attention": "sdpa",
+  "device": "NVIDIA A800-SXM4-80GB, 550.144.03, 8.0",
+  "method": "dense_full",
+  "passed": true,
+  "rank": 7
+}

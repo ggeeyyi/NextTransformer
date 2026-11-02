@@ -1,0 +1,370 @@
+{
+  "created_at": "2026-10-18T05:30:17.784459+00:00",
+  "source_hash": "d64f2ebb8616458923526f68fdc035892279f59ffaeb1387bbb8e9e49783ae27",
+  "torch": "2.9.1+cu128",
+  "device": "NVIDIA A800-SXM4-80GB",
+  "dtype": "torch.bfloat16",
+  "world_size": 8,
+  "mode": "target",
+  "seed": 42,
+  "results": [
+    {
+      "method": "dense",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "4de5fc8d5a1aa55c4be204b23a3326ac5a2de0653a8eb9442b89d4e7e8268fc8",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 24,
+      "parameters": 1384122122,
+      "loss": 10.397589683532715,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 0.7248704731464386,
+      "peak_allocated_bytes": 9923154944,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "nsa",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "03b0033525c58b2e48c21c597021e4d9916162c43dc45110093789bda5f8f9cc",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1380128008,
+      "loss": 10.399887084960938,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 17.067361230030656,
+      "peak_allocated_bytes": 13820981760,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "elu_linear",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "0e9b133e1a77fe932d4ca2d80ac8b38ece7da93b5178943e27ad53c01e126dc6",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 25,
+      "parameters": 1462765468,
+      "loss": 10.397253036499023,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 48.449144676327705,
+      "peak_allocated_bytes": 51555160064,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "ut_act",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "e4fd2bd85c346861e39536c784c689dd8d94290fd2eed05d546183f3b02fc788",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 12,
+      "parameters": 742394259,
+      "loss": 10.432916641235352,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 0.9541934989392757,
+      "peak_allocated_bytes": 8062056960,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "seer",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "00771858fe6d7eb007225377e52b579d99b921e6cee562173909aa5501654313",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1378420488,
+      "loss": 14.331192970275879,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 10.527964744716883,
+      "peak_allocated_bytes": 10614490112,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "fixed_recursive",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "37846cbe0a932d13298ce9dc27504cb378a55e9453343440153939886e0bf391",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 15,
+      "parameters": 927990968,
+      "loss": 10.396737098693848,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 0.773414196446538,
+      "peak_allocated_bytes": 8501807104,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "moba",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "65821733ebf8007137d906a05d5f610b187635d87c4f3f49fd95406da6fcf002",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 25,
+      "parameters": 1462765468,
+      "loss": 10.397331237792969,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 8.045402571558952,
+      "peak_allocated_bytes": 12059168768,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "huginn",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "2dfc67debe37661b81b4f0727f9247021147a27d2b9ca2438613c54318b5e239",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 14,
+      "parameters": 870581286,
+      "loss": 10.398690223693848,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 0.7410291768610477,
+      "peak_allocated_bytes": 6731731456,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "deltanet",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "33c0c10cf2edd046df4b109a54624593983de22f0576a60a87947d62c39aec96",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 25,
+      "parameters": 1463690268,
+      "loss": 10.39813232421875,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 47.80316091887653,
+      "peak_allocated_bytes": 52528662528,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "ouro",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "8c2d3d176dc6aadbeb8a77b642490475984fc13c56e756742c0ce9f3f07b4baa",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 9,
+      "parameters": 607127805,
+      "loss": 10.30959415435791,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 0.8704386465251446,
+      "peak_allocated_bytes": 8576565248,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "gsa",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "2977032828b883f05d306c3ea9802c4d136b6ab7d67da80c01a91d94b2f2e4af",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 24,
+      "parameters": 1412436746,
+      "loss": 10.398494720458984,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 51.86307806894183,
+      "peak_allocated_bytes": 50268459008,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "deeploop",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "af94d0d0180b07d8af251c6e4e7af13d49b14223239b9d1f804fb0b49bdff41d",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 12,
+      "parameters": 742392722,
+      "loss": 10.397372245788574,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 0.8888105358928442,
+      "peak_allocated_bytes": 8110555136,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "gla",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "41b23e96e7aa0ad6e48569bb83d0bfc32962ab50fece672c743d3a263a6aa03f",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1411207816,
+      "loss": 10.398490905761719,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 29.344043804332614,
+      "peak_allocated_bytes": 48317368832,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "dsa",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "7db95573737aa30ef6966d049dc372e7e1fa210f57cc4a3ac90af0c66184a2f4",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 22,
+      "parameters": 1316236406,
+      "loss": 14.160091400146484,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 9.099848218262196,
+      "peak_allocated_bytes": 12823961088,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "kda",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "a04f3722e3995b24f1d0eb344adae41c4110ce5982f667072a6678dcda163c1b",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1412126344,
+      "loss": 10.397245407104492,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 28.35881708189845,
+      "peak_allocated_bytes": 50409336832,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "qsa",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "d104ddcfe5a3e301e0ef287cd500d330efd109b76e908fb852c9fa29188480dd",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1378420488,
+      "loss": 456.2342529296875,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 9.98884811066091,
+      "peak_allocated_bytes": 11122206208,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    },
+    {
+      "method": "retnet",
+      "status": "passed",
+      "mode": "target",
+      "model_hash": "ffbb43799e7c8cbec8c944d9d476654dd4e2485b37d91187b4f1d93e3daf3b3b",
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "configured_context": 2048,
+      "test_shape": [
+        1,
+        2048
+      ],
+      "width": 1536,
+      "physical_layers": 23,
+      "parameters": 1410077320,
+      "loss": 10.399635314941406,
+      "causal_max_abs": 0.0,
+      "elapsed_seconds": 33.552098816260695,
+      "peak_allocated_bytes": 47734863872,
+      "scope": "full-config-full-context",
+      "full_global_update": false
+    }
+  ],
+  "science_hash_at_run": "9c10e507a3493dd02a22d762caaee74f4fbb96ebe5f41fac3696945e549ccf30"
+}

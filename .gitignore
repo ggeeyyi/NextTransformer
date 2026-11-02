@@ -14,7 +14,6 @@ eval_bundle/
 .claude/
 
 # Local setup
-/hostfile
 CLAUDE.md
 wandb/
 .pytest_cache/
@@ -31,7 +30,3 @@ dist/
 *.prof
 .coverage
 htmlcov/
-
-# Training outputs and agent scratch space
-/runs/
-/.agent-work/

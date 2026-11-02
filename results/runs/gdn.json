@@ -1,8 +1,8 @@
 {
- "id": "gdn",
+ "id": "gdn_h20_seed42",
  "methodId": "gdn",
  "cohort": "reference-v1",
- "name": "Gated DeltaNet · GDN",
+ "name": "A07 GDN",
  "status": "finished",
  "step": 46875,
  "val": [
@@ -789,8 +789,9 @@
    "value": 0.3054997381638131
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/gdn.json",
- "source": "Run directory · cumulative audit",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/h20-gdn-formal.json",
+ "hardware": "H20 ×32 (4 nodes)",
+ "source": "H20 run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
   "protocol": "nextt-reference-50b-v1",
@@ -1129,7 +1130,7 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/gdn.json"
+  "source": "Cumulative audit · evidence/checks/h20-gdn-formal.json"
  },
  "order": 7
 }

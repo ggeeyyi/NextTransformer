@@ -1,0 +1,162 @@
+{
+  "recorded_at": "2026-10-18T20:48:05.181766+00:00",
+  "status": "passed",
+  "scope": "Koala H20 Normal jobs, one node with 8x H20-3e per method; formal dimensions and full 1,048,576-token updates with real ClimbMix rows (smoke, 12 steps, never a formal result). A run segmented after step 1 and resumed in a new process, from an emptied Triton cache restored only from the autotune tar archive, equals the continuous run bitwise in every logged loss and in all final weights. Smoke val (131,072 tokens) and smoke CORE (32 examples/task, 22 tasks) exercise the evaluation chain.",
+  "code_bundle": "eed81b3ef7bdf9bef88015d28d00812907c93d55447a037a8b43ddba8db502d3",
+  "command": "bash reference/koala/bounded_check.sh SITE.json METHOD OUT_ROOT 12",
+  "rows": [
+    {
+      "method": "kda",
+      "koala_job": "gyyige-nextt-p6-kda-d91bc1c34b-normal-20261019-043543",
+      "passed": true,
+      "losses_equal": true,
+      "weights_equal": true,
+      "resumed_in_new_process": true,
+      "steps": 12,
+      "median_step_seconds": 8.495,
+      "mfu_theory": 0.4894,
+      "peak_memory_gib": 68.1,
+      "projected_training_hours": 110.6,
+      "loss_step1": 10.397808521986008,
+      "loss_last": 6.743029706180096,
+      "evaluations": [
+        {
+          "event": "validation",
+          "step": 0,
+          "val_bpb": 3.1907544640258263
+        },
+        {
+          "event": "validation",
+          "step": 12,
+          "val_bpb": 2.0574767045412066
+        },
+        {
+          "event": "core",
+          "step": 12,
+          "core_metric": 0.007433699784452129
+        }
+      ],
+      "model_hash": "39e28f3a7ac2c5a0638d33beaa80679442af824fc2f8ab17598a91e8efe0fb90",
+      "cost_relative_error": 0.0042900659006865904,
+      "micro_batch": 8,
+      "accumulation": 8,
+      "world_size": 8,
+      "device": "NVIDIA H20-3e",
+      "software": {
+        "science_hash": "178345f75842c0fad13c558f04262205b15d334d5f6c300dc4272a07c7b6bc2d",
+        "reference_source_hash": "ae7a22b5e7afd92a03cb7e89e62b6030b071cc7fd75871a1e39bd68772570b3b",
+        "native_source_sha256": "f105fdc6b3f05e467be32050e50c71c91c6e5ac473d6c759ade2055952751e07",
+        "git_commit": null,
+        "python": "3.10.20",
+        "torch": "2.9.1+cu128",
+        "cuda": "12.8",
+        "nccl": "2.27.5",
+        "code_snapshot": "eed81b3ef7bdf9bef88015d28d00812907c93d55447a037a8b43ddba8db502d3",
+        "fla_core": "0.5.2",
+        "fla_record_sha256": "2281535f71fed1297e028f6d623349ff8da5da0ae5ed58eb73e5aafd3170305c"
+      }
+    },
+    {
+      "method": "retnet",
+      "koala_job": "gyyige-nextt-p6-retnet-d3e0f87814-normal-20261019-043606",
+      "passed": true,
+      "losses_equal": true,
+      "weights_equal": true,
+      "resumed_in_new_process": true,
+      "steps": 12,
+      "median_step_seconds": 5.853,
+      "mfu_theory": 0.7008,
+      "peak_memory_gib": 49.71,
+      "projected_training_hours": 76.2,
+      "loss_step1": 10.397485315799713,
+      "loss_last": 6.651683829724789,
+      "evaluations": [
+        {
+          "event": "validation",
+          "step": 0,
+          "val_bpb": 3.190687106066004
+        },
+        {
+          "event": "validation",
+          "step": 12,
+          "val_bpb": 2.024316673781334
+        },
+        {
+          "event": "core",
+          "step": 12,
+          "core_metric": -0.009113349657334152
+        }
+      ],
+      "model_hash": "8bc4853d25752e241dfee6d7637b230317a74ca3f148e7a90a4f5e0057f9e742",
+      "cost_relative_error": -0.009061398234406104,
+      "micro_batch": 8,
+      "accumulation": 8,
+      "world_size": 8,
+      "device": "NVIDIA H20-3e",
+      "software": {
+        "science_hash": "178345f75842c0fad13c558f04262205b15d334d5f6c300dc4272a07c7b6bc2d",
+        "reference_source_hash": "ae7a22b5e7afd92a03cb7e89e62b6030b071cc7fd75871a1e39bd68772570b3b",
+        "native_source_sha256": "f105fdc6b3f05e467be32050e50c71c91c6e5ac473d6c759ade2055952751e07",
+        "git_commit": null,
+        "python": "3.10.20",
+        "torch": "2.9.1+cu128",
+        "cuda": "12.8",
+        "nccl": "2.27.5",
+        "code_snapshot": "eed81b3ef7bdf9bef88015d28d00812907c93d55447a037a8b43ddba8db502d3",
+        "fla_core": "0.5.2",
+        "fla_record_sha256": "2281535f71fed1297e028f6d623349ff8da5da0ae5ed58eb73e5aafd3170305c"
+      }
+    },
+    {
+      "method": "elu_linear",
+      "koala_job": "gyyige-nextt-p6-elu-linear-2f4ccd49b8-normal-20261019-043631",
+      "passed": true,
+      "losses_equal": true,
+      "weights_equal": true,
+      "resumed_in_new_process": true,
+      "steps": 12,
+      "median_step_seconds": 6.142,
+      "mfu_theory": 0.6707,
+      "peak_memory_gib": 56.35,
+      "projected_training_hours": 80.0,
+      "loss_step1": 10.398528069257736,
+      "loss_last": 6.832919530570507,
+      "evaluations": [
+        {
+          "event": "validation",
+          "step": 0,
+          "val_bpb": 3.1910066170841183
+        },
+        {
+          "event": "validation",
+          "step": 12,
+          "val_bpb": 2.0581379839902456
+        },
+        {
+          "event": "core",
+          "step": 12,
+          "core_metric": 0.02069127554202789
+        }
+      ],
+      "model_hash": "108313abc66ba8da60c3c5fe0fa08456972b19cb29d3be12c3a82beda2f8c71d",
+      "cost_relative_error": -0.004503314624452526,
+      "micro_batch": 8,
+      "accumulation": 8,
+      "world_size": 8,
+      "device": "NVIDIA H20-3e",
+      "software": {
+        "science_hash": "178345f75842c0fad13c558f04262205b15d334d5f6c300dc4272a07c7b6bc2d",
+        "reference_source_hash": "ae7a22b5e7afd92a03cb7e89e62b6030b071cc7fd75871a1e39bd68772570b3b",
+        "native_source_sha256": "f105fdc6b3f05e467be32050e50c71c91c6e5ac473d6c759ade2055952751e07",
+        "git_commit": null,
+        "python": "3.10.20",
+        "torch": "2.9.1+cu128",
+        "cuda": "12.8",
+        "nccl": "2.27.5",
+        "code_snapshot": "eed81b3ef7bdf9bef88015d28d00812907c93d55447a037a8b43ddba8db502d3",
+        "fla_core": "0.5.2",
+        "fla_record_sha256": "2281535f71fed1297e028f6d623349ff8da5da0ae5ed58eb73e5aafd3170305c"
+      }
+    }
+  ]
+}

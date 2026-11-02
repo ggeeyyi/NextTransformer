@@ -1,4 +1,4 @@
-"""MLA training implementation, reused from the frozen Others implementation.
+"""Reused from xxy/others-attention commit 8cba0a3 (MLA training implementation).
 
 v2 Others: multi-head latent attention (MLA, MLA-NoPE).
 

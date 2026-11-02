@@ -1,5 +1,5 @@
 {
- "id": "gsa_qknorm",
+ "id": "gsa_qknorm_fast_20261028",
  "methodId": "gsa_qknorm",
  "cohort": "reference-v1",
  "name": "GSA + QK-norm",
@@ -789,7 +789,8 @@
    "value": 0.28172001072935654
   }
  ],
- "url": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/gsa_qknorm.json",
+ "url": "https://github.com/Selen-Suyue/NextTransformer/blob/main/evidence/checks/gsa-qknorm-formal.json",
+ "hardware": "8 × H200",
  "source": "Run directory · cumulative audit",
  "protocol": "nextt-reference-50b-v1",
  "proof": {
@@ -1129,7 +1130,7 @@
   "step": 46875,
   "final": true,
   "accounting": "reference-aten-math-v2",
-  "source": "Cumulative audit · evidence/audits/gsa_qknorm.json"
+  "source": "Cumulative audit · evidence/checks/gsa-qknorm-formal.json"
  },
  "comparisonNote": "Frozen-source run; single seed 42."
 }

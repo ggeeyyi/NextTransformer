@@ -1,0 +1,136 @@
+{
+  "differences": {
+    "bpb.train": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.0001
+    },
+    "bpb.val": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.0001
+    },
+    "core.agi_eval_lsat_ar": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.arc_challenge": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.arc_easy": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.bigbench_cs_algorithms": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.bigbench_dyck_languages": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.bigbench_language_identification": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.bigbench_operators": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.bigbench_qa_wikidata": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.bigbench_repeat_copy_logic": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.boolq": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.commonsense_qa": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.copa": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.coqa": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.hellaswag": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.hellaswag_zeroshot": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.jeopardy": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.lambada_openai": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.openbook_qa": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.piqa": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.squad": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.winograd": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core.winogrande": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.005
+    },
+    "core_metric": {
+      "absolute": 0.0,
+      "passed": true,
+      "tolerance": 0.001
+    }
+  },
+  "inputs_sha256": {
+    "candidate": "00b5ab6278dea8aca5beb5e38f9a9b56e35031f8e3a7a439fa328ae327c0c64a",
+    "contract": "e7513214ea1e26863c8c41e3ebb09108a47a792e0a9f3f1fd1d986ab55de3a1a",
+    "reference": "2ecfeaece6818dfb69054f88bf78bad19948c935db7fdb07a4711fc1be2929cc",
+    "tolerances": "27287db443f8315ac1acd58135ca7fd0ed13b4c842e243c291eb43632e6e2261"
+  },
+  "passed": true
+}

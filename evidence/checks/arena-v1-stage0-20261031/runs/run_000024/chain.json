@@ -1,0 +1,42 @@
+{
+ "state": "succeeded",
+ "segments": [
+  {
+   "n": 1,
+   "job": "gyyige-nextt-gym-run-000024-33a315ae16-normal-20261031-141425",
+   "submitted": 1793427279.4081397,
+   "job_state": "Deleting",
+   "status": [
+    null,
+    null,
+    null
+   ],
+   "checkpoint": 250,
+   "finished": 1793430753.2156916
+  },
+  {
+   "n": 2,
+   "job": "gyyige-nextt-gym-run-000024-dd1564dc0b-normal-20261031-151246",
+   "submitted": 1793430781.9649792,
+   "job_state": "Succeeded",
+   "status": [
+    "training_complete",
+    512,
+    "2574741487928393768"
+   ],
+   "checkpoint": 512,
+   "finished": 1793447238.0293233
+  }
+ ],
+ "restarts": [
+  {
+   "segment": 1,
+   "job_state": "Deleting",
+   "failed_at_step": 300,
+   "resumed_from": 250
+  }
+ ],
+ "phase": "training_complete",
+ "step": 512,
+ "consumed_flops": "2574741487928393768"
+}

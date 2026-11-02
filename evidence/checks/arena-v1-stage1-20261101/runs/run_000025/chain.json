@@ -1,0 +1,21 @@
+{
+ "state": "succeeded",
+ "segments": [
+  {
+   "n": 1,
+   "job": "gyyige-nextt-gym-run-000025-bb872e5fb3-normal-20261031-213045",
+   "submitted": 1793453459.4869173,
+   "job_state": "Succeeded",
+   "status": [
+    "training_complete",
+    512,
+    "2574741487928393768"
+   ],
+   "checkpoint": 512,
+   "finished": 1793490489.4085083
+  }
+ ],
+ "phase": "training_complete",
+ "step": 512,
+ "consumed_flops": "2574741487928393768"
+}

@@ -9,7 +9,7 @@
  "mechanism": [
   "S ← α(I − βkkᵀ)S + βkvᵀ with one α per head and token",
   "log α = −exp(A_log)·softplus(W_a x + dt_bias); conv + SiLU, L2 q/k, sigmoid β",
-  "Output RMSNorm × gain × SiLU gate; FLA chunk kernels"
+  "Output RMSNorm × gain × SiLU gate; FLA chunk kernels on H20"
  ],
  "limitations": "Pure GDN, without the hybrid attention layers of the GDN-H1/H2 or Qwen3-Next models. On Hopper with Triton 3.5 the dedicated GDN kernel is guarded off (FLA #640), so the equivalent KDA kernel with a broadcast gate is used.",
  "diagram": "state",
@@ -18,9 +18,10 @@
  "params": 1411349680,
  "flops": 4.687197,
  "error": 0.317,
- "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/linear.py",
+ "owner": "geyi",
+ "codeUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/c77bf36bf5c94ee5a8703131c66514c808405c20/reference/methods/linear.py",
  "cohort": "reference-v1",
- "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#linear-attention",
+ "sourceUrl": "https://github.com/Selen-Suyue/NextTransformer/blob/c77bf36bf5c94ee5a8703131c66514c808405c20/reference/SOURCES.md",
  "costModel": "reference-aten-math-v2",
  "order": 19
 }

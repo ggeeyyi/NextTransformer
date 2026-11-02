@@ -1,0 +1,353 @@
+{
+ "recorded_at": "2026-10-22T14:50:00Z",
+ "scope": "A07 four-node (4x8 H20) resume determinism: the failed B1 of the first two four-node bounded checks, the diagnosis (DDP bucket layout, then per-process Inductor kernel selection in the optimizer), the fixes and the passing acceptance; diagnostic jobs train no state that is kept",
+ "first_four_node_check": {
+  "job": "gyyige-nextt-a07-bounded32-feb2185b08-normal-20261022-213923",
+  "bundle": "49cc41a8",
+  "criteria": {
+   "world": 32,
+   "L1_eight_gpu_resume_bitwise": true,
+   "B1_resume_bitwise": false,
+   "B2_stream_states": true,
+   "B3_val0_matches": true,
+   "B4_first_loss": true,
+   "passed": false,
+   "val0_16": 3.1687824620648284,
+   "val0_8": 3.1687824620648284,
+   "val0_relative_difference": 0.0,
+   "loss1_16": 10.397991418838501,
+   "loss1_8": 10.397991418838501,
+   "loss1_relative_difference": 0.0,
+   "max_loss_relative_difference": 9.107317484602362e-06,
+   "step_seconds": {
+    "gpus8": 6.422649176907726,
+    "gpusN": 1.7819119123741984
+   },
+   "scaling_efficiency": 0.9010896010496758,
+   "mfu_theory": {
+    "gpus8": 0.6478600159865735,
+    "gpusN": 0.5823917375724963
+   },
+   "peak_memory_gib": {
+    "gpus8": 108.2467713356018,
+    "gpusN": 104.00861644744873
+   },
+   "phases": {
+    "gpus8": {
+     "continuous": "smoke_complete",
+     "segmented": "smoke_complete"
+    },
+    "gpusN": {
+     "continuous": "smoke_complete",
+     "segmented": "smoke_complete"
+    }
+   }
+  },
+  "observation": "segmented run resumed at step 1: steps 1-2 bitwise equal (loss, grad norm), then relative loss differences 3.8e-8 at step 3 growing to 8e-6 by step 11; B2-B4 passed"
+ },
+ "nccl": {
+  "version": "2.27.5+cuda12.9",
+  "four_nodes": "all-reduce of DDP buckets mostly Algo RING (LL128/SIMPLE); NVLS multicast available",
+  "first_iteration": "DDP's initial buckets: one 1.3 GB and one 3.0 GB all-reduce",
+  "later_iterations": "rebuilt buckets (gradient-ready order): 28.5/37.7/56.6/100.7/201.3 MB buckets, identical in iterations 2 and 3",
+  "note": "one and two nodes use NVLS / NVLS_TREE (in-switch reduction, layout independent), which is why the 8- and 16-GPU checks resumed bitwise"
+ },
+ "diagnostic": {
+  "jobs": [
+   "gyyige-nextt-a07-diag-cde8731839-normal-20261022-220644 (failed in its synthetic optimizer part: a BF16 parameter got an FP32 gradient; DDP part ran)",
+   "gyyige-nextt-a07-diag-491b5b8a68-normal-20261022-223906"
+  ],
+  "design": "two separate launches on 4x8 H20, each: three DDP forward/backward of one fixed batch without optimizer steps, a raw 26 MB all-reduce, one Muon+AdamW step on fixed synthetic gradients; bit-exact per-rank fingerprints",
+  "result": {
+   "ranks": [
+    32,
+    32
+   ],
+   "nccl": [
+    "2.27.5"
+   ],
+   "it1_launch1_vs_launch2_params_differing": 0,
+   "it1_loss_equal": true,
+   "it2_launch1_vs_launch2_params_differing": 0,
+   "it2_loss_equal": true,
+   "it3_launch1_vs_launch2_params_differing": 0,
+   "it3_loss_equal": true,
+   "launch1_it1_vs_it2_params_differing": 1536,
+   "launch1_it2_vs_it3_params_differing": 0,
+   "launch2_it1_vs_it2_params_differing": 1536,
+   "launch2_it2_vs_it3_params_differing": 0,
+   "allreduce_launches_equal": true,
+   "optimizer_launches_params_differing": 0,
+   "params_per_rank": 376
+  },
+  "reading": "launch-to-launch: identical everywhere (NCCL, optimizer and compile are deterministic across processes); within a launch: iteration 1 (initial buckets) differs from iteration 2 in 48 of 376 parameters on every rank, iterations 2 and 3 are identical"
+ },
+ "cause": "A new process's first backward all-reduces with DDP's initial bucket layout; later backwards use the rebuilt layout. With NCCL Ring over 4 nodes the summation order of an element depends on its position in the bucket, so the resumed segment's first update differs in the last bits from the continuous run's same update.",
+ "fix": "reference/train.py: before the first update of every process, one discarded DDP forward/backward on a zero dummy batch (rebuilds the buckets), gradients cleared, all RNG and routing RNG restored; no data, optimizer, budget or theory-cost change",
+ "cpu_regression": {
+  "test": "reference/tests/test_data_layout.py::test_resumed_segment_is_bitwise_with_eight_ddp_ranks (8 gloo ranks, gloo ring all-reduce)",
+  "without_fix": "fails (losses differ after the resume)",
+  "with_fix": "passes",
+  "full_suite": "293 passed, 20 CUDA-only skipped"
+ },
+ "warm_up_status": "necessary (first backward's bucket layout) but not sufficient: see second_four_node_check and record 028",
+ "second_four_node_check": {
+  "job": "gyyige-nextt-a07-bounded32b-cf2d3858d8-normal-20261022-224804",
+  "bundle": "79c3ff91 (commit 2692022, with the DDP warm-up)",
+  "criteria": {
+   "B1_resume_bitwise": false,
+   "B2_stream_states": true,
+   "B3_val0_matches": true,
+   "B4_first_loss": true
+  },
+  "first_difference": "loss at step 3 (relative 1.2e-8); steps 1-2 bitwise equal",
+  "step_seconds": 1.793
+ },
+ "diagnostics_record_028": [
+  {
+   "job": "gyyige-nextt-a07-diag2-b68a37c5fb-normal-20261022-230703",
+   "what": "real trainer, per-rank bit fingerprints of gradients, optimizer state and parameters before/after every update; node caches kept between launches",
+   "result": "continuous vs resumed equal for all 4 updates on all 32 ranks"
+  },
+  {
+   "job": "gyyige-nextt-a07-diag3-55574471a3-normal-20261023-000518",
+   "what": "as diag2 with bounded_check's cache handling (new cache dir per launch, per-node archive), 6 updates then 6 single-update launches, Triton autotune and NCCL logs",
+   "result": "first resumed update: gradients, state and parameters before equal; after the step one parameter differs on all ranks: transformer.h.18.mlp.c_proj.weight, the [1536, 6144] Muon matrix rank 18 owns; in launch 1 ranks of a node chose different FLA Triton configs (l2norm BT 8/16/32, num_stages) without any numerical effect"
+  },
+  {
+   "job": "gyyige-nextt-a07-bounded32c-24cbd3d56e-normal-20261023-004221",
+   "bundle": "2bd45cdb (per-rank kernel caches)",
+   "result": "B1 fails (the continuous launch's update 1 differs); 6-segment chain first differs at step 4"
+  },
+  {
+   "job": "gyyige-nextt-a07-muonrepro-62236209bd-normal-20261023-010915",
+   "what": "one H20, fused Muon step for one [1536, 6144] chunk, 40 repeats x several processes",
+   "result": "bitwise reproducible alone and with an SM-filling elementwise kernel on a second stream; a different, reproducible result with cuBLAS GEMMs on a second stream; CUBLAS_WORKSPACE_CONFIG=:4096:8 changes nothing (training runs no cuBLAS on a second stream)"
+  },
+  {
+   "job": "gyyige-nextt-a07-optrepro-be83b1b509-normal-20261023-011329",
+   "what": "four nodes, real model and optimizer, one step repeated 30 times from a snapshot in each of 5 launches (default x2, CUBLAS_WORKSPACE_CONFIG, waiting for all_gathers, eager)",
+   "result": "every launch bitwise repeatable; default, workspace and waiting launches equal to each other; eager differs from compiled and is itself repeatable"
+  },
+  {
+   "job": "gyyige-nextt-a07-diag4-bb60c7a354-normal-20261023-014314",
+   "what": "real trainer, every optimizer step repeated 3 times from a snapshot",
+   "result": "all repeats equal (including the first call of each process); a later launch differed at update 1 in transformer.h.20.mlp.c_proj.weight (first attributed to all_gather overlap, later explained by per-process kernel selection)"
+  },
+  {
+   "job": "gyyige-nextt-a07-bounded32d-5d01bd6df6-normal-20261023-020022",
+   "bundle": "cd06d031 (Muon waits for in-flight all_gathers)",
+   "result": "B1 fails; chain differs at step 3: the wait is not the fix (removed)"
+  },
+  {
+   "job": "gyyige-nextt-a07-diag5-5472340408-normal-20261023-023250",
+   "what": "bounded_check's exact sequence with per-rank Inductor DEBUG logs",
+   "result": "launch 1 benchmarks 159 kernels; in a resumed launch rank 5 ran a Muon reduction (triton_red_fused__to_copy_clamp_min_copy__div_lerp_linalg_vector_norm_mul_rsub_2) with R0_BLOCK 1024 where launch 1 ran 2048; another resumed launch benchmarked one kernel; the resumed run then diverged"
+  },
+  {
+   "job": "gyyige-nextt-a07-bounded32e-fa5ff5da5a-normal-20261023-025359",
+   "bundle": "3e74d350 (eager optimizer steps)",
+   "result": "L1, B1-B4 and an 8-segment chain bitwise; not adopted because of lower Muon precision (see precision)"
+  },
+  {
+   "job": "gyyige-nextt-a07-bounded32f-b2cc4d7bda-normal-20261023-033052",
+   "bundle": "d1fb98cf (compiled; autotune_pointwise and coalesce_tiling_analysis off)",
+   "result": "no kernel starts with more than one configuration, yet the resumed update 2 differs in transformer.h.17.mlp.c_proj.weight: Inductor scaled R0_BLOCK 2048 down to 1024 at run time from register use and benchmarked the two (0.140928 vs 0.140416 ms); 23 such scalings per launch, one per rank owning a [1536, 6144] Muon matrix; stopped after this part"
+  }
+ ],
+ "root_cause": "Inductor compiles the optimizer's fused AdamW/Muon steps and, in every process, benchmarks candidate launch configurations for some reduction kernels, keeping the fastest. For the reduction of the [1536, 6144] Muon group the candidates (R0_BLOCK 2048 and a run-time scaled 1024) time within 0.4%, so processes pick differently; cached choices are not reliably carried over. A different block size sums in a different order, so the same update rounds differently in a resumed (or any other) process. Gradients were bitwise reproducible throughout; one and two nodes passed B1 without triggering it.",
+ "fixes_record_028": {
+  "per_rank_kernel_caches": "commit f5ca6e3: one Triton and one Inductor cache directory per local rank (reference.train), the Inductor cache inside the per-node archive (run.sh); every rank reuses its own FLA autotune choices",
+  "fixed_optimizer_configurations": "commit c77bf36: ExperimentOptimizer.step compiles with Inductor's triton.autotune_pointwise, triton.coalesce_tiling_analysis and dynamic_scale_rblock off, so every kernel has one heuristic configuration and nothing is benchmarked; same compiled math",
+  "superseded": {
+   "8cd832d": "Muon waits for in-flight all_gathers (not the cause; removed)",
+   "d9110b9": "eager optimizer steps (deterministic but less precise; replaced)"
+  },
+  "science_hash": "b0a4afc1 unchanged (cost proofs unchanged)"
+ },
+ "acceptance_record_028": {
+  "job": "gyyige-nextt-a07-bounded32g-c1687f3ccc-normal-20261023-034922",
+  "bundle": "b41faaab (commit c77bf36)",
+  "instrumented": {
+   "launches": 3,
+   "rblock_scalings": 0,
+   "benchmarks_of_several_configurations": 0,
+   "fingerprints": "gradients, state and parameters equal for all 4 updates on all 32 ranks"
+  },
+  "criteria": {
+   "L1_eight_gpu_resume_bitwise": true,
+   "B1_resume_bitwise": true,
+   "B2_stream_states": true,
+   "B3_val0_matches": true,
+   "B4_first_loss": true,
+   "passed": true,
+   "val0": 3.1687824620648284,
+   "loss1": 10.397991418838501,
+   "max_loss_relative_difference_vs_8_gpus": 2.328057311062892e-05,
+   "step_seconds": 1.812750807031989,
+   "scaling_efficiency": 0.8857600768943399,
+   "peak_memory_gib": 104.01032495498657
+  },
+  "chain": {
+   "updates": 8,
+   "single_update_segments": 8,
+   "resumes": 7,
+   "losses_equal": true,
+   "weights_equal": true,
+   "note": "every segment starts from an empty kernel-cache directory and restores only its node's archive, as a new pod"
+  }
+ },
+ "precision_record_028": {
+  "what": "one H20; relative L2 error of the update (and new state) against the same algorithm in float64 (Polar Express in float64; explicit .float() casts stay FP32; for AdamW the reference is effectively FP32); per-rank chunks at 32 ranks",
+  "job": "gyyige-nextt-a07-optprec3-f97b7b9665-normal-20261023-034952",
+  "default_inductor": {
+   "muon_g8": {
+    "compiled": {
+     "update": 0.03853980670970868,
+     "momentum": 2.3588900465194175e-08,
+     "second_momentum": 0.031887043373060746
+    },
+    "eager": {
+     "update": 0.041020706483999164,
+     "momentum": 2.3588900465194175e-08,
+     "second_momentum": 0.030418445663640308
+    }
+   },
+   "muon_g9": {
+    "compiled": {
+     "update": 0.014200208743197988,
+     "momentum": 2.617458083105686e-08,
+     "second_momentum": 0.005826447821910008
+    },
+    "eager": {
+     "update": 0.021845837529892276,
+     "momentum": 2.617458083105686e-08,
+     "second_momentum": 0.0081139338294542
+    }
+   },
+   "muon_g10": {
+    "compiled": {
+     "update": 0.020555918594878413,
+     "momentum": 2.6177069464113885e-08,
+     "second_momentum": 0.0011747057112439878
+    },
+    "eager": {
+     "update": 0.03272199515711132,
+     "momentum": 2.6177069464113885e-08,
+     "second_momentum": 0.001971971585458921
+    }
+   },
+   "muon_g11": {
+    "compiled": {
+     "update": 0.02129126460697325,
+     "momentum": 2.618883085917896e-08,
+     "second_momentum": 0.0012055590465153254
+    },
+    "eager": {
+     "update": 0.03092695053086899,
+     "momentum": 2.618883085917896e-08,
+     "second_momentum": 0.0032762449042060323
+    }
+   },
+   "adamw_fp32": {
+    "compiled": {
+     "update": 3.11276094991246e-06,
+     "exp_avg": 0.0,
+     "exp_avg_sq": 3.404685319276979e-08
+    },
+    "eager": {
+     "update": 0.0,
+     "exp_avg": 0.0,
+     "exp_avg_sq": 0.0
+    }
+   },
+   "adamw_bf16": {
+    "compiled": {
+     "update": 0.11745851841207132,
+     "exp_avg": 0.002335953790476473,
+     "exp_avg_sq": 0.002819440990123337
+    },
+    "eager": {
+     "update": 0.11745851762744439,
+     "exp_avg": 0.002335953790476473,
+     "exp_avg_sq": 0.002819440990123337
+    }
+   }
+  },
+  "fixed_configurations": {
+   "muon_g8": {
+    "compiled": {
+     "update": 0.038539831571633695,
+     "momentum": 2.3588900465194175e-08,
+     "second_momentum": 0.031887057746595115
+    },
+    "eager": {
+     "update": 0.041020706483999164,
+     "momentum": 2.3588900465194175e-08,
+     "second_momentum": 0.030418445663640308
+    }
+   },
+   "muon_g9": {
+    "compiled": {
+     "update": 0.014200208743197988,
+     "momentum": 2.617458083105686e-08,
+     "second_momentum": 0.005826447821910008
+    },
+    "eager": {
+     "update": 0.021845837529892276,
+     "momentum": 2.617458083105686e-08,
+     "second_momentum": 0.0081139338294542
+    }
+   },
+   "muon_g10": {
+    "compiled": {
+     "update": 0.020555918653514405,
+     "momentum": 2.6177069464113885e-08,
+     "second_momentum": 0.0011747045628152555
+    },
+    "eager": {
+     "update": 0.03272199515711132,
+     "momentum": 2.6177069464113885e-08,
+     "second_momentum": 0.001971971585458921
+    }
+   },
+   "muon_g11": {
+    "compiled": {
+     "update": 0.02129126460697325,
+     "momentum": 2.618883085917896e-08,
+     "second_momentum": 0.0012055590465153254
+    },
+    "eager": {
+     "update": 0.03092695053086899,
+     "momentum": 2.618883085917896e-08,
+     "second_momentum": 0.0032762449042060323
+    }
+   },
+   "adamw_fp32": {
+    "compiled": {
+     "update": 3.11276094991246e-06,
+     "exp_avg": 0.0,
+     "exp_avg_sq": 3.404685319276979e-08
+    },
+    "eager": {
+     "update": 0.0,
+     "exp_avg": 0.0,
+     "exp_avg_sq": 0.0
+    }
+   },
+   "adamw_bf16": {
+    "compiled": {
+     "update": 0.11745851841207132,
+     "exp_avg": 0.002335953790476473,
+     "exp_avg_sq": 0.002819440990123337
+    },
+    "eager": {
+     "update": 0.11745851762744439,
+     "exp_avg": 0.002335953790476473,
+     "exp_avg_sq": 0.002819440990123337
+    }
+   }
+  }
+ },
+ "disclosure_record_028": "RetNet, KDA v2 and A06'' ran the optimizer with Inductor's per-process benchmark choices; each of their segments started on a new pod and re-benchmarked, so their resumes restored every required state but are equal to an uninterrupted run only up to rounding, not bitwise. A07's fixed heuristic configurations give the same compiled math (precision identical to the shown digits) with possibly different reduction block sizes."
+}

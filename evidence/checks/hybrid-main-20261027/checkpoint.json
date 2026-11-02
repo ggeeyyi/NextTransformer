@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "checkpoint": "h01-wxn-four-gpu-20261025T142732Z/training/checkpoint_00000012",
+  "manifest_sha256": "bf157746bccc53b8efbb0370f675e2fb0902b26582a37192633b7889a3d4398a",
+  "method": "deltanet_hybrid",
+  "step": 12,
+  "parameters": 1403810314,
+  "weights_bitwise": true,
+  "scope": "Read-only public load_model; no optimizer resume or training"
+}

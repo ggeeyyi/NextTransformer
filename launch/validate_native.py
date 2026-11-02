@@ -1,6 +1,6 @@
 """Bounded 8-GPU native smoke, fresh-process resume and all-task CORE acceptance.
 
-Source launch/env.sh with your site configuration first. Does not start formal pretraining or publish W&B.
+Source experiment_env.sh first. Does not start formal pretraining or publish W&B.
 One persistent process owns the sequence; status changes do not require polling by an agent.
 """
 import argparse
@@ -21,15 +21,14 @@ def write(path,value):
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output',type=Path,required=True)
-    models = ('dense', 'mor', 'loopformer', 'circle')
-    p.add_argument('--models', nargs='+', choices=models, default=models)
-    p.add_argument('--micro-batch', type=int, default=os.environ.get('MICRO_BATCH', '8'))
+    p.add_argument('--models',nargs='+',default=['dense','mor','loopformer','circle'])
     p.add_argument('--timeout',type=int,default=3600)
     p.add_argument('--mor-pilot-steps',type=int,default=64)
     p.add_argument('--loopformer-pilot-steps',type=int,default=256)
     args=p.parse_args()
     root=Path(__file__).resolve().parents[1]
-    if args.micro_batch < 1: p.error('--micro-batch must be positive')
+    hardware=json.loads((root/'configs/native/hardware.json').read_text())['a800']['micro_batch']
+    if set(args.models)-set(hardware):p.error('unknown model')
     active=subprocess.check_output(['nvidia-smi','--query-compute-apps=pid','--format=csv,noheader,nounits'],text=True).strip()
     if active:raise RuntimeError('GPU compute processes already exist')
     args.output.mkdir(parents=True,exist_ok=False)
@@ -57,7 +56,7 @@ def main():
         reports={}
         for model in args.models:
             directory=args.output/model;config=root/'configs/native'/f'{model}.json'
-            batch=args.micro_batch
+            batch=hardware[model]
             shared=['--config',config,'--output',directory,'--micro-batch',batch,'--log-every',1,'--wandb-mode','disabled']
             if model=='circle':shared+=['--circle-stage-step',10000]
             first_steps=(args.mor_pilot_steps if model=='mor' else

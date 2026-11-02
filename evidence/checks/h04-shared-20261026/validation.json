@@ -1,0 +1,274 @@
+{
+  "status": "implemented; cost-admitted; bounded GPU/data/bitwise-resume checks passed; pilot and formal runs pending",
+  "owner": "kris",
+  "date": "2026-10-26",
+  "baseline_commit": "748d7c1b50f87a6eedc2350c0368ab36a6e19fdb",
+  "science_hash": "61e4010d69a0bc38727ba6ab98e1f9a4d48f870285f589a359636c931e7995d2",
+  "validation_source_hash": "0bde59b4392235937ff41b9ab785f069e751e63ac8ef433c79859c30e725a620",
+  "model_hash": "dde404f134c60ad33f1fc44d7a480be9403eac5a1c1565b84de053f0b1b4439c",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "model": {
+    "layers": 24,
+    "ffn": 6016,
+    "parameters": 793542986,
+    "mla_positions_one_based": [
+      4,
+      8,
+      12,
+      16,
+      20,
+      24
+    ],
+    "value_embeddings": false
+  },
+  "costs": {
+    "proof": "../../costs/h04-shared-20261026/kda_hybrid.json",
+    "gflops_per_input_token": 4.692309035399331,
+    "relative_error": 0.004261346863994708,
+    "flops_per_update": 4920242639102889,
+    "formal_total_flops": 230636373707947921875,
+    "sssl_total_flops": 229657722492412734375,
+    "previous_28_operator_counts_unchanged": true
+  },
+  "tests": [
+    {
+      "name": "Final CPU regressions",
+      "command": "CUDA_VISIBLE_DEVICES= NANOCHAT_DTYPE=float32 TORCH_COMPILE_DISABLE=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python -m pytest -q -m \"not slow\"",
+      "tests": 515,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 39,
+      "seconds": 114.145
+    },
+    {
+      "name": "MLA CUDA BF16 vs FP64 oracle",
+      "tests": 2,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    }
+  ],
+  "hardware": {
+    "gpus": 8,
+    "model": "NVIDIA H100 80GB HBM3"
+  },
+  "evidence": {
+    "cost_comparison": "cost-comparison.json",
+    "fla": "fla.json",
+    "gpu": "gpu.json",
+    "initial_failed_resume": "resume-initial.json",
+    "accepted_resume": "resume.json"
+  },
+  "real_data": {
+    "method": "kda_hybrid",
+    "input_tokens_per_run": 12582912,
+    "global_batch_tokens": 1048576,
+    "context": 2048,
+    "micro_batch": 8,
+    "accumulation": 8,
+    "validation_events_per_run": 2,
+    "validation_tokens_per_event": 41943040,
+    "core": {
+      "tasks": 22,
+      "max_examples_per_task": 32,
+      "full_core": false
+    }
+  },
+  "resume": {
+    "continuous_steps": 12,
+    "segmented_steps": [
+      1,
+      11
+    ],
+    "fresh_process": true,
+    "data_rng_and_counters_exact": true,
+    "losses_and_weights_bitwise": true,
+    "acceptance": "passed; original bitwise criterion unchanged",
+    "optimizer_states_bitwise": true
+  },
+  "data_layout": {
+    "logical_ranks_tested": [
+      8,
+      16,
+      32
+    ],
+    "hardware_ranks_tested": [
+      8
+    ]
+  },
+  "remaining": [
+    "Pilot and long-run MLA/Muon stability; earlier pure MLA instability is disclosed in SOURCES.",
+    "All eventual formal runs require 49.152B input tokens, 189 complete validation events, six full CORE-22 events and final independent BPB.",
+    "Any 16/32-rank hardware deployment requires hardware checks."
+  ],
+  "formal_training_started": false,
+  "matched": false,
+  "initial_validation_source_hash": "5802219bf5a783fdbab7b2255d70c457cdda8d8124241e51100f4c5f09efd445",
+  "runtime_change": "The existing --deterministic-attention option now also requests deterministic PyTorch algorithms and defaults CUBLAS_WORKSPACE_CONFIG to :4096:8; the model/science hash and operator counts are unchanged.",
+  "structure": {
+    "layout": [
+      "kda",
+      "kda",
+      "kda",
+      "mla_nope",
+      "kda",
+      "kda",
+      "kda",
+      "mla_nope",
+      "kda",
+      "kda",
+      "kda",
+      "mla_nope",
+      "kda",
+      "kda",
+      "kda",
+      "mla_nope",
+      "kda",
+      "kda",
+      "kda",
+      "mla_nope",
+      "kda",
+      "kda",
+      "kda",
+      "mla_nope"
+    ],
+    "mixer_counts": {
+      "kda": 18,
+      "mla_nope": 6
+    },
+    "value_embeddings": false,
+    "parameters": 793542986,
+    "parameter_parts": {
+      "kda": 213942528,
+      "mla_nope": 35389440,
+      "ffn": 443547648,
+      "shell": 100663370
+    },
+    "parameter_fractions": {
+      "kda": 0.2696042076793052,
+      "mla_nope": 0.04459675231758649,
+      "ffn": 0.5589459623804173,
+      "shell": 0.126853077622691
+    },
+    "training_backend": "fla_chunk64",
+    "mla": {
+      "q_rank": 768,
+      "kv_rank": 256,
+      "qk_content": 128,
+      "rope": 0,
+      "v": 128,
+      "heads": 12
+    }
+  },
+  "resource_verification": {
+    "status": "passed",
+    "data_revision": "915333b4f8b8684f39aeaafea600fea6f43fb703",
+    "files": 6543,
+    "total_bytes": 599758882644,
+    "failed_files": [],
+    "source_manifest_sha256": "7d8d2b612a00571a90b0111298f101518f51d7794ed5ab1c9204a6d9fc0ea946",
+    "data_manifest_sha256": "7f37aebc75cf8b451fd9c9a1b19d71a6012f7f94678bf5dfbcb23aa12f6c5474",
+    "observed_content_sha256": "454b7fdbce79169cab5bfeb61da3f064a7e797fb715f0c975a85cbde70724762",
+    "tokenizer_sha256": "06258dc0044b6198c6fa8ba75c5b3bbaeaeab44f4804b464d9ce5f5e3797ec54",
+    "tokenizer_matches_shared": true,
+    "seconds": 132.372475290671
+  },
+  "compatibility": {
+    "previous_commit": "748d7c1b50f87a6eedc2350c0368ab36a6e19fdb",
+    "previous_methods": 28,
+    "methods_exact": true,
+    "existing_h01_checkpoint_exact": true,
+    "checkpoint_step": 12
+  },
+  "environment": {
+    "python": "3.10.12",
+    "torch": "2.9.1+cu128",
+    "cuda": "12.8",
+    "packages": {
+      "fla-core": "0.5.2",
+      "triton": "3.5.1",
+      "setuptools": "84.0.0",
+      "kernels": "0.11.7"
+    },
+    "gpus": [
+      "NVIDIA H100 80GB HBM3, 570.133.20, 81559 MiB",
+      "NVIDIA H100 80GB HBM3, 570.133.20, 81559 MiB",
+      "NVIDIA H100 80GB HBM3, 570.133.20, 81559 MiB",
+      "NVIDIA H100 80GB HBM3, 570.133.20, 81559 MiB",
+      "NVIDIA H100 80GB HBM3, 570.133.20, 81559 MiB",
+      "NVIDIA H100 80GB HBM3, 570.133.20, 81559 MiB",
+      "NVIDIA H100 80GB HBM3, 570.133.20, 81559 MiB",
+      "NVIDIA H100 80GB HBM3, 570.133.20, 81559 MiB"
+    ]
+  },
+  "shared_contract": {
+    "unchanged_from_parent": {
+      "nexttransformer/models/backbone.py": true,
+      "nanochat/dataloader.py": true,
+      "nanochat/loss_eval.py": true,
+      "nanochat/core_eval.py": true,
+      "nanochat/base_eval.py": true,
+      "nanochat/tok_train.py": true,
+      "nexttransformer/train.py": false,
+      "nexttransformer/protocol/spec.py": true,
+      "nexttransformer/protocol/admission.py": true,
+      "nexttransformer/protocol/compute.py": true,
+      "nexttransformer/training/optimizer.py": true
+    },
+    "trainer_change": "Existing --deterministic-attention also enables deterministic PyTorch algorithms and a cuBLAS workspace; no new model-specific path, stages, loss, optimizer recipe, packing or budget."
+  },
+  "current_admission": {
+    "science_hash": "61e4010d69a0bc38727ba6ab98e1f9a4d48f870285f589a359636c931e7995d2",
+    "validation_source_hash": "0bde59b4392235937ff41b9ab785f069e751e63ac8ef433c79859c30e725a620",
+    "admitted": 32
+  },
+  "resume_diagnosis": {
+    "a": {
+      "losses_equal": true,
+      "gradient_differences": [
+        0,
+        6,
+        6
+      ]
+    },
+    "b": {
+      "losses_equal": true,
+      "gradient_differences": [
+        0,
+        91,
+        93
+      ]
+    },
+    "workspace-only": {
+      "losses_equal": true,
+      "gradient_differences": [
+        0,
+        54,
+        52
+      ]
+    },
+    "deterministic-a": {
+      "losses_equal": true,
+      "gradient_differences": [
+        0,
+        0,
+        0
+      ]
+    },
+    "deterministic-b": {
+      "losses_equal": true,
+      "gradient_differences": [
+        0,
+        0,
+        0
+      ]
+    },
+    "deterministic_fresh_process_equal": true,
+    "instrumented_update2": {
+      "all_8_rank_parameters_restored_exactly": true,
+      "all_8_rank_optimizer_states_restored_exactly": true,
+      "gradient_tensors_differing_per_rank": 120
+    },
+    "scope": "Full selected H04, real rank-0 update-2 rows, BF16, 8 microbatches of 8x2048; no optimizer update; repeated three times per process."
+  }
+}

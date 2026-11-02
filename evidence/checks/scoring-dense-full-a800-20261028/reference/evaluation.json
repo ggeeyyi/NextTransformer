@@ -1,0 +1,79 @@
+{
+  "step": 46875,
+  "checkpoint": "RUNS/nextt-v2-dense-20261023_dense_full_a800_seed42/checkpoint_00046875",
+  "native_manifest_sha256": "69fa9df6810b6c5e89f41c53b5134353e7ddfb676b4af3d694d9aa8a34358cc2",
+  "track": "registered",
+  "method": "dense_full",
+  "bpb": {
+    "train": {
+      "bpb": 0.6665835136673783,
+      "input_tokens": 20971520,
+      "split": "train",
+      "seconds": 33.06320265494287,
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "smoke": false
+    },
+    "val": {
+      "bpb": 0.6644601775656058,
+      "input_tokens": 20971520,
+      "split": "val",
+      "seconds": 31.9763007722795,
+      "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+      "smoke": false
+    }
+  },
+  "core": {
+    "results": {
+      "hellaswag_zeroshot": 0.6398127675056458,
+      "jeopardy": 0.21114784479141235,
+      "bigbench_qa_wikidata": 0.5509079098701477,
+      "arc_easy": 0.7373737096786499,
+      "arc_challenge": 0.4479522109031677,
+      "copa": 0.699999988079071,
+      "commonsense_qa": 0.24078623950481415,
+      "piqa": 0.7747551202774048,
+      "openbook_qa": 0.44600000977516174,
+      "lambada_openai": 0.5132932066917419,
+      "hellaswag": 0.6558454036712646,
+      "winograd": 0.7545787692070007,
+      "winogrande": 0.602999210357666,
+      "bigbench_dyck_languages": 0.09000000357627869,
+      "agi_eval_lsat_ar": 0.313043475151062,
+      "bigbench_cs_algorithms": 0.4106060564517975,
+      "bigbench_operators": 0.22380952537059784,
+      "bigbench_repeat_copy_logic": 0.09375,
+      "squad": 0.5,
+      "coqa": 0.3714142441749573,
+      "boolq": 0.6370030641555786,
+      "bigbench_language_identification": 0.2531000077724457
+    },
+    "centered_results": {
+      "hellaswag_zeroshot": 0.5197503566741943,
+      "jeopardy": 0.21114784479141235,
+      "bigbench_qa_wikidata": 0.5509079098701477,
+      "arc_easy": 0.6498316129048666,
+      "arc_challenge": 0.26393628120422363,
+      "copa": 0.3999999761581421,
+      "commonsense_qa": 0.05098279938101767,
+      "piqa": 0.5495102405548096,
+      "openbook_qa": 0.2613333463668823,
+      "lambada_openai": 0.5132932066917419,
+      "hellaswag": 0.5411272048950195,
+      "winograd": 0.5091575384140015,
+      "winogrande": 0.20599842071533203,
+      "bigbench_dyck_languages": 0.09000000357627869,
+      "agi_eval_lsat_ar": 0.1413043439388275,
+      "bigbench_cs_algorithms": 0.4106060564517975,
+      "bigbench_operators": 0.22380952537059784,
+      "bigbench_repeat_copy_logic": 0.09375,
+      "squad": 0.5,
+      "coqa": 0.3714142441749573,
+      "boolq": 0.04474490567257531,
+      "bigbench_language_identification": 0.17832784133382362
+    },
+    "core_metric": 0.33095152996093863,
+    "full_core": true,
+    "expected_tasks": 22,
+    "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc"
+  }
+}
