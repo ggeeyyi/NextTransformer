@@ -1,0 +1,2444 @@
+{
+ "final": {
+  "dsa": 0.6651612218722921,
+  "attnres": 0.6602173420730655,
+  "seer": 0.6659131381119981,
+  "dense_full": 0.6644601775656058,
+  "elu_qknorm": 0.6970469936774131,
+  "deltanet": 0.675965955330843,
+  "deeploop": 0.7144553691567268,
+  "gqa": 0.6714470160555484,
+  "gdn": 0.667271564072002,
+  "fixed_recursive": 0.6757011305823809,
+  "residual_standard": 0.6712140516719944,
+  "mla_nope_qknorm": 0.6829632589041497,
+  "mla_qknorm": 0.6732413127376643,
+  "ut_act": 0.6866413287311441,
+  "huginn": 0.700871283974744,
+  "retnet": 0.6796920482626081,
+  "kda": 0.6643866894246494,
+  "ouro": 0.7047420857536928,
+  "nsa": 0.6651030825202697,
+  "qsa": 0.6680830150081789,
+  "gla": 0.6663204042729152,
+  "mqa": 0.674316600053319,
+  "moba": 0.6713956790077125
+ },
+ "sets": {
+  "plan nine": [
+   "dense_full",
+   "attnres",
+   "residual_standard",
+   "kda",
+   "gdn",
+   "retnet",
+   "elu_qknorm",
+   "fixed_recursive",
+   "huginn"
+  ],
+  "eleven (decision rows)": [
+   "dense_full",
+   "attnres",
+   "residual_standard",
+   "kda",
+   "gdn",
+   "retnet",
+   "elu_qknorm",
+   "fixed_recursive",
+   "huginn",
+   "ut_act",
+   "deeploop"
+  ],
+  "13 trainable": [
+   "dense_full",
+   "attnres",
+   "residual_standard",
+   "kda",
+   "gdn",
+   "retnet",
+   "elu_qknorm",
+   "fixed_recursive",
+   "huginn",
+   "gla",
+   "deltanet",
+   "ut_act",
+   "deeploop"
+  ],
+  "all 23": [
+   "attnres",
+   "deeploop",
+   "deltanet",
+   "dense_full",
+   "dsa",
+   "elu_qknorm",
+   "fixed_recursive",
+   "gdn",
+   "gla",
+   "gqa",
+   "huginn",
+   "kda",
+   "mla_nope_qknorm",
+   "mla_qknorm",
+   "moba",
+   "mqa",
+   "nsa",
+   "ouro",
+   "qsa",
+   "residual_standard",
+   "retnet",
+   "seer",
+   "ut_act"
+  ]
+ },
+ "scores": {
+  "plan nine": {
+   "250": {
+    "spearman": 0.6,
+    "pair_accuracy": 0.7777777777777778,
+    "pairs": 27,
+    "wrong": [
+     [
+      "dense_full",
+      "fixed_recursive"
+     ],
+     [
+      "attnres",
+      "fixed_recursive"
+     ],
+     [
+      "residual_standard",
+      "kda"
+     ],
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "retnet",
+      "huginn"
+     ]
+    ]
+   },
+   "500": {
+    "spearman": 0.7166666666666667,
+    "pair_accuracy": 0.8888888888888888,
+    "pairs": 27,
+    "wrong": [
+     [
+      "residual_standard",
+      "kda"
+     ],
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ]
+    ]
+   },
+   "750": {
+    "spearman": 0.7166666666666667,
+    "pair_accuracy": 0.8888888888888888,
+    "pairs": 27,
+    "wrong": [
+     [
+      "residual_standard",
+      "kda"
+     ],
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ]
+    ]
+   },
+   "1000": {
+    "spearman": 0.8166666666666667,
+    "pair_accuracy": 0.9259259259259259,
+    "pairs": 27,
+    "wrong": [
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ]
+    ]
+   },
+   "1500": {
+    "spearman": 0.85,
+    "pair_accuracy": 0.9259259259259259,
+    "pairs": 27,
+    "wrong": [
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ]
+    ]
+   },
+   "2000": {
+    "spearman": 0.8666666666666667,
+    "pair_accuracy": 0.9259259259259259,
+    "pairs": 27,
+    "wrong": [
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ]
+    ]
+   },
+   "3000": {
+    "spearman": 0.8666666666666667,
+    "pair_accuracy": 0.9259259259259259,
+    "pairs": 27,
+    "wrong": [
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ]
+    ]
+   },
+   "4000": {
+    "spearman": 0.9666666666666667,
+    "pair_accuracy": 1.0,
+    "pairs": 27,
+    "wrong": []
+   },
+   "6000": {
+    "spearman": 0.9666666666666667,
+    "pair_accuracy": 1.0,
+    "pairs": 27,
+    "wrong": []
+   },
+   "8000": {
+    "spearman": 0.9833333333333333,
+    "pair_accuracy": 1.0,
+    "pairs": 27,
+    "wrong": []
+   },
+   "12000": {
+    "spearman": 0.9833333333333333,
+    "pair_accuracy": 1.0,
+    "pairs": 27,
+    "wrong": []
+   },
+   "16500": {
+    "spearman": 0.95,
+    "pair_accuracy": 1.0,
+    "pairs": 27,
+    "wrong": []
+   },
+   "25000": {
+    "spearman": 0.9666666666666667,
+    "pair_accuracy": 1.0,
+    "pairs": 27,
+    "wrong": []
+   },
+   "35000": {
+    "spearman": 1.0,
+    "pair_accuracy": 1.0,
+    "pairs": 27,
+    "wrong": []
+   },
+   "46875": {
+    "spearman": 1.0,
+    "pair_accuracy": 1.0,
+    "pairs": 27,
+    "wrong": []
+   }
+  },
+  "eleven (decision rows)": {
+   "250": {
+    "spearman": 0.3545454545454545,
+    "pair_accuracy": 0.6304347826086957,
+    "pairs": 46,
+    "wrong": [
+     [
+      "dense_full",
+      "fixed_recursive"
+     ],
+     [
+      "attnres",
+      "fixed_recursive"
+     ],
+     [
+      "residual_standard",
+      "kda"
+     ],
+     [
+      "residual_standard",
+      "ut_act"
+     ],
+     [
+      "residual_standard",
+      "deeploop"
+     ],
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "kda",
+      "ut_act"
+     ],
+     [
+      "kda",
+      "deeploop"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "ut_act"
+     ],
+     [
+      "gdn",
+      "deeploop"
+     ],
+     [
+      "retnet",
+      "huginn"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "deeploop"
+     ],
+     [
+      "elu_qknorm",
+      "deeploop"
+     ],
+     [
+      "huginn",
+      "deeploop"
+     ],
+     [
+      "ut_act",
+      "deeploop"
+     ]
+    ]
+   },
+   "500": {
+    "spearman": 0.7181818181818183,
+    "pair_accuracy": 0.8260869565217391,
+    "pairs": 46,
+    "wrong": [
+     [
+      "residual_standard",
+      "kda"
+     ],
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "kda",
+      "ut_act"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "elu_qknorm",
+      "deeploop"
+     ],
+     [
+      "huginn",
+      "deeploop"
+     ]
+    ]
+   },
+   "750": {
+    "spearman": 0.7272727272727273,
+    "pair_accuracy": 0.8478260869565217,
+    "pairs": 46,
+    "wrong": [
+     [
+      "residual_standard",
+      "kda"
+     ],
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "kda",
+      "ut_act"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "elu_qknorm",
+      "deeploop"
+     ]
+    ]
+   },
+   "1000": {
+    "spearman": 0.7727272727272727,
+    "pair_accuracy": 0.8695652173913043,
+    "pairs": 46,
+    "wrong": [
+     [
+      "residual_standard",
+      "ut_act"
+     ],
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "kda",
+      "ut_act"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "1500": {
+    "spearman": 0.9090909090909091,
+    "pair_accuracy": 0.9347826086956522,
+    "pairs": 46,
+    "wrong": [
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "2000": {
+    "spearman": 0.9181818181818182,
+    "pair_accuracy": 0.9347826086956522,
+    "pairs": 46,
+    "wrong": [
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "3000": {
+    "spearman": 0.9181818181818182,
+    "pair_accuracy": 0.9347826086956522,
+    "pairs": 46,
+    "wrong": [
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "4000": {
+    "spearman": 0.9727272727272728,
+    "pair_accuracy": 0.9782608695652174,
+    "pairs": 46,
+    "wrong": [
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "6000": {
+    "spearman": 0.9727272727272728,
+    "pair_accuracy": 0.9782608695652174,
+    "pairs": 46,
+    "wrong": [
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "8000": {
+    "spearman": 0.990909090909091,
+    "pair_accuracy": 1.0,
+    "pairs": 46,
+    "wrong": []
+   },
+   "12000": {
+    "spearman": 0.990909090909091,
+    "pair_accuracy": 1.0,
+    "pairs": 46,
+    "wrong": []
+   },
+   "16500": {
+    "spearman": 0.9636363636363636,
+    "pair_accuracy": 0.9782608695652174,
+    "pairs": 46,
+    "wrong": [
+     [
+      "huginn",
+      "deeploop"
+     ]
+    ]
+   },
+   "25000": {
+    "spearman": 0.9818181818181818,
+    "pair_accuracy": 1.0,
+    "pairs": 46,
+    "wrong": []
+   },
+   "35000": {
+    "spearman": 1.0,
+    "pair_accuracy": 1.0,
+    "pairs": 46,
+    "wrong": []
+   },
+   "46875": {
+    "spearman": 1.0,
+    "pair_accuracy": 1.0,
+    "pairs": 46,
+    "wrong": []
+   }
+  },
+  "13 trainable": {
+   "250": {
+    "spearman": 0.3571428571428571,
+    "pair_accuracy": 0.6290322580645161,
+    "pairs": 62,
+    "wrong": [
+     [
+      "dense_full",
+      "fixed_recursive"
+     ],
+     [
+      "attnres",
+      "fixed_recursive"
+     ],
+     [
+      "residual_standard",
+      "kda"
+     ],
+     [
+      "residual_standard",
+      "ut_act"
+     ],
+     [
+      "residual_standard",
+      "deeploop"
+     ],
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "kda",
+      "ut_act"
+     ],
+     [
+      "kda",
+      "deeploop"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "ut_act"
+     ],
+     [
+      "gdn",
+      "deeploop"
+     ],
+     [
+      "retnet",
+      "huginn"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "deeploop"
+     ],
+     [
+      "elu_qknorm",
+      "deeploop"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "huginn",
+      "deltanet"
+     ],
+     [
+      "huginn",
+      "deeploop"
+     ],
+     [
+      "gla",
+      "ut_act"
+     ],
+     [
+      "gla",
+      "deeploop"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ],
+     [
+      "deltanet",
+      "deeploop"
+     ],
+     [
+      "ut_act",
+      "deeploop"
+     ]
+    ]
+   },
+   "500": {
+    "spearman": 0.7032967032967032,
+    "pair_accuracy": 0.8225806451612904,
+    "pairs": 62,
+    "wrong": [
+     [
+      "residual_standard",
+      "kda"
+     ],
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "kda",
+      "ut_act"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "elu_qknorm",
+      "deeploop"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "huginn",
+      "deeploop"
+     ],
+     [
+      "gla",
+      "ut_act"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ]
+    ]
+   },
+   "750": {
+    "spearman": 0.7197802197802198,
+    "pair_accuracy": 0.8387096774193549,
+    "pairs": 62,
+    "wrong": [
+     [
+      "residual_standard",
+      "kda"
+     ],
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "kda",
+      "ut_act"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "elu_qknorm",
+      "deeploop"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "gla",
+      "ut_act"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ]
+    ]
+   },
+   "1000": {
+    "spearman": 0.7582417582417582,
+    "pair_accuracy": 0.8548387096774194,
+    "pairs": 62,
+    "wrong": [
+     [
+      "residual_standard",
+      "ut_act"
+     ],
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "kda",
+      "ut_act"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "gla",
+      "ut_act"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ]
+    ]
+   },
+   "1500": {
+    "spearman": 0.8901098901098901,
+    "pair_accuracy": 0.9193548387096774,
+    "pairs": 62,
+    "wrong": [
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ]
+    ]
+   },
+   "2000": {
+    "spearman": 0.9065934065934066,
+    "pair_accuracy": 0.9193548387096774,
+    "pairs": 62,
+    "wrong": [
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ]
+    ]
+   },
+   "3000": {
+    "spearman": 0.9065934065934066,
+    "pair_accuracy": 0.9193548387096774,
+    "pairs": 62,
+    "wrong": [
+     [
+      "kda",
+      "fixed_recursive"
+     ],
+     [
+      "gdn",
+      "fixed_recursive"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ]
+    ]
+   },
+   "4000": {
+    "spearman": 0.9615384615384616,
+    "pair_accuracy": 0.967741935483871,
+    "pairs": 62,
+    "wrong": [
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ]
+    ]
+   },
+   "6000": {
+    "spearman": 0.967032967032967,
+    "pair_accuracy": 0.967741935483871,
+    "pairs": 62,
+    "wrong": [
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ]
+    ]
+   },
+   "8000": {
+    "spearman": 0.9835164835164835,
+    "pair_accuracy": 1.0,
+    "pairs": 62,
+    "wrong": []
+   },
+   "12000": {
+    "spearman": 0.978021978021978,
+    "pair_accuracy": 1.0,
+    "pairs": 62,
+    "wrong": []
+   },
+   "16500": {
+    "spearman": 0.9615384615384616,
+    "pair_accuracy": 0.9838709677419355,
+    "pairs": 62,
+    "wrong": [
+     [
+      "huginn",
+      "deeploop"
+     ]
+    ]
+   },
+   "25000": {
+    "spearman": 0.9725274725274725,
+    "pair_accuracy": 1.0,
+    "pairs": 62,
+    "wrong": []
+   },
+   "35000": {
+    "spearman": 1.0,
+    "pair_accuracy": 1.0,
+    "pairs": 62,
+    "wrong": []
+   },
+   "46875": {
+    "spearman": 1.0,
+    "pair_accuracy": 1.0,
+    "pairs": 62,
+    "wrong": []
+   }
+  },
+  "all 23": {
+   "250": {
+    "spearman": 0.26778656126482214,
+    "pair_accuracy": 0.5882352941176471,
+    "pairs": 187,
+    "wrong": [
+     [
+      "attnres",
+      "fixed_recursive"
+     ],
+     [
+      "deeploop",
+      "deltanet"
+     ],
+     [
+      "deeploop",
+      "elu_qknorm"
+     ],
+     [
+      "deeploop",
+      "gdn"
+     ],
+     [
+      "deeploop",
+      "gla"
+     ],
+     [
+      "deeploop",
+      "gqa"
+     ],
+     [
+      "deeploop",
+      "huginn"
+     ],
+     [
+      "deeploop",
+      "kda"
+     ],
+     [
+      "deeploop",
+      "mla_nope_qknorm"
+     ],
+     [
+      "deeploop",
+      "mla_qknorm"
+     ],
+     [
+      "deeploop",
+      "moba"
+     ],
+     [
+      "deeploop",
+      "mqa"
+     ],
+     [
+      "deeploop",
+      "ouro"
+     ],
+     [
+      "deeploop",
+      "qsa"
+     ],
+     [
+      "deeploop",
+      "residual_standard"
+     ],
+     [
+      "deeploop",
+      "retnet"
+     ],
+     [
+      "deeploop",
+      "seer"
+     ],
+     [
+      "deeploop",
+      "ut_act"
+     ],
+     [
+      "deltanet",
+      "huginn"
+     ],
+     [
+      "deltanet",
+      "ouro"
+     ],
+     [
+      "deltanet",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "seer"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ],
+     [
+      "dense_full",
+      "fixed_recursive"
+     ],
+     [
+      "dsa",
+      "fixed_recursive"
+     ],
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "elu_qknorm",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "gdn"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "fixed_recursive",
+      "kda"
+     ],
+     [
+      "fixed_recursive",
+      "nsa"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "seer"
+     ],
+     [
+      "gdn",
+      "ouro"
+     ],
+     [
+      "gdn",
+      "ut_act"
+     ],
+     [
+      "gla",
+      "gqa"
+     ],
+     [
+      "gla",
+      "mqa"
+     ],
+     [
+      "gla",
+      "ouro"
+     ],
+     [
+      "gla",
+      "ut_act"
+     ],
+     [
+      "gqa",
+      "kda"
+     ],
+     [
+      "gqa",
+      "ouro"
+     ],
+     [
+      "gqa",
+      "seer"
+     ],
+     [
+      "gqa",
+      "ut_act"
+     ],
+     [
+      "huginn",
+      "mla_nope_qknorm"
+     ],
+     [
+      "huginn",
+      "mla_qknorm"
+     ],
+     [
+      "huginn",
+      "qsa"
+     ],
+     [
+      "huginn",
+      "retnet"
+     ],
+     [
+      "huginn",
+      "seer"
+     ],
+     [
+      "kda",
+      "mqa"
+     ],
+     [
+      "kda",
+      "ouro"
+     ],
+     [
+      "kda",
+      "residual_standard"
+     ],
+     [
+      "kda",
+      "ut_act"
+     ],
+     [
+      "mla_nope_qknorm",
+      "ouro"
+     ],
+     [
+      "mla_nope_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "ouro"
+     ],
+     [
+      "mla_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "seer"
+     ],
+     [
+      "mla_qknorm",
+      "ut_act"
+     ],
+     [
+      "moba",
+      "ouro"
+     ],
+     [
+      "moba",
+      "seer"
+     ],
+     [
+      "moba",
+      "ut_act"
+     ],
+     [
+      "mqa",
+      "ouro"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ],
+     [
+      "mqa",
+      "seer"
+     ],
+     [
+      "mqa",
+      "ut_act"
+     ],
+     [
+      "ouro",
+      "qsa"
+     ],
+     [
+      "ouro",
+      "residual_standard"
+     ],
+     [
+      "ouro",
+      "retnet"
+     ],
+     [
+      "ouro",
+      "seer"
+     ],
+     [
+      "ouro",
+      "ut_act"
+     ],
+     [
+      "qsa",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "ut_act"
+     ],
+     [
+      "residual_standard",
+      "seer"
+     ],
+     [
+      "residual_standard",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "seer"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "seer",
+      "ut_act"
+     ]
+    ]
+   },
+   "500": {
+    "spearman": 0.45158102766798414,
+    "pair_accuracy": 0.7058823529411765,
+    "pairs": 187,
+    "wrong": [
+     [
+      "deeploop",
+      "elu_qknorm"
+     ],
+     [
+      "deeploop",
+      "huginn"
+     ],
+     [
+      "deeploop",
+      "mla_nope_qknorm"
+     ],
+     [
+      "deeploop",
+      "qsa"
+     ],
+     [
+      "deeploop",
+      "seer"
+     ],
+     [
+      "deltanet",
+      "ouro"
+     ],
+     [
+      "deltanet",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "seer"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ],
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "elu_qknorm",
+      "qsa"
+     ],
+     [
+      "elu_qknorm",
+      "seer"
+     ],
+     [
+      "fixed_recursive",
+      "gdn"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "fixed_recursive",
+      "kda"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "seer"
+     ],
+     [
+      "gdn",
+      "mqa"
+     ],
+     [
+      "gdn",
+      "ut_act"
+     ],
+     [
+      "gla",
+      "gqa"
+     ],
+     [
+      "gla",
+      "mla_qknorm"
+     ],
+     [
+      "gla",
+      "mqa"
+     ],
+     [
+      "gla",
+      "ouro"
+     ],
+     [
+      "gla",
+      "ut_act"
+     ],
+     [
+      "gqa",
+      "kda"
+     ],
+     [
+      "gqa",
+      "seer"
+     ],
+     [
+      "huginn",
+      "qsa"
+     ],
+     [
+      "huginn",
+      "seer"
+     ],
+     [
+      "kda",
+      "mla_qknorm"
+     ],
+     [
+      "kda",
+      "moba"
+     ],
+     [
+      "kda",
+      "mqa"
+     ],
+     [
+      "kda",
+      "ouro"
+     ],
+     [
+      "kda",
+      "residual_standard"
+     ],
+     [
+      "kda",
+      "ut_act"
+     ],
+     [
+      "mla_nope_qknorm",
+      "ouro"
+     ],
+     [
+      "mla_nope_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_nope_qknorm",
+      "seer"
+     ],
+     [
+      "mla_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "seer"
+     ],
+     [
+      "mla_qknorm",
+      "ut_act"
+     ],
+     [
+      "moba",
+      "ouro"
+     ],
+     [
+      "moba",
+      "seer"
+     ],
+     [
+      "moba",
+      "ut_act"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ],
+     [
+      "mqa",
+      "seer"
+     ],
+     [
+      "mqa",
+      "ut_act"
+     ],
+     [
+      "ouro",
+      "qsa"
+     ],
+     [
+      "ouro",
+      "retnet"
+     ],
+     [
+      "ouro",
+      "seer"
+     ],
+     [
+      "qsa",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "ut_act"
+     ],
+     [
+      "residual_standard",
+      "seer"
+     ],
+     [
+      "retnet",
+      "seer"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ],
+     [
+      "seer",
+      "ut_act"
+     ]
+    ]
+   },
+   "750": {
+    "spearman": 0.6630434782608696,
+    "pair_accuracy": 0.8128342245989305,
+    "pairs": 187,
+    "wrong": [
+     [
+      "deeploop",
+      "elu_qknorm"
+     ],
+     [
+      "deeploop",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "ouro"
+     ],
+     [
+      "deltanet",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ],
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "elu_qknorm",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "gdn"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "fixed_recursive",
+      "kda"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "seer"
+     ],
+     [
+      "gdn",
+      "mqa"
+     ],
+     [
+      "gdn",
+      "ut_act"
+     ],
+     [
+      "gla",
+      "gqa"
+     ],
+     [
+      "gla",
+      "moba"
+     ],
+     [
+      "gla",
+      "mqa"
+     ],
+     [
+      "gla",
+      "ut_act"
+     ],
+     [
+      "gqa",
+      "kda"
+     ],
+     [
+      "gqa",
+      "seer"
+     ],
+     [
+      "huginn",
+      "qsa"
+     ],
+     [
+      "kda",
+      "mqa"
+     ],
+     [
+      "kda",
+      "residual_standard"
+     ],
+     [
+      "kda",
+      "ut_act"
+     ],
+     [
+      "mla_nope_qknorm",
+      "ouro"
+     ],
+     [
+      "mla_nope_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "ut_act"
+     ],
+     [
+      "moba",
+      "ut_act"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ],
+     [
+      "ouro",
+      "qsa"
+     ],
+     [
+      "ouro",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "1000": {
+    "spearman": 0.6620553359683794,
+    "pair_accuracy": 0.8181818181818182,
+    "pairs": 187,
+    "wrong": [
+     [
+      "deeploop",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "ouro"
+     ],
+     [
+      "deltanet",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ],
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "elu_qknorm",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "gdn"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "fixed_recursive",
+      "kda"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "seer"
+     ],
+     [
+      "gdn",
+      "mqa"
+     ],
+     [
+      "gdn",
+      "ut_act"
+     ],
+     [
+      "gla",
+      "gqa"
+     ],
+     [
+      "gla",
+      "mqa"
+     ],
+     [
+      "gla",
+      "ut_act"
+     ],
+     [
+      "gqa",
+      "kda"
+     ],
+     [
+      "gqa",
+      "seer"
+     ],
+     [
+      "huginn",
+      "qsa"
+     ],
+     [
+      "kda",
+      "mqa"
+     ],
+     [
+      "kda",
+      "ut_act"
+     ],
+     [
+      "mla_nope_qknorm",
+      "ouro"
+     ],
+     [
+      "mla_nope_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "ut_act"
+     ],
+     [
+      "moba",
+      "ut_act"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ],
+     [
+      "mqa",
+      "seer"
+     ],
+     [
+      "ouro",
+      "qsa"
+     ],
+     [
+      "ouro",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "ut_act"
+     ],
+     [
+      "residual_standard",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "1500": {
+    "spearman": 0.7223320158102766,
+    "pair_accuracy": 0.839572192513369,
+    "pairs": 187,
+    "wrong": [
+     [
+      "deeploop",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "ouro"
+     ],
+     [
+      "deltanet",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ],
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "elu_qknorm",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "gdn"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "fixed_recursive",
+      "kda"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "seer"
+     ],
+     [
+      "gdn",
+      "mqa"
+     ],
+     [
+      "gla",
+      "gqa"
+     ],
+     [
+      "gla",
+      "mqa"
+     ],
+     [
+      "gqa",
+      "kda"
+     ],
+     [
+      "gqa",
+      "seer"
+     ],
+     [
+      "huginn",
+      "qsa"
+     ],
+     [
+      "kda",
+      "mqa"
+     ],
+     [
+      "mla_nope_qknorm",
+      "ouro"
+     ],
+     [
+      "mla_nope_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "ut_act"
+     ],
+     [
+      "moba",
+      "ut_act"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ],
+     [
+      "mqa",
+      "seer"
+     ],
+     [
+      "ouro",
+      "qsa"
+     ],
+     [
+      "ouro",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "2000": {
+    "spearman": 0.7381422924901186,
+    "pair_accuracy": 0.8449197860962567,
+    "pairs": 187,
+    "wrong": [
+     [
+      "deeploop",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "ouro"
+     ],
+     [
+      "deltanet",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ],
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "elu_qknorm",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "gdn"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "fixed_recursive",
+      "kda"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "seer"
+     ],
+     [
+      "gdn",
+      "mqa"
+     ],
+     [
+      "gla",
+      "gqa"
+     ],
+     [
+      "gla",
+      "mqa"
+     ],
+     [
+      "gqa",
+      "kda"
+     ],
+     [
+      "gqa",
+      "seer"
+     ],
+     [
+      "huginn",
+      "qsa"
+     ],
+     [
+      "kda",
+      "mqa"
+     ],
+     [
+      "mla_nope_qknorm",
+      "ouro"
+     ],
+     [
+      "mla_nope_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "ut_act"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ],
+     [
+      "mqa",
+      "seer"
+     ],
+     [
+      "ouro",
+      "qsa"
+     ],
+     [
+      "ouro",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "3000": {
+    "spearman": 0.7816205533596838,
+    "pair_accuracy": 0.8770053475935828,
+    "pairs": 187,
+    "wrong": [
+     [
+      "deeploop",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ],
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "elu_qknorm",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "gdn"
+     ],
+     [
+      "fixed_recursive",
+      "gla"
+     ],
+     [
+      "fixed_recursive",
+      "kda"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "seer"
+     ],
+     [
+      "gla",
+      "gqa"
+     ],
+     [
+      "gqa",
+      "seer"
+     ],
+     [
+      "huginn",
+      "qsa"
+     ],
+     [
+      "mla_nope_qknorm",
+      "ouro"
+     ],
+     [
+      "mla_nope_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "ut_act"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ],
+     [
+      "mqa",
+      "seer"
+     ],
+     [
+      "ouro",
+      "qsa"
+     ],
+     [
+      "qsa",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "4000": {
+    "spearman": 0.8211462450592886,
+    "pair_accuracy": 0.8983957219251337,
+    "pairs": 187,
+    "wrong": [
+     [
+      "deeploop",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ],
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "elu_qknorm",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "fixed_recursive",
+      "seer"
+     ],
+     [
+      "gqa",
+      "seer"
+     ],
+     [
+      "huginn",
+      "qsa"
+     ],
+     [
+      "mla_nope_qknorm",
+      "ouro"
+     ],
+     [
+      "mla_nope_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "ut_act"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ],
+     [
+      "mqa",
+      "seer"
+     ],
+     [
+      "ouro",
+      "qsa"
+     ],
+     [
+      "qsa",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "6000": {
+    "spearman": 0.8814229249011858,
+    "pair_accuracy": 0.93048128342246,
+    "pairs": 187,
+    "wrong": [
+     [
+      "deltanet",
+      "qsa"
+     ],
+     [
+      "deltanet",
+      "ut_act"
+     ],
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "gqa",
+      "seer"
+     ],
+     [
+      "mla_nope_qknorm",
+      "ouro"
+     ],
+     [
+      "mla_nope_qknorm",
+      "qsa"
+     ],
+     [
+      "mla_qknorm",
+      "qsa"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ],
+     [
+      "ouro",
+      "qsa"
+     ],
+     [
+      "qsa",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "ut_act"
+     ],
+     [
+      "retnet",
+      "ut_act"
+     ]
+    ]
+   },
+   "8000": {
+    "spearman": 0.9090909090909091,
+    "pair_accuracy": 0.9518716577540107,
+    "pairs": 187,
+    "wrong": [
+     [
+      "deltanet",
+      "qsa"
+     ],
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "gqa",
+      "seer"
+     ],
+     [
+      "mla_nope_qknorm",
+      "ouro"
+     ],
+     [
+      "mla_qknorm",
+      "qsa"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ],
+     [
+      "qsa",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "ut_act"
+     ]
+    ]
+   },
+   "12000": {
+    "spearman": 0.9021739130434783,
+    "pair_accuracy": 0.9572192513368984,
+    "pairs": 187,
+    "wrong": [
+     [
+      "deltanet",
+      "qsa"
+     ],
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "gqa",
+      "seer"
+     ],
+     [
+      "mla_qknorm",
+      "qsa"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ],
+     [
+      "qsa",
+      "retnet"
+     ],
+     [
+      "qsa",
+      "ut_act"
+     ]
+    ]
+   },
+   "16500": {
+    "spearman": 0.9229249011857708,
+    "pair_accuracy": 0.9679144385026738,
+    "pairs": 187,
+    "wrong": [
+     [
+      "deeploop",
+      "huginn"
+     ],
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "gqa",
+      "seer"
+     ],
+     [
+      "mla_qknorm",
+      "qsa"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ]
+    ]
+   },
+   "25000": {
+    "spearman": 0.9387351778656127,
+    "pair_accuracy": 0.983957219251337,
+    "pairs": 187,
+    "wrong": [
+     [
+      "elu_qknorm",
+      "ouro"
+     ],
+     [
+      "fixed_recursive",
+      "qsa"
+     ],
+     [
+      "mqa",
+      "qsa"
+     ]
+    ]
+   },
+   "35000": {
+    "spearman": 0.9713438735177866,
+    "pair_accuracy": 0.9946524064171123,
+    "pairs": 187,
+    "wrong": [
+     [
+      "elu_qknorm",
+      "ouro"
+     ]
+    ]
+   },
+   "46875": {
+    "spearman": 1.0,
+    "pair_accuracy": 1.0,
+    "pairs": 187,
+    "wrong": []
+   }
+  }
+ }
+}

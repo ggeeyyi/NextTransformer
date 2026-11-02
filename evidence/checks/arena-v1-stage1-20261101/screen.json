@@ -1,0 +1,105 @@
+{
+ "top_rows": [
+  "attnres",
+  "dense_full",
+  "kda"
+ ],
+ "proxies": {
+  "C_512": {
+   "gap_to_dense_full": {
+    "attnres": -0.0037,
+    "dense_full": 0.0,
+    "deeploop": 0.005,
+    "fixed_recursive": 0.0083,
+    "residual_standard": 0.0115,
+    "ut_act": 0.0147,
+    "gdn": 0.0214,
+    "kda": 0.0301,
+    "huginn": 0.038,
+    "retnet": 0.039,
+    "elu_qknorm": 0.092
+   },
+   "threshold_keeping_top_rows": 0.0301,
+   "kept": [
+    "attnres",
+    "dense_full",
+    "deeploop",
+    "fixed_recursive",
+    "residual_standard",
+    "ut_act",
+    "gdn",
+    "kda"
+   ],
+   "rejected": [
+    "retnet",
+    "elu_qknorm",
+    "huginn"
+   ],
+   "worst_final_kept": "deeploop"
+  },
+  "prefix_500": {
+   "gap_to_dense_full": {
+    "dense_full": 0.0,
+    "attnres": 0.0007,
+    "fixed_recursive": 0.0033,
+    "residual_standard": 0.0157,
+    "ut_act": 0.0158,
+    "gdn": 0.0184,
+    "kda": 0.0261,
+    "retnet": 0.0378,
+    "deeploop": 0.047,
+    "huginn": 0.0642,
+    "elu_qknorm": 0.0912
+   },
+   "threshold_keeping_top_rows": 0.0261,
+   "kept": [
+    "dense_full",
+    "attnres",
+    "fixed_recursive",
+    "residual_standard",
+    "ut_act",
+    "gdn",
+    "kda"
+   ],
+   "rejected": [
+    "retnet",
+    "elu_qknorm",
+    "huginn",
+    "deeploop"
+   ],
+   "worst_final_kept": "ut_act"
+  },
+  "prefix_2000": {
+   "gap_to_dense_full": {
+    "attnres": -0.0018,
+    "dense_full": 0.0,
+    "fixed_recursive": 0.0048,
+    "kda": 0.0089,
+    "gdn": 0.0099,
+    "residual_standard": 0.0109,
+    "ut_act": 0.0132,
+    "retnet": 0.0256,
+    "elu_qknorm": 0.0571,
+    "huginn": 0.0597,
+    "deeploop": 0.1125
+   },
+   "threshold_keeping_top_rows": 0.0089,
+   "kept": [
+    "attnres",
+    "dense_full",
+    "fixed_recursive",
+    "kda"
+   ],
+   "rejected": [
+    "gdn",
+    "residual_standard",
+    "retnet",
+    "ut_act",
+    "elu_qknorm",
+    "huginn",
+    "deeploop"
+   ],
+   "worst_final_kept": "fixed_recursive"
+  }
+ }
+}

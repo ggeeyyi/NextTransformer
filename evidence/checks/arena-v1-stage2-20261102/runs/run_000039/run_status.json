@@ -1,0 +1,15 @@
+{
+  "phase": "training_complete",
+  "step": 2000,
+  "steps": 2000,
+  "consumed_flops": "9931581441129503960",
+  "consumed_train_flops": "9814372146504314000",
+  "consumed_eval_flops": "117209294625189960",
+  "synthetic": false,
+  "final": {
+    "val_bpb_dev": 0.8003100409814948
+  },
+  "training_seconds": 13651.971918557305,
+  "evaluation_seconds": 168.21964492090046,
+  "max_shard_index": 44
+}

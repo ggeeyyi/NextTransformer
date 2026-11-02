@@ -1,0 +1,13 @@
+{
+  "accumulation": 4,
+  "cuda": "12.8",
+  "device": "withheld",
+  "micro_batch": 16,
+  "native_source_sha256": "3acf94071b0a70c32c63aabf7bc215c10108c279d4c02ec77e92932d0fe8ba32",
+  "parameters": 742392722,
+  "python": "3.10.20",
+  "submission_sha256": "8019a229ebfb6fe321e2ba17f4f6d27e85c130e05ae77cd4a8f4f9b6b1f0d6f4",
+  "synthetic": false,
+  "torch": "2.9.1+cu128",
+  "world_size": 8
+}

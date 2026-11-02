@@ -1,0 +1,257 @@
+{
+ "source": "evidence/checks/arena-v1-stage1-20261101/runs",
+ "c_dev_bpb_512": {
+  "dense_full": 0.8554101805897026,
+  "gdn": 0.8768571603299382,
+  "kda": 0.8855412660262212,
+  "huginn": 0.8934206372388459,
+  "ut_act": 0.8701597020582229,
+  "deeploop": 0.8604447435383401,
+  "fixed_recursive": 0.863732859892865,
+  "attnres": 0.8517026383063867,
+  "residual_standard": 0.8669341584192775,
+  "retnet": 0.8944096055416927,
+  "elu_qknorm": 0.9474573310428329
+ },
+ "dense_full_seeds": {
+  "0": 0.8554101805897026,
+  "1": 0.8554999746142637,
+  "2": 0.8554978694997025
+ },
+ "noise": {
+  "spread": 8.97940245611073e-05,
+  "sd": 5.124572061997677e-05
+ },
+ "eleven": {
+  "missing": [],
+  "c": {
+   "rows": 11,
+   "spearman": 0.4,
+   "pair_accuracy": 0.6739130434782609,
+   "pairs": 46,
+   "wrong": [
+    [
+     "residual_standard",
+     "kda"
+    ],
+    [
+     "residual_standard",
+     "deeploop"
+    ],
+    [
+     "kda",
+     "fixed_recursive"
+    ],
+    [
+     "kda",
+     "ut_act"
+    ],
+    [
+     "kda",
+     "deeploop"
+    ],
+    [
+     "gdn",
+     "fixed_recursive"
+    ],
+    [
+     "gdn",
+     "ut_act"
+    ],
+    [
+     "gdn",
+     "deeploop"
+    ],
+    [
+     "retnet",
+     "huginn"
+    ],
+    [
+     "retnet",
+     "ut_act"
+    ],
+    [
+     "retnet",
+     "deeploop"
+    ],
+    [
+     "elu_qknorm",
+     "deeploop"
+    ],
+    [
+     "fixed_recursive",
+     "deeploop"
+    ],
+    [
+     "huginn",
+     "deeploop"
+    ],
+    [
+     "ut_act",
+     "deeploop"
+    ]
+   ]
+  },
+  "prefix_500": {
+   "rows": 11,
+   "spearman": 0.7181818181818181,
+   "pair_accuracy": 0.8260869565217391,
+   "pairs": 46,
+   "wrong": [
+    [
+     "residual_standard",
+     "kda"
+    ],
+    [
+     "kda",
+     "fixed_recursive"
+    ],
+    [
+     "kda",
+     "ut_act"
+    ],
+    [
+     "gdn",
+     "fixed_recursive"
+    ],
+    [
+     "gdn",
+     "ut_act"
+    ],
+    [
+     "retnet",
+     "ut_act"
+    ],
+    [
+     "elu_qknorm",
+     "deeploop"
+    ],
+    [
+     "huginn",
+     "deeploop"
+    ]
+   ]
+  },
+  "bootstrap": {
+   "draws": 9999,
+   "spearman_90": [
+    -0.17272727272727273,
+    0.8363636363636363
+   ],
+   "pair_accuracy_90": [
+    0.4130434782608695,
+    0.9166666666666666
+   ],
+   "c_beats_prefix": {
+    "spearman": 0.13621362136213622,
+    "pair_accuracy": 0.0
+   }
+  },
+  "c_ranks": false
+ },
+ "nine": {
+  "missing": [],
+  "c": {
+   "rows": 9,
+   "spearman": 0.7166666666666667,
+   "pair_accuracy": 0.8518518518518519,
+   "pairs": 27,
+   "wrong": [
+    [
+     "residual_standard",
+     "kda"
+    ],
+    [
+     "kda",
+     "fixed_recursive"
+    ],
+    [
+     "gdn",
+     "fixed_recursive"
+    ],
+    [
+     "retnet",
+     "huginn"
+    ]
+   ]
+  },
+  "prefix_500": {
+   "rows": 9,
+   "spearman": 0.7166666666666667,
+   "pair_accuracy": 0.8888888888888888,
+   "pairs": 27,
+   "wrong": [
+    [
+     "residual_standard",
+     "kda"
+    ],
+    [
+     "kda",
+     "fixed_recursive"
+    ],
+    [
+     "gdn",
+     "fixed_recursive"
+    ]
+   ]
+  },
+  "bootstrap": {
+   "draws": 9975,
+   "spearman_90": [
+    0.23333333333333334,
+    0.95
+   ],
+   "pair_accuracy_90": [
+    0.64,
+    1.0
+   ],
+   "c_beats_prefix": {
+    "spearman": 0.3399498746867168,
+    "pair_accuracy": 0.0
+   }
+  },
+  "c_ranks": false
+ },
+ "screen": {
+  "top_rows": {
+   "dense_full": {
+    "final": 0.6644601775656058,
+    "c_behind_leader": 0.0037075422833159344
+   },
+   "attnres": {
+    "final": 0.6602173420730655,
+    "c_behind_leader": 0.0
+   },
+   "kda": {
+    "final": 0.6643866894246494,
+    "c_behind_leader": 0.03383862771983448
+   }
+  },
+  "c_order": [
+   "attnres",
+   "dense_full",
+   "deeploop",
+   "fixed_recursive",
+   "residual_standard",
+   "ut_act",
+   "gdn",
+   "kda",
+   "huginn",
+   "retnet",
+   "elu_qknorm"
+  ],
+  "final_order": [
+   "attnres",
+   "kda",
+   "dense_full",
+   "gdn",
+   "residual_standard",
+   "fixed_recursive",
+   "retnet",
+   "ut_act",
+   "elu_qknorm",
+   "huginn",
+   "deeploop"
+  ]
+ }
+}

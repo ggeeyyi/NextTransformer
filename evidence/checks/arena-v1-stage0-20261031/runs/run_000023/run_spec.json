@@ -1,0 +1,26 @@
+{
+ "core": false,
+ "dev_shard": "shard_06541.parquet",
+ "final_val_tokens": 8388608,
+ "forward_flops_per_token": 1556072346.5415268,
+ "input_tokens": 536870912,
+ "micro_batch": null,
+ "official_evaluated": false,
+ "reserved_flops": "2636192730410415480",
+ "run_id": "run_000023",
+ "scale": "S",
+ "schedule_steps": 46875,
+ "seed": 42,
+ "seed_offset": 0,
+ "stage_costs": {
+  "joint": "4920383344138811"
+ },
+ "steps": 512,
+ "stop_at_flops": "2636192730410415480",
+ "submission_sha256": "e2a51a10b7bf68293eb1bae229d655b9af6c2f9f072b1d149f980957e914edc6",
+ "synthetic": false,
+ "task_fingerprint": "c33b3bf4d2942d38ec84a359cfa23d5a6de02bf3bb5137e1c849d1c14d9cf193",
+ "val_every": 128,
+ "val_tokens": 8388608,
+ "world_size": 8
+}

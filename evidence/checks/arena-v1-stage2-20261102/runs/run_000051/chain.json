@@ -1,0 +1,39 @@
+{
+ "state": "cancelled",
+ "segments": [
+  {
+   "n": 1,
+   "job": "user-nextt-gym-run-000051-ffe31cc064-normal-20261101-233541",
+   "submitted": 1793547356.95181,
+   "job_state": "Failed",
+   "status": [
+    null,
+    null,
+    null
+   ],
+   "checkpoint": 250,
+   "finished": 1793569086.0750527
+  },
+  {
+   "n": 2,
+   "job": "user-nextt-gym-run-000051-2c835b9694-normal-20261102-053816",
+   "submitted": 1793569110.7292078,
+   "job_state": "Stopped",
+   "status": [
+    null,
+    null,
+    null
+   ],
+   "checkpoint": 250,
+   "finished": 1793569371.811434
+  }
+ ],
+ "restarts": [
+  {
+   "segment": 1,
+   "job_state": "Failed",
+   "failed_at_step": 300,
+   "resumed_from": 250
+  }
+ ]
+}

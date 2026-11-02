@@ -1,7 +1,8 @@
 # Evidence
 
 What makes the published results admissible. The records shown on the website live in [`results/`](../results);
-this directory holds the cost proofs that admit each configuration and the cumulative audits of finished runs.
+this directory holds the cost proofs that admit each configuration, the cumulative audits of finished runs, and the
+evidence of research checks.
 
 | Path | Contents |
 |---|---|
@@ -10,6 +11,7 @@ this directory holds the cost proofs that admit each configuration and the cumul
 | [`costs/hybrid-kernels-20261026-release/`](costs/hybrid-kernels-20261026-release/summary.json) | Earlier proof set of the frozen source the published hybrid runs trained on. |
 | [`costs/layout-20261024/`](costs/layout-20261024/summary.json) | Earlier proof set from before the package reorganization; model hashes, parameter counts and operator counts equal the later sets. Kept for runs admitted with it. |
 | [`audits/`](audits) | One cumulative audit per published run that has one, `audits/<method>.json`, written by `python -m nexttransformer.audit_run` (or, for earlier runs, by the same checks) and referenced by `results/runs/<method>.json`. |
+| [`checks/arena-v1/`](checks/arena-v1/README.md) | Arena v1: the research gym's acceptance on real data and the proxy and search stages on the dev split, with their run files, the scripts that recompute every check, and the code bundle of every run. Research evidence, not formal results. |
 
 ## Cost proofs
 

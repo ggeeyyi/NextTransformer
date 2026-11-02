@@ -1,0 +1,94 @@
+{
+ "run_000041": {
+  "name": "attnres_gate",
+  "value": 0.8872817602274363,
+  "anchor": 0.887536914630292,
+  "gap": -0.00025515440285572843,
+  "decision": "continues"
+ },
+ "run_000045": {
+  "name": "attnres_ve_all",
+  "value": 0.8921996707933173,
+  "anchor": 0.887536914630292,
+  "gap": 0.00466275616302525,
+  "decision": "continues"
+ },
+ "run_000044": {
+  "name": "attnres_deep",
+  "value": 0.8975065194219297,
+  "anchor": 0.887536914630292,
+  "gap": 0.009969604791637665,
+  "decision": "continues"
+ },
+ "run_000042": {
+  "name": "attnres_canon",
+  "value": 0.8893077515172523,
+  "anchor": 0.887536914630292,
+  "gap": 0.0017708368869602253,
+  "decision": "continues"
+ },
+ "run_000043": {
+  "name": "attnres_full",
+  "value": 0.8889235318147444,
+  "anchor": 0.887536914630292,
+  "gap": 0.0013866171844523212,
+  "decision": "continues"
+ },
+ "run_000046": {
+  "name": "dense_full_gate",
+  "decision": "ended cancelled before update 512"
+ },
+ "run_000051": {
+  "name": "attnres_moe16",
+  "decision": "ended cancelled before update 512"
+ },
+ "run_000047": {
+  "name": "attnres_moe",
+  "value": 0.8954983853108058,
+  "anchor": 0.887536914630292,
+  "gap": 0.007961470680513782,
+  "decision": "continues"
+ },
+ "run_000048": {
+  "name": "attnres_gate_canon",
+  "value": 0.8861920367862784,
+  "anchor": 0.887536914630292,
+  "gap": -0.0013448778440136033,
+  "decision": "continues"
+ },
+ "run_000049": {
+  "name": "attnres_full_gate",
+  "value": 0.887501200272908,
+  "anchor": 0.887536914630292,
+  "gap": -3.571435738403128e-05,
+  "decision": "continues"
+ },
+ "run_000050": {
+  "name": "attnres_full_canon",
+  "value": 0.887926506004439,
+  "anchor": 0.887536914630292,
+  "gap": 0.0003895913741469581,
+  "decision": "continues"
+ },
+ "run_000052": {
+  "name": "attnres_canon_abcd",
+  "value": 0.8881895727344388,
+  "anchor": 0.887536914630292,
+  "gap": 0.0006526581041467194,
+  "decision": "continues"
+ },
+ "run_000053": {
+  "name": "attnres_moe16-mb8",
+  "value": 0.8906561136888155,
+  "anchor": 0.887536914630292,
+  "gap": 0.0031191990585234253,
+  "decision": "continues"
+ },
+ "run_000054": {
+  "name": "attnres_full_canon_abcd",
+  "value": 0.8868129004015345,
+  "anchor": 0.887536914630292,
+  "gap": -0.0007240142287575635,
+  "decision": "continues"
+ }
+}

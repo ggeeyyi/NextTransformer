@@ -1,0 +1,52 @@
+{
+ "agent_runs": {
+  "run_000021": {
+   "official_or_core_fields": [],
+   "final": {
+    "val_bpb_dev": 0.9063977248369458
+   }
+  },
+  "run_000022": {
+   "official_or_core_fields": [],
+   "final": {
+    "val_bpb_dev": 0.8878298885050931
+   }
+  },
+  "run_000023": {
+   "official_or_core_fields": [],
+   "final": {
+    "val_bpb_dev": 0.9112092908224048
+   }
+  }
+ },
+ "get_run_curve_official_S": {
+  "error": {
+   "code": "POLICY_DENIED",
+   "message": "the official split is not evaluated at scale S",
+   "retryable": false
+  }
+ },
+ "get_leaderboard_S_official": {
+  "error": {
+   "code": "POLICY_DENIED",
+   "message": "the official split is not evaluated at scale S",
+   "retryable": false
+  }
+ },
+ "get_run_logs_grep_official_core_sealed_run_000022": {
+  "run_id": "run_000022",
+  "lines": [],
+  "truncated": false
+ },
+ "imported_reference_run_000002": {
+  "origin": "imported",
+  "scale": "L",
+  "latest": {
+   "at_step": 46875,
+   "val_bpb_official": 0.7144553691567268
+  },
+  "final_core": 0.25453665062365954,
+  "note": "imported published runs show official values by design; open question for the operator"
+ },
+ "recovery": "every MCP call in this check started a fresh gym server process that rebuilt its state from the store; the 2026-10-30 operator session also ended while runs 018-020 were active, and their chain drivers and the store recorded the failures, which a later session read through get_run"
+}

@@ -1,0 +1,54 @@
+{
+ "before": {
+  "source_commit": "f8f5d05",
+  "calls": 275,
+  "characters": 3922756,
+  "published_values": 347,
+  "attempts": 33,
+  "runs": 23,
+  "outputs_with_published_values": 83,
+  "by_operation": {
+   "get_leaderboard": 1,
+   "list_attempts": 3,
+   "get_attempt": 17,
+   "get_run": 17,
+   "get_run_curve": 17,
+   "get_run_logs": 3,
+   "compare_attempts": 4,
+   "read_doc": 2,
+   "resource": 19
+  },
+  "distinct_values_found": 168
+ },
+ "after": {
+  "source_commit": "93983dd",
+  "calls": 281,
+  "characters": 3102228,
+  "published_values": 347,
+  "attempts": 33,
+  "runs": 24,
+  "outputs_with_published_values": 3,
+  "by_operation": {
+   "get_run_logs": 3
+  },
+  "distinct_values_found": 9,
+  "matches": {
+   "get_run_logs {\"run_id\": \"run_000023\", \"tail\": 2000}": [
+    "0.1604",
+    "0.2009",
+    "0.2217",
+    "0.2267"
+   ],
+   "get_run_logs {\"run_id\": \"run_000021\", \"tail\": 2000}": [
+    "0.1892",
+    "0.2597",
+    "0.2766",
+    "0.2769"
+   ],
+   "get_run_logs {\"run_id\": \"run_000022\", \"tail\": 2000}": [
+    "0.2036"
+   ]
+  },
+  "note": "all matches are grad_norm values in the agent S runs' own training logs whose first four decimals equal a published value; the three `core` keys found are the scale flags in the task"
+ }
+}
