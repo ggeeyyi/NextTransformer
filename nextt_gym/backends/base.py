@@ -68,7 +68,8 @@ class Backend(ABC):
 
     @abstractmethod
     def status(self, handle):
-        """dict(state, phase?, step?, consumed_flops?, gpu_hours?, restarts?)."""
+        """dict(state, phase?, step?, consumed_flops?, gpu_hours?, final?, restarts?): `state` from STATES, the rest
+        from the trainer's files as summarize() reads them. A backend may add its own keys (Koala: segments)."""
 
     @abstractmethod
     def logs(self, handle, tail=200):

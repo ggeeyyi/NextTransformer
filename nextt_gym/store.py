@@ -18,6 +18,11 @@ def gym_home(path=None):
     return Path(path or os.environ.get("NEXTT_GYM_HOME") or Path.home() / ".nextt-gym").expanduser()
 
 
+# Every event type the gym emits; wait_events filters on these (INTERFACE.md lists the same).
+EVENT_TYPES = ("verification.finished", "attempt.revealed", "run.status", "run.eval", "run.restarted", "run.poll_error",
+               "run.finished", "budget.low", "budget.settled")
+
+
 def now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
@@ -155,6 +160,7 @@ class Store:
 
     # ---- events -----------------------------------------------------------------
     def append_event(self, type, ref=None, data=None):
+        if type not in EVENT_TYPES: raise ValueError(f"unknown event type {type!r}")
         cur = self.execute("INSERT INTO events(at, type, ref, data) VALUES (?, ?, ?, ?)",
                            (now(), type, dumps(ref or {}), dumps(data or {})))
         return cur.lastrowid

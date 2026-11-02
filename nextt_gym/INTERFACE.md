@@ -12,7 +12,7 @@ The same operations are served over MCP stdio, MCP Streamable HTTP (`/mcp`, stat
 | `get_task` | none | The task card, described below |
 | `get_budget` | none | FLOPs cap, used, reserved and available (floats plus exact strings); breakdown by kind and scale; GPU-hours per GPU type; rate counters |
 | `get_leaderboard` | `scale` (S, C, M, L), `split` (dev, official), `limit`, `include_imported` | Best succeeded run per attempt, ranked by validation BPB. The official split lists revealed attempts only: official results of gym and imported runs are sealed. Also `entries_per_split`, `notes` (for example, when there is no anchor yet) and `accepted` on imported results |
-| `list_attempts` | filters: `status`, `origin`, `tags`, `ancestor_of`, `descendant_of`; sort: `created`, `best_S`, `best_L`; `limit`, `cursor` | Attempt summaries and `next_cursor` |
+| `list_attempts` | filters: `status`, `origin`, `tags`, `ancestor_of`, `descendant_of`; sort: `created` (newest first) or the best dev BPB at a scale, `best_S`, `best_C`, `best_M`, `best_L`; `limit`, `cursor` | Attempt summaries and `next_cursor` |
 | `get_attempt` | `attempt_id`, `include` ⊂ {files, audit, runs, lineage} | Attempt with code, audit, runs, lineage and notes |
 | `get_run` | `run_id` | Status, progress, consumed FLOPs, latest metrics (loss, step time, tokens/s, peak memory) and final metrics; `extra.restarts` lists restarts after a failed segment; after a restart, `progress` and `consumed` go back to the checkpoint while the updates since it are replayed (the budget keeps the highest charge until the run settles at its final total). Local paths are omitted |
 | `get_run_curve` | `run_id`, `metric` (train_loss, val_bpb), `split`, `max_points` | Points `{step, input_tokens, value}` |
@@ -32,7 +32,7 @@ The same operations are served over MCP stdio, MCP Streamable HTTP (`/mcp`, stat
 
 | Tool | Input | Output |
 |---|---|---|
-| `list_backends` | `gpu_type` | Backend id, kind, GPU type, allowed world sizes, status, queue estimate and segment limit |
+| `list_backends` | `gpu_type` | Backend id, kind, GPU type, allowed world sizes and status; where they apply, the queue estimate (`queue_estimate_minutes`), the segment limits (`max_wall_hours_per_segment`, `max_segments`) and `max_restarts` |
 | `quote_run` | `attempt_id`, `scale`, `backend_id`, `world_size` | FLOPs to reserve (train, eval, margin), estimated GPU-hours and wall time, budget after reserve, and `feasible` with `blockers` (for example, an L run without a succeeded S run). Valid for 30 minutes |
 | `launch_run` | `quote_id`, `idempotency_key`, `seed_offset` (S only; L runs use the protocol seed) | `run_id`, `events_cursor` and the reserved FLOPs, returned immediately |
 | `cancel_run` | `run_id`, `reason` | Final status, consumed FLOPs and refunded FLOPs |
@@ -41,7 +41,7 @@ The same operations are served over MCP stdio, MCP Streamable HTTP (`/mcp`, stat
 
 | Tool | Input | Output |
 |---|---|---|
-| `wait_events` | `cursor`, `types`, `timeout_s` (≤ 60) | Events after `cursor` and `next_cursor`. Event types: `verification.finished`, `run.status`, `run.eval`, `run.restarted`, `run.finished`, `budget.low`, `budget.settled` |
+| `wait_events` | `cursor`, `types`, `timeout_s` (≤ 60) | Events after `cursor` and `next_cursor`. Event types: `verification.finished`, `attempt.revealed`, `run.status`, `run.eval`, `run.restarted`, `run.poll_error` (a backend could not be read; the run keeps its state), `run.finished`, `budget.low`, `budget.settled`; an unknown type in `types` is an `INVALID_ARGUMENT` error |
 | `annotate_attempt` | `attempt_id`, `text` (≤ 4 KB), `tags_add` | Stores a research note in the archive |
 
 ### Documents (tool versions of the resources and the prompt)
@@ -115,9 +115,9 @@ prints the JSON result and a last line `combined_score: <value>`.
 | `controlled` | Fixed variables: vocabulary 32768, context 2048, 1,048,576 tokens per update, the ClimbMix revision, the Muon/AdamW recipe by parameter role, the schedule (warmup 40, last 65% warmdown to 5%), seed 42, BF16 |
 | `flops_anchor` | 4,672,398,325 training FLOPs per input token (upstream SSSL Dense), tolerance 1% |
 | `scales` | S: 512 updates, a prefix of the L schedule (`origin: gym`; shaped like a pilot, but a research run outside the pilot quota). C: S's 512 updates and tokens under their own compressed schedule (warmup 40, the last 65% decaying to 5%), so a run ends after a decay (`origin: gym`). M: the first 2,000 updates of the L schedule, evaluated every 256 updates (`origin: gym`). L: 46,875 updates (`origin: upstream protocol`). Also validation cadence, which splits are evaluated, CORE and theory FLOPs |
-| `visible_splits` | S and L: `dev` (the arena's dev split, `shard_06541`) |
+| `visible_splits` | Every scale (S, C, M, L): `dev` (the arena's dev split, `shard_06541`) |
 | `sealed`, `sealing` | L also evaluates the official validation split and CORE-22; for gym runs and imported upstream runs they stay sealed until the operator reveals the attempt |
 | `upstream_protocol_hash` | Fingerprint of the upstream protocol the gym follows |
-| `policy` | An L run requires a succeeded S run and uses the protocol seed; at most 4 concurrent runs; one run may reserve at most 25% of the cap; 30 `estimate_cost` calls per hour; submissions up to 256 KB |
+| `policy` | An L run requires a succeeded S run and uses the protocol seed; at most 12 concurrent runs; one run may reserve at most 25% of the cap; 30 `estimate_cost` calls per hour; submissions up to 256 KB |
 
 The card is static unless the upstream protocol or the gym policy changes. Read it once per session.

@@ -1,7 +1,10 @@
-"""Koala backend against a fake `koala` CLI, its pod entry with a stub `uv`, and the shell reader."""
+"""Koala backend against a strict stand-in for the `koala` CLI (_fake_koala.py), its pod entry with a stub `uv`,
+and the shell reader."""
 import json
 import os
 from pathlib import Path
+import re
+import shutil
 import stat
 import subprocess
 import sys
@@ -14,67 +17,20 @@ from nextt_gym.backends.koala import Koala, KoalaBackend, chain
 
 REPO = Path(__file__).resolve().parents[2]
 
-# A stand-in for the koala CLI: publishes, runs each submitted segment instantly by writing the
-# trainer's status files into the remote run directory, and logs every call. A `crash` segment fails
-# after update 300 with a complete checkpoint at 250 (`crash-early`: before any checkpoint).
-FAKE = r'''#!PYTHON
-import json, os, shlex, sys
-from pathlib import Path
-state = Path(os.environ["FAKE_KOALA_STATE"]); state.mkdir(exist_ok=True)
-argv = sys.argv[1:]
-if argv[:1] == ["--cluster"]: argv = argv[2:]
-with open(state / "calls.jsonl", "a") as log: log.write(json.dumps(argv) + "\n")
-cmd = argv[0] if argv else "--help"
-if cmd == "code":
-    files = len(list(Path(argv[2]).iterdir()))
-    print(json.dumps(dict(files=files, bundle_sha256="f" * 64, bundle_uri="oss://fake/" + "f" * 64 + ".tar.gz",
-                          published="--dry-run" not in argv)))
-elif cmd == "submit":
-    n = len(list(state.glob("job-*"))) + 1
-    job = argv[argv.index("-j") + 1] + f"-{n}-normal"
-    (state / f"job-{n}").write_text(job)
-    words = shlex.split(argv[argv.index("-c") + 1].replace("&&", " ").replace(";", " "))
-    out = Path(words[words.index("--output") + 1])
-    phases = os.environ.get("FAKE_PHASES", "training_complete").split(",")
-    phase = phases[min(n, len(phases)) - 1]
-    if phase.startswith("crash"):
-        (out / "run").mkdir(parents=True, exist_ok=True)
-        (out / "run" / "run_status.json").unlink(missing_ok=True)
-        (out / "run" / "budget.json").write_text(json.dumps(dict(step=300, consumed_flops="300")))
-        if phase == "crash": (out / "run" / "latest.json").write_text(json.dumps(dict(step=250)))
-        (state / ("crashed-" + job)).write_text("1")
-    elif phase != "hang":
-        (out / "run").mkdir(parents=True, exist_ok=True)
-        status = dict(phase=phase, step=256 * n, consumed_flops=str(1000 * n), final={"val_bpb_dev": 0.9})
-        (out / "run" / "run_status.json").write_text(json.dumps(status))
-        (out / "run" / "budget.json").write_text(json.dumps(dict(step=256 * n, consumed_flops=str(1000 * n))))
-        (out / "run" / "metrics.jsonl").write_text('{"event": "train", "step": 1, "loss": 10.0}\n')
-        (out / "run" / f"val_{256 * n:08d}_dev.json").write_text("{}")
-        (out / "remote_status.json").write_text(json.dumps(dict(phase="exited", returncode=0)))
-    print(job)
-elif cmd == "get":
-    stopped = (state / ("stopped-" + argv[1])).exists() or (state / ("crashed-" + argv[1])).exists()
-    hang = "hang" in os.environ.get("FAKE_PHASES", "")
-    active = os.environ.get("FAKE_JOB_STATE", "Running")
-    print(json.dumps(dict(status="Failed" if stopped else active if hang else "Succeeded")))
-elif cmd == "wait":
-    import time; time.sleep(0.2)
-elif cmd == "stop":
-    (state / ("stopped-" + argv[-1])).write_text("1")
-elif cmd == "log":
-    if not (state / ("crashed-" + argv[1])).exists(): print("NEXTT_RUN_STATUS training_complete 512 1000")
-'''
-
 
 @pytest.fixture
 def fake_koala(tmp_path, monkeypatch):
+    """`koala` on PATH is the stand-in of _fake_koala.py; every test fails on a command line the real CLI rejects."""
     bin_dir = tmp_path / "bin"; bin_dir.mkdir()
     path = bin_dir / "koala"
-    path.write_text(FAKE.replace("PYTHON", sys.executable))
+    path.write_text(f"#!{sys.executable}\nimport sys\nsys.path.insert(0, {str(REPO)!r})\n"
+                    "from nextt_gym.tests._fake_koala import main\nsys.exit(main())\n")
     path.chmod(path.stat().st_mode | stat.S_IEXEC)
     monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ['PATH']}")
     monkeypatch.setenv("FAKE_KOALA_STATE", str(tmp_path / "koala"))
-    return tmp_path / "koala"
+    yield tmp_path / "koala"
+    violations = tmp_path / "koala" / "violations.jsonl"
+    assert not violations.exists(), violations.read_text()
 
 
 def calls(state):
@@ -131,7 +87,9 @@ def test_koala_run_segments_and_fetch(tmp_path, fake_koala, monkeypatch):
     assert "rm -f" in plan["command"] and "bash /local-ssd/nextt-gym-boot/nextt_gym/backends/koala/run.sh run " in \
         plan["command"]
     publish = [c for c in calls(fake_koala) if c[0] == "code"]
-    assert "--dry-run" in publish[0] and publish[1][publish[1].index("--expect-sha256") + 1] == "f" * 64
+    # Publishes only the previewed bundle, and the job mounts the URI the publish returned.
+    previewed = Path(plan["bundle_uri"]).name.split(".")[0]
+    assert "--dry-run" in publish[0] and publish[1][publish[1].index("--expect-sha256") + 1] == previewed
     fetched = koala_backend.fetch(handle, tmp_path / "fetched")
     assert json.loads((fetched / "run_status.json").read_text())["phase"] == "training_complete"
     assert {"budget.json", "metrics.jsonl", "remote_status.json", "val_00000512_dev.json"} <= {
@@ -150,8 +108,10 @@ def test_koala_cancel_stops_the_job(tmp_path, fake_koala, monkeypatch):
     assert len([c for c in calls(fake_koala) if c[0] == "submit"]) == 1
 
 
-def test_koala_queued_job_reports_queued(tmp_path, fake_koala, monkeypatch):
-    monkeypatch.setenv("FAKE_PHASES", "hang"); monkeypatch.setenv("FAKE_JOB_STATE", "Queuing")
+@pytest.mark.parametrize("job_state", ["Queuing", "Updating"])
+def test_koala_queued_job_reports_queued(tmp_path, fake_koala, monkeypatch, job_state):
+    """Koala admits a job (Queuing), then schedules and pulls the image (Updating); the run is queued until Running."""
+    monkeypatch.setenv("FAKE_PHASES", "hang"); monkeypatch.setenv("FAKE_JOB_STATE", job_state)
     koala_backend = backend(tmp_path)
     handle = launch(tmp_path, koala_backend)
     deadline = time.time() + 30
@@ -172,7 +132,10 @@ def test_koala_driver_reattaches(tmp_path, fake_koala):
     (run_dir / "koala_plan.json").write_text(json.dumps(dict(
         cluster="h20", bundle_uri="oss://x", code_dir="/data/work/run_codes", command="true", remote_dir=str(remote),
         reader=koala_backend.reader, nodes=1, gpus=8, flags=[], max_segments=8, job_prefix="nextt-gym-run-000009")))
-    (run_dir / "chain.json").write_text(json.dumps(dict(state="running", segments=[dict(n=1, job="old-job")])))
+    job = "tester-nextt-gym-run-000009-0000000001-normal-20261102-000001"
+    (fake_koala / "jobs").mkdir(parents=True)
+    (fake_koala / "jobs" / f"{job}.json").write_text(json.dumps(dict(state="Succeeded")))
+    (run_dir / "chain.json").write_text(json.dumps(dict(state="running", segments=[dict(n=1, job=job)])))
     chain(run_dir)
     record = json.loads((run_dir / "chain.json").read_text())
     assert record["state"] == "succeeded" and record["consumed_flops"] == "7" and len(record["segments"]) == 1
@@ -195,6 +158,83 @@ def test_koala_failed_segment_restarts_from_the_checkpoint(tmp_path, fake_koala,
     expected = [dict(segment=1, job_state="Failed", failed_at_step=300, resumed_from=250)] if submits == 2 else []
     assert status["restarts"] == expected
     assert koala_backend.describe().get("max_restarts") == (max_restarts or None)
+
+
+@pytest.mark.parametrize("ended", ["Failed", "Deleting", "Stopped"])
+def test_koala_restarts_after_every_ended_state(tmp_path, fake_koala, monkeypatch, ended):
+    """A segment ends Failed (a crash), Deleting (after `koala stop`, as on H20) or Stopped (the CLI's record after a
+    stop); the chain restarts from the checkpoint after any of them."""
+    monkeypatch.setenv("FAKE_PHASES", "crash,training_complete"); monkeypatch.setenv("FAKE_CRASH_STATE", ended)
+    koala_backend = backend(tmp_path, max_restarts=1)
+    status = wait_final(koala_backend, launch(tmp_path, koala_backend))
+    assert status["state"] == "succeeded"
+    assert status["restarts"] == [dict(segment=1, job_state=ended, failed_at_step=300, resumed_from=250)]
+
+
+def test_koala_backend_follows_the_backend_interface(tmp_path, fake_koala, monkeypatch):
+    """describe() and status() carry what every backend reports (base.Backend, base.summarize), plus the segment
+    limits of a Koala job; logs() is the last segment's job log."""
+    from nextt_gym.backends.base import STATES, summarize
+    monkeypatch.setenv("FAKE_PHASES", "segment_complete,training_complete")
+    koala_backend = backend(tmp_path)
+    described = koala_backend.describe()
+    assert {"backend_id", "kind", "gpu_type", "allowed_world_sizes", "status"} <= set(described)
+    assert described["max_wall_hours_per_segment"] == 45.5 and described["max_segments"] == 8
+    handle = launch(tmp_path, koala_backend)
+    assert koala_backend.status(handle)["state"] in STATES
+    status = wait_final(koala_backend, handle)
+    common = {"state", *summarize(dict(step=0), dict(phase="x"))}
+    assert common <= set(status), common - set(status)
+    assert status["step"] == 512 and status["gpu_hours"] == 1.0 and status["final"] == {"val_bpb_dev": 0.9}
+    assert koala_backend.logs(handle) == ["NEXTT_RUN_STATUS training_complete 512 1000"]
+
+
+def test_koala_default_reader_runs_through_koala_exec(tmp_path, fake_koala):
+    """Without a `reader`, result files come back through `koala exec --cpu -q -- bash -c` on a debug pod."""
+    koala_backend = KoalaBackend("koala-test", dict(gpu_type="H20", allowed_world_sizes=[8],
+                                                    workdir=str(tmp_path / "cpfs"), fetch_every_s=0))
+    handle = launch(tmp_path, koala_backend)
+    assert wait_final(koala_backend, handle)["state"] == "succeeded"
+    fetched = koala_backend.fetch(handle, tmp_path / "fetched")
+    assert json.loads((fetched / "run_status.json").read_text())["phase"] == "training_complete"
+    execs = [c for c in calls(fake_koala) if c[0] == "exec"]
+    assert execs and all(c[1:6] == ["--cpu", "-q", "--", "bash", "-c"] for c in execs)
+
+
+def test_koala_unknown_job_has_no_state(fake_koala):
+    """`koala get` of a job Koala no longer knows exits 1; the gym reads that as an unknown state, not as an end."""
+    gone = "tester-gone-0000000000-normal-20261102-000000"
+    assert Koala("h20").state(gone) is None and Koala("h20").stop(gone) == 1 and Koala("h20").log(gone) == []
+
+
+def test_the_fake_rejects_what_koala_rejects():
+    from nextt_gym.tests._fake_koala import Rejected, parse
+    for argv in (["submit", "-m", "normal", "-g", "16", "-c", "x"], ["submit", "-m", "normal", "-g", "8"],
+                 ["submit", "-m", "debug", "-c", "x"], ["submit", "-m", "normal", "-c", "x", "--s3-log", "s3://x"],
+                 ["submit", "-m", "normal", "-c", "x", "--code", "a:b", "--code-bundle", "c:d"],
+                 ["submit", "-m", "normal", "-c", "x", "--cluster", "h20"], ["--cluster", "mars", "get", "j"],
+                 ["get", "a", "b"], ["exec", "pod"], ["stop"], ["wait"], ["log", "j", "--since", "1h"],
+                 ["code", "publish", "--force"]):
+        with pytest.raises(Rejected): parse(argv)
+    assert parse(["--cluster", "h20", "exec", "--cpu", "-q", "--", "bash", "-c", "true"])[4] == ["bash", "-c", "true"]
+
+
+@pytest.mark.skipif(not shutil.which("koala"), reason="no koala CLI installed")
+def test_fake_grammar_matches_the_installed_cli():
+    """The fake accepts exactly the options of the installed CLI, with the same value arity. A Koala release that
+    changes them fails here until _fake_koala.GRAMMAR (and the backend, if it uses them) follow."""
+    from nextt_gym.tests._fake_koala import GRAMMAR
+    for command, grammar in GRAMMAR.items():
+        text = subprocess.run(["koala", *command.split(), "--help"], capture_output=True, text=True,
+                              timeout=60).stdout
+        flags, options = set(), set()
+        for line in text.splitlines():
+            head = re.match(r"\s+(-\S.*?)(?:\s{2,}|$)", line)
+            for part in (head.group(1).split(", ") if head else []):
+                name, *metavar = part.split()
+                (options if metavar else flags).add(name)
+        assert flags - {"-h", "--help"} == set(grammar["flags"]), command
+        assert options == set(grammar["options"]), command
 
 
 def test_only_restartable_backends_accept_max_restarts(tmp_path):

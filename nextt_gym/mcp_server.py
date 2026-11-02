@@ -1,4 +1,4 @@
-"""MCP adapter: the 19 agent tools, read-only resources and the iteration prompt.
+"""MCP adapter: the 22 agent tools, read-only resources and the iteration prompt.
 
 Every tool is a thin call into GymService; errors come back as structured GymError dicts.
     python -m nextt_gym.mcp_server                      # stdio (local agent, e.g. Claude Code)
@@ -69,7 +69,8 @@ def get_leaderboard(scale: str, split: str = "dev", limit: int = 20, include_imp
 def list_attempts(status: list[str] | None = None, origin: str | None = None, tags: list[str] | None = None,
                   ancestor_of: str | None = None, descendant_of: str | None = None, sort: str = "created",
                   limit: int = 50, cursor: str | None = None) -> dict:
-    """List architecture attempts with filters; sort by "created" or "best_S" / "best_L"."""
+    """List architecture attempts with filters; sort by "created" or by the best dev BPB at a scale: "best_S",
+    "best_C", "best_M" or "best_L"."""
     return svc().list_attempts(status=status, origin=origin, tags=tags, ancestor_of=ancestor_of,
                                descendant_of=descendant_of, sort=sort, limit=limit, cursor=cursor)
 
@@ -161,8 +162,8 @@ def cancel_run(run_id: str, reason: str) -> dict:
 # ---- events and memory -------------------------------------------------------------------
 @tool
 def wait_events(cursor: int | None = None, types: list[str] | None = None, timeout_s: int = 30) -> dict:
-    """Long-poll for events after `cursor` (verification.finished, run.status, run.eval, run.restarted,
-    run.finished, budget.*).
+    """Long-poll for events after `cursor`; `types` filters on verification.finished, attempt.revealed, run.status,
+    run.eval, run.restarted, run.poll_error, run.finished, budget.low and budget.settled.
 
     Pass the `events_cursor` returned by submit_attempt / launch_run; without a cursor only events after this call
     are returned. Use `next_cursor` from the result for the following call."""

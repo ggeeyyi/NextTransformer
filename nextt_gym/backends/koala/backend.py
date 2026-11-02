@@ -38,7 +38,7 @@ import subprocess
 import time
 
 from .. import reader
-from ..base import RESULT_FILES, Backend
+from ..base import RESULT_FILES, Backend, summarize
 from .chain import FINAL, driver_running, read_chain, start_driver, write_json
 from .cli import Koala
 
@@ -56,8 +56,14 @@ class KoalaBackend(Backend):
         super().__init__(backend_id, config)
         self.koala = Koala(config.get("cluster", "h20"))
         self.cluster = self.koala.cluster
+        # A Koala job has a wall-clock limit, so every run has segment limits; describe() reports them.
+        self.max_wall_hours_per_segment = float(config.get("max_wall_hours_per_segment", 45.5))
+        self.max_segments = int(config.get("max_segments", 8))
         self.fetch_every_s = float(config.get("fetch_every_s", 60))
         self.reader = config.get("reader") or self.koala.exec_template(config.get("reader_target"))
+
+    def describe(self):
+        return dict(super().describe(), max_segments=self.max_segments)
 
     def availability(self):
         return "available" if self.koala.available() else "offline"
@@ -83,7 +89,7 @@ class KoalaBackend(Backend):
         boot = self.config.get("boot_dir", "/local-ssd/nextt-gym-boot")
         args = ["run", "--bundle", f"{code}/{bundle_name}", "--sha256", sha256, "--run-spec", f"{out}/{spec_name}",
                 "--output", out, "--nproc", str(min(world_size, self.gpus_per_node)), "--resume", "auto",
-                "--max-wall-hours", str(self.config.get("max_wall_hours_per_segment", 45.5)),
+                "--max-wall-hours", str(self.max_wall_hours_per_segment),
                 "--code-dir", self.config.get("unpack_dir", "/local-ssd/nextt-gym-code")]
         if self.config.get("site_config"): args += ["--site-config", self.config["site_config"]]
         if synthetic: args += ["--synthetic"]
@@ -118,7 +124,7 @@ class KoalaBackend(Backend):
                     command=command, remote_dir=out, reader=self.reader, nodes=1,
                     gpus=min(world_size, self.gpus_per_node),
                     flags=self.config.get("submit_flags", ["-m", "normal", "--ssd", "64", "-q", "-y"]),
-                    max_segments=int(self.config.get("max_segments", 8)), max_restarts=self.max_restarts,
+                    max_segments=self.max_segments, max_restarts=self.max_restarts,
                     job_prefix="nextt-gym-" + re.sub(r"[^a-z0-9-]+", "-", spec["run_id"].lower()))
         write_json(run_dir / "koala_plan.json", plan)
         start_driver(run_dir)
@@ -132,9 +138,10 @@ class KoalaBackend(Backend):
             start_driver(run_dir)   # re-attaches to the unfinished job
         if state == "running" and (chain.get("segments") or [{}])[-1].get("job_state") in ("Queuing", "Updating"):
             state = "queued"        # submitted, but Koala has not started the pod yet
-        return dict(state=state, phase=chain.get("phase"), step=chain.get("step"),
-                    consumed_flops=chain.get("consumed_flops"), segments=chain.get("segments", []),
-                    restarts=chain.get("restarts", []))
+        # The keys of the other backends (base.summarize), from the trainer's files at the last segment's end.
+        out = dict(state=state, **summarize(chain.get("budget"), chain.get("run_status")))
+        return dict(out, phase=chain.get("phase"), step=chain.get("step"), consumed_flops=chain.get("consumed_flops"),
+                    segments=chain.get("segments", []), restarts=chain.get("restarts", []))
 
     def logs(self, handle, tail=200):
         job = (read_chain(handle).get("segments") or [{}])[-1].get("job")

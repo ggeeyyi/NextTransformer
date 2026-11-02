@@ -139,6 +139,9 @@ CI runs it in the `gym` job. The suite runs on CPU and covers:
 - sealed official results, the operator's reveal, and the protocol seed at L;
 - trainer smoke with exact resume and budget stop;
 - the local backend;
+- the Koala backend against a stand-in that accepts only the real CLI's command lines (`tests/_fake_koala.py`;
+  compared with the installed `koala --help` where there is one);
+- the served tools, resources, prompt, event types and task card against [INTERFACE.md](INTERFACE.md);
 - the whole service loop.
 
 The verifier's static checks are not a sandbox. API sealing hides results but does not remove

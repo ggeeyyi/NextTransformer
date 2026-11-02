@@ -236,12 +236,13 @@ class Archive:
                               best_official=a["best_official"], flops_per_token=fpt, created_at=a["created_at"]))
         if sort == "created":
             items.reverse()   # newest first
-        elif sort in ("best_S", "best_L"):
-            scale = sort[-1]
+        elif sort in [f"best_{s}" for s in SCALES]:
+            scale = sort[len("best_"):]
             items.sort(key=lambda a: (a["best"].get(scale, {}).get("val_bpb") is None,
                                       a["best"].get(scale, {}).get("val_bpb") or 0.0))
         else:
-            raise GymError("INVALID_ARGUMENT", f"unknown sort {sort!r}")
+            raise GymError("INVALID_ARGUMENT", f"unknown sort {sort!r}",
+                           details=dict(available=["created", *(f"best_{s}" for s in SCALES)]))
         start = int(cursor or 0)
         page = items[start:start + int(limit)]
         nxt = start + len(page)

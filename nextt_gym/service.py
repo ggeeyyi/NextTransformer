@@ -22,7 +22,7 @@ from .backends import load_backends
 from .contract import REQUIRED_FILES, OPTIONAL_FILES, load_submission
 from .errors import GymError
 from .ledger import FlopsLedger
-from .store import Store, now
+from .store import EVENT_TYPES, Store, now
 from .task import SCALES, TASK
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -509,6 +509,9 @@ class GymService:
 
     # ---- events and memory ----------------------------------------------------------------------
     def wait_events(self, cursor=None, types=None, timeout_s=30):
+        unknown = sorted(set(types or ()) - set(EVENT_TYPES))
+        if unknown:
+            raise GymError("INVALID_ARGUMENT", f"unknown event types {unknown}", details=dict(available=list(EVENT_TYPES)))
         deadline = time.monotonic() + max(0, min(int(timeout_s), 60))
         while True:
             self.poll(force=True)

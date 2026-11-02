@@ -74,7 +74,8 @@ def segment_status(plan, koala, job):
         fields = lines[-1].split() if lines else []
         phase, step, consumed = (fields[1], int(fields[2]), fields[3]) if len(fields) >= 4 else (None, None, None)
     return dict(phase=phase, step=step, consumed=consumed, logged_step=(found.get("budget.json") or {}).get("step"),
-                checkpoint=(found.get("latest.json") or {}).get("step"))
+                checkpoint=(found.get("latest.json") or {}).get("step"), budget=found.get("budget.json"),
+                run_status=status)
 
 
 def restart_from(plan, record, outcome):
@@ -136,6 +137,8 @@ def chain(run_dir):
         segment.update(job_state=job_state, status=[phase, outcome["step"], outcome["consumed"]],
                        checkpoint=outcome["checkpoint"], finished=time.time())
         if phase: record.update(phase=phase, step=outcome["step"], consumed_flops=outcome["consumed"])
+        # The trainer's own files, so that status() reports what the other backends report (base.summarize).
+        record.update({k: outcome[k] for k in ("budget", "run_status") if outcome[k]})
         if cancelled(): record["state"] = "cancelled"
         elif phase in ("training_complete", "smoke_complete"): record["state"] = "succeeded"
         elif phase == "segment_complete": pass
