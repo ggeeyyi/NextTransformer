@@ -149,6 +149,7 @@ accelerate launch --config_file launch/accelerate.yaml \
 
 > [!NOTE]
 > **竞技场正在积极开发中。** 全面支持 agent 自主研究的 Arena v2（带 MCP 工具的研究 gym、算力计量、研究轨迹和自我改进的研究循环）将于 **2026 年 11 月 14 日**前上线。
+> 研究 gym 的早期版本在 [`nextt_gym/`](nextt_gym/README.md)。
 
 现在任何 LLM（无论是否借助研究框架）就已经可以提交架构参赛：它在相同的协议下训练、在同一个排行榜上排名，并披露它是如何被发现的。见[竞技场](https://interactive-active-ai.github.io/NextTransformer/docs/zh-cn/arena/overview/)。
 

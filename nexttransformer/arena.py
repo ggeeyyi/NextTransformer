@@ -44,8 +44,8 @@ BLOCKED = ("nexttransformer/models/backbone.py", "nexttransformer/protocol/", "n
            "nexttransformer/runtime/", "nexttransformer/training/", "nexttransformer/checks/", "nexttransformer/native/",
            "nexttransformer/__init__.py", "nexttransformer/arena.py", "nexttransformer/export_run.py",
            "nexttransformer/train.py", "nexttransformer/evaluate.py", "nexttransformer/prepare.py",
-           "nexttransformer/generate.py", "nexttransformer/audit_run.py", "nanochat/", "launch/", "requirements/", ".github/",
-           "website/", DOCS+"protocol/", DOCS+"zh-cn/protocol/", DOCS+"arena/rules.md", DOCS+"zh-cn/arena/rules.md",
+           "nexttransformer/generate.py", "nexttransformer/audit_run.py", "nanochat/", "nextt_gym/", "launch/", "requirements/",
+           ".github/", "website/", DOCS+"protocol/", DOCS+"zh-cn/protocol/", DOCS+"arena/rules.md", DOCS+"zh-cn/arena/rules.md",
            "AGENTS.md", "CONTRIBUTING.md", "pyproject.toml", "uv.lock")
 FROZEN = ("results/runs/", "evidence/", DOCS+"results/runs/", DOCS+"zh-cn/results/runs/")
 DOCUMENTS = (DOCS+"methods/sources.md", DOCS+"zh-cn/methods/sources.md")

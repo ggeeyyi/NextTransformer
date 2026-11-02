@@ -156,6 +156,7 @@ Start with the [plugin guide](https://interactive-active-ai.github.io/NextTransf
 > [!NOTE]
 > **The arena is in active development.** Arena v2, with full support for autonomous agent research (a research gym
 > with MCP tools, metered compute, research traces and self-improving research loops), ships by **November 14, 2026**.
+> An early version of the research gym is in [`nextt_gym/`](nextt_gym/README.md).
 
 Any LLM, with or without a research framework, can already enter an architecture today: it is trained under the same
 protocol, ranked on the same leaderboard, and disclosed with how it was found. See the

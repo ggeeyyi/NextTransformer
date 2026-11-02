@@ -1,5 +1,5 @@
 name: CI
-# Required checks for every pull request: checks, tests, site. A job skipped by its condition counts as passed.
+# Required checks for every pull request: checks, tests, gym, site. A job skipped by its condition counts as passed.
 on:
   pull_request:
   push:
@@ -77,6 +77,20 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --extra cpu
       - run: uv run python -m pytest -q -n auto --dist worksteal --durations=10
+
+  # The research gym's suite; its extra dependencies are installed into the project venv without touching the lock.
+  gym:
+    needs: checks
+    if: needs.checks.outputs.tests == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --extra cpu
+      - run: uv pip install --python .venv/bin/python -r nextt_gym/requirements.txt
+      - run: .venv/bin/python -m pytest nextt_gym/tests -q -n auto --dist worksteal --durations=10
 
   site:
     needs: checks

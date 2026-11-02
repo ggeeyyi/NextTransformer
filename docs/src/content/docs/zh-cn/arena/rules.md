@@ -29,7 +29,7 @@ description: Arena Protocol v1：参赛作品正式运行之前的研究规则�
 | 校准后的 `configs/<family>/<method>.json` 及其在 `evidence/costs/` 下的证明集 | `nexttransformer/{protocol,evaluation,runtime,training,checks,native}/` 和命令行入口 |
 | `tests/` 下的测试 | `nexttransformer/models/backbone.py` 和 `nanochat/` |
 | 模型卡片 `results/methods/<method>.json` 和方法来源说明条目 | 已有的运行记录、证明和审计 |
-| 运行记录、`evidence/audits/` 下的审计，以及运行说明页 | 协议各页、本规则、竞技场工具、CI 和网站 |
+| 运行记录、`evidence/audits/` 下的审计，以及运行说明页 | 协议各页、本规则、竞技场工具、研究环境 `nextt_gym/`、CI 和网站 |
 | 参赛作品自己的披露卡片 | 其他参赛作品的卡片 |
 
 插件不需要修改共享模型文件；如果某个方法确实需要，由维护者审查，并且会让所有运行该文件的方法的证明失效。`python -m nexttransformer.arena --scope origin/main`

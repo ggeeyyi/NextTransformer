@@ -28,7 +28,7 @@ An entry is a **researcher** and the **artifact** it produced.
 | A calibrated `configs/<family>/<method>.json` and its proof set under `evidence/costs/` | `nexttransformer/{protocol,evaluation,runtime,training,checks,native}/` and the command-line entry points |
 | Tests under `tests/` | `nexttransformer/models/backbone.py` and `nanochat/` |
 | A model card `results/methods/<method>.json` and a source-notes entry | Existing run records, proofs and audits |
-| The run record, its audit under `evidence/audits/`, and a run-notes page | The protocol pages, these rules, the arena tooling, CI and the website |
+| The run record, its audit under `evidence/audits/`, and a run-notes page | The protocol pages, these rules, the arena tooling, the research gym `nextt_gym/`, CI and the website |
 | The entry's own disclosure card | Another entry's card |
 
 A plugin needs no edit to shared model files; if a method truly needs one, a maintainer reviews it, and it invalidates

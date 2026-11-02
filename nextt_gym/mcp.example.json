@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "nextt-gym": {
+      "command": ".venv/bin/python",
+      "args": ["-m", "nextt_gym.mcp_server"],
+      "env": {
+        "NEXTT_GYM_HOME": "/persistent/nextt-gym",
+        "NEXTT_GYM_BACKENDS": "nextt_gym/backends.local.toml"
+      }
+    }
+  }
+}
