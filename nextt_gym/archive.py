@@ -4,6 +4,7 @@ Attempt files are materialized to GYM_HOME/attempts/<id>/ and never change; an
 edit is a new attempt whose `parent_ids` point at its sources.
 """
 import base64
+from datetime import datetime
 import hashlib
 import json
 from pathlib import Path
@@ -19,7 +20,7 @@ from .task import SCALES
 ATTEMPT_STATUS = ("submitted", "verifying", "verified", "rejected")
 RUN_JSON = ("progress", "latest", "final", "failure", "extra")
 RUN_FIELDS = ("status", "backend_id", "gpu_type", "world_size", "micro_batch", "quote_id", "seed_offset", "handle",
-              "gpu_hours", "started_at", "ended_at", *RUN_JSON)
+              "gpu_hours", "platform_gpu_hours", "started_at", "ended_at", *RUN_JSON)
 TERMINAL = ("succeeded", "failed", "cancelled", "budget_exceeded")
 NOTE_LIMIT = 4096
 _TOKEN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*|\d+(?:\.\d+)?|[^\s\w]")
@@ -44,6 +45,13 @@ def _summary(audit):
     """Audit report without the heavy per-operator stage records."""
     if not audit: return audit
     return {k: v for k, v in audit.items() if k != "stage_records"}
+
+
+def _hours(row):
+    """Wall-clock hours from creation (queueing included) to the end, or to now while the run is open."""
+    end = row["ended_at"] or now()
+    start, stop = (datetime.fromisoformat(v.replace("Z", "+00:00")) for v in (row["created_at"], end))
+    return round((stop - start).total_seconds() / 3600, 4)
 
 
 class Archive:
@@ -322,7 +330,8 @@ class Archive:
                     backend_id=row["backend_id"], gpu_type=row["gpu_type"], world_size=row["world_size"],
                     micro_batch=row["micro_batch"], status=row["status"], quote_id=row["quote_id"],
                     seed_offset=row["seed_offset"], handle=row["handle"], progress=loads(row["progress"], {}),
-                    consumed=dict(flops=float(consumed), flops_exact=str(consumed), gpu_hours=row["gpu_hours"]),
+                    consumed=dict(flops=float(consumed), flops_exact=str(consumed), gpu_hours=row["gpu_hours"],
+                                  platform_gpu_hours=row["platform_gpu_hours"], wall_hours=_hours(row)),
                     reserved_flops=float(int(row["reserved_flops"])), reserved_flops_exact=row["reserved_flops"],
                     latest=loads(row["latest"], {}), final=loads(row["final"]), failure=loads(row["failure"]),
                     extra=loads(row["extra"], {}), created_at=row["created_at"], started_at=row["started_at"],

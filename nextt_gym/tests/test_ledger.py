@@ -28,7 +28,8 @@ def test_reserve_charge_settle(ledger, store):
     snap = ledger.snapshot()
     assert snap["used_flops_exact"] == str(r // 2) and snap["reserved_flops"] == 0
     assert snap["by_kind"]["eval"] == 10 and snap["by_scale"]["L"] == float(r // 2)
-    assert snap["gpu_hours"] == [dict(backend_id="b", gpu_type="A800", hours=1.5)]
+    assert snap["gpu_hours"] == [dict(backend_id="b", gpu_type="A800", hours=1.5, platform_hours=None)]
+    assert snap["metering"]["platform_gpu_hours"] == 0 and snap["metering"]["runs_without_platform_hours"] == 1
     assert [e["type"] for e in store.events_since(0)["events"]] == ["budget.settled"]
 
 

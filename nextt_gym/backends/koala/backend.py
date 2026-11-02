@@ -141,17 +141,41 @@ class KoalaBackend(Backend):
         # The keys of the other backends (base.summarize), from the trainer's files at the last segment's end.
         out = dict(state=state, **summarize(chain.get("budget"), chain.get("run_status")))
         return dict(out, phase=chain.get("phase"), step=chain.get("step"), consumed_flops=chain.get("consumed_flops"),
-                    segments=chain.get("segments", []), restarts=chain.get("restarts", []))
+                    segments=chain.get("segments", []), restarts=chain.get("restarts", []),
+                    **self.platform_time(chain.get("segments", []), json.loads((run_dir / "koala_plan.json").read_text())
+                                         if (run_dir / "koala_plan.json").exists() else {}))
+
+    @staticmethod
+    def platform_time(segments, plan):
+        """Platform GPU-hours and queue time over the run's jobs: finished segments as the platform recorded them, a
+        segment still running up to now (pod time since the driver first saw it running)."""
+        hours, queue, known = 0., 0., bool(segments)
+        for segment in segments:
+            meter = segment.get("metering")
+            if meter and meter.get("platform_gpu_hours") is not None:
+                hours += meter["platform_gpu_hours"]; queue += meter.get("queue_seconds") or 0.
+            elif segment.get("finished"):
+                known = False          # an ended segment without a platform record: the run's total is unknown
+            elif segment.get("running_at"):
+                hours += (time.time() - segment["running_at"]) * plan.get("gpus", 0) * plan.get("nodes", 1) / 3600
+        if not known: return dict(platform_gpu_hours=None, queue_seconds=None)
+        return dict(platform_gpu_hours=round(hours, 4), queue_seconds=round(queue, 1))
 
     def logs(self, handle, tail=200):
         job = (read_chain(handle).get("segments") or [{}])[-1].get("job")
         return self.koala.log(job, tail) if job else []
 
     def cancel(self, handle):
-        """Mark the run cancelled and stop its job; the driver records the final state."""
+        """Mark the run cancelled and stop its job; the driver records the final state.
+
+        A stopped job's record loses its times, so they are kept first (`times-<job>.json`) for the metering.
+        """
         run_dir = Path(handle); (run_dir / "cancelled").write_text("1")
         for segment in read_chain(run_dir).get("segments", []):
-            if segment.get("job") and not segment.get("finished"): self.koala.stop(segment["job"])
+            if segment.get("job") and not segment.get("finished"):
+                times = self.koala.times(segment["job"])
+                if times: write_json(run_dir / f"times-{segment['job']}.json", times)
+                self.koala.stop(segment["job"])
 
     def fetch(self, handle, dest):
         """Read the run's result files through the reader; a running job at most every `fetch_every_s`."""

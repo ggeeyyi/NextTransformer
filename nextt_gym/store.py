@@ -81,6 +81,11 @@ MIGRATIONS = [
     """
     CREATE TABLE reveals (attempt_id TEXT PRIMARY KEY, at TEXT NOT NULL, reason TEXT NOT NULL);
     """,
+    # version 3: platform GPU-hours (pod time x GPUs as the cluster records it, queueing excluded), null if unknown
+    """
+    ALTER TABLE runs ADD COLUMN platform_gpu_hours REAL;
+    ALTER TABLE ledger_entries ADD COLUMN platform_gpu_hours REAL;
+    """,
 ]
 
 

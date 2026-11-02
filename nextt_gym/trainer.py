@@ -75,6 +75,11 @@ class Schedule:
         self.warmdown_ratio, self.final_lr_fraction = base.warmdown_ratio, base.final_lr_fraction
 
 
+def schedule_for(spec):
+    """A run's schedule: a prefix scale (S, M) runs `steps` updates of a `schedule_steps`-update schedule."""
+    return Schedule(int(spec.get("schedule_steps") or spec["steps"]))
+
+
 class SyntheticStream:
     """Deterministic random rows with the BestFitStream batch/state interface (smoke only)."""
     def __init__(self, vocab, sequence_len, seed, rank):
@@ -238,9 +243,8 @@ def main(argv=None):
     vocab = int(overrides.get("vocab_size", sub.vocab_size))
     steps = spec["steps"]
     scale = SCALES[spec["scale"]]
-    # A prefix scale (S) runs the first `steps` updates of a `horizon`-update schedule.
-    horizon = int(spec.get("schedule_steps") or steps)
-    schedule = Schedule(horizon)
+    schedule = schedule_for(spec)
+    horizon = schedule.steps
     stage_costs = {k: int(v) for k, v in spec["stage_costs"].items()}
     stop_at = int(spec["stop_at_flops"])
     forward_per_token = spec["forward_flops_per_token"]
@@ -290,7 +294,10 @@ def main(argv=None):
     stage = sub.stage_for_step(0, horizon)
     model = sub.instantiate(device, overrides=overrides or None, seed=spec["seed"])
     sub.set_stage(model, stage, audit=False, step=0, total_steps=horizon)
-    optimizer = build_optimizer(model, sub.model_dim)
+    # The upstream LR scaling follows the width it was declared for (model_dim_field); smoke overrides that change
+    # that field change it too, as nexttransformer.train scales by the model's own width.
+    field = sub.config.get("model_dim_field")
+    optimizer = build_optimizer(model, int(overrides[field]) if field in overrides else sub.model_dim)
     wrapped = DDP(model, device_ids=[device.index] if device.type == "cuda" else None,
                   broadcast_buffers=False) if world > 1 else model
     autocast = torch.autocast("cuda", dtype=torch.bfloat16) if device.type == "cuda" and sub.config.get(

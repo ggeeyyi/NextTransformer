@@ -13,6 +13,7 @@ from .store import dumps, loads, now
 from .task import SCALES, TASK
 
 KINDS = ("train", "eval", "check", "anchor")
+KEEP = object()   # settle(): keep the stored platform reading
 LOW_FRACTION = 0.10
 
 
@@ -87,21 +88,31 @@ class FlopsLedger:
         if row is None: raise GymError("NOT_FOUND", f"no ledger entry for {run_id}")
         return row
 
-    def charge(self, run_id, consumed_total, gpu_hours=0.0, gpu_type=None, *, breakdown=None):
-        """Record the running total consumed by a run. Idempotent; totals never move backwards."""
+    def charge(self, run_id, consumed_total, gpu_hours=0.0, gpu_type=None, *, breakdown=None, platform_gpu_hours=None):
+        """Record the running total consumed by a run. Idempotent; totals never move backwards.
+
+        `gpu_hours` is the trainer's own training and evaluation time; `platform_gpu_hours` is the pod time the
+        cluster charged (setup, compilation and restarts included, queueing excluded), None when unknown. A running
+        run's platform reading is provisional: the latest known one replaces the stored one.
+        """
         consumed_total = int(consumed_total)
         with self.store.transaction():
             row = self._open(run_id)
             if row["state"] != "open": return dict(consumed=int(row["consumed"]), over=False)
             consumed = max(int(row["consumed"]), consumed_total)
             hours = max(float(row["gpu_hours"]), float(gpu_hours or 0))
-            self.store.execute("UPDATE ledger_entries SET consumed=?, gpu_hours=?, gpu_type=COALESCE(?, gpu_type), "
-                               "breakdown=COALESCE(?, breakdown), updated_at=? WHERE entry_id=?",
-                               (str(consumed), hours, gpu_type, dumps(_ints(breakdown)), now(), run_id))
+            platform = row["platform_gpu_hours"] if platform_gpu_hours is None else float(platform_gpu_hours)
+            self.store.execute("UPDATE ledger_entries SET consumed=?, gpu_hours=?, platform_gpu_hours=?, "
+                               "gpu_type=COALESCE(?, gpu_type), breakdown=COALESCE(?, breakdown), updated_at=? "
+                               "WHERE entry_id=?",
+                               (str(consumed), hours, platform, gpu_type, dumps(_ints(breakdown)), now(), run_id))
             self._maybe_low()
             return dict(consumed=consumed, over=consumed > int(row["reserved"]))
 
-    def settle(self, run_id, final_consumed=None, *, gpu_hours=None, breakdown=None):
+    def settle(self, run_id, final_consumed=None, *, gpu_hours=None, breakdown=None, platform_gpu_hours=KEEP):
+        """Close a run's entry. `platform_gpu_hours`, when given, is the final measurement and replaces any
+        provisional reading, None (unknown) included; left out, the stored reading stays (cancel_run, before the
+        backend's final metering)."""
         with self.store.transaction():
             row = self._open(run_id)
             reserved = int(row["reserved"])
@@ -110,9 +121,10 @@ class FlopsLedger:
                 return dict(consumed=consumed, refunded=max(reserved - consumed, 0))
             consumed = int(row["consumed"]) if final_consumed is None else int(final_consumed)
             hours = float(row["gpu_hours"]) if gpu_hours is None else float(gpu_hours)
-            self.store.execute("UPDATE ledger_entries SET consumed=?, gpu_hours=?, breakdown=COALESCE(?, breakdown), "
-                               "state='settled', updated_at=? WHERE entry_id=?",
-                               (str(consumed), hours, dumps(_ints(breakdown)), now(), run_id))
+            platform = row["platform_gpu_hours"] if platform_gpu_hours is KEEP else platform_gpu_hours
+            self.store.execute("UPDATE ledger_entries SET consumed=?, gpu_hours=?, platform_gpu_hours=?, "
+                               "breakdown=COALESCE(?, breakdown), state='settled', updated_at=? WHERE entry_id=?",
+                               (str(consumed), hours, platform, dumps(_ints(breakdown)), now(), run_id))
             refunded = max(reserved - consumed, 0)
             t = self.totals()
             self.store.append_event("budget.settled", dict(run_id=run_id),
@@ -133,6 +145,16 @@ class FlopsLedger:
                 (entry_id, kind, scale, str(int(flops)), str(int(flops)), float(gpu_hours), gpu_type, backend_id, ts, ts))
             self._maybe_low()
         return entry_id
+
+    def meter(self, run_id, platform_gpu_hours):
+        """Set a run's platform GPU-hours after the fact (`cli meter`), in any state; the FLOPs stay as they are."""
+        self._open(run_id)
+        self.store.execute("UPDATE ledger_entries SET platform_gpu_hours=?, updated_at=? WHERE entry_id=?",
+                           (platform_gpu_hours, now(), run_id))
+
+    def llm_usage(self):
+        """LLM tokens and API cost of the research, as the operator recorded them (`cli llm-usage`); null if not."""
+        return loads(self.store.get_setting("llm_usage"), dict(tokens=None, cost_usd=None, note=None))
 
     def record_anchor(self, flops, **kwargs):
         return self.record("anchor", flops, **kwargs)
@@ -169,7 +191,7 @@ class FlopsLedger:
         t = self.totals()
         by_kind = {k: 0 for k in KINDS}
         by_scale = {k: 0 for k in SCALES}
-        hours = {}
+        hours, platform, unmetered = {}, {}, 0
         for e in self._entries():
             consumed = int(e["consumed"])
             parts = _ints(loads(e["breakdown"])) if e["breakdown"] else None
@@ -179,14 +201,21 @@ class FlopsLedger:
             else:
                 by_kind[e["kind"]] = by_kind.get(e["kind"], 0) + consumed
             if e["scale"] in by_scale: by_scale[e["scale"]] += consumed
+            key = (e["backend_id"], e["gpu_type"])
             if e["gpu_hours"]:
-                key = (e["backend_id"], e["gpu_type"])
                 hours[key] = hours.get(key, 0.0) + float(e["gpu_hours"])
+            if e["platform_gpu_hours"] is not None:
+                platform[key] = platform.get(key, 0.0) + float(e["platform_gpu_hours"])
+            elif e["kind"] == "train": unmetered += 1
         return dict(
             **self._public(t),
             by_kind={k: float(v) for k, v in by_kind.items()},
             by_scale={k: float(v) for k, v in by_scale.items()},
-            gpu_hours=[dict(backend_id=b, gpu_type=g, hours=h) for (b, g), h in sorted(hours.items(), key=str)],
+            gpu_hours=[dict(backend_id=b, gpu_type=g, hours=hours.get((b, g), 0.0), platform_hours=platform.get((b, g)))
+                       for b, g in sorted(set(hours) | set(platform), key=str)],
+            metering=dict(trainer_gpu_hours=round(sum(hours.values()), 4),
+                          platform_gpu_hours=round(sum(platform.values()), 4),
+                          runs_without_platform_hours=unmetered, llm=self.llm_usage()),
             counters=dict(verifications_today=self.count("verification", 86400),
                           estimate_cost_last_hour=self.count("estimate_cost", 3600),
                           estimate_cost_limit_per_hour=TASK.policy.estimate_cost_per_hour))

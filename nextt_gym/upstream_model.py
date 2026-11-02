@@ -6,6 +6,8 @@ stage rules mirror nexttransformer/protocol/calibrate.py::Auditor.stages and aud
 non-L scales the fixed-length stages (sparse burn-in, Ouro gate-only) keep their
 share of the run.
 """
+import json
+
 import torch
 
 from nexttransformer.models.looped import huginn_depth
@@ -23,7 +25,7 @@ def _fields(config):
 
 def model_config(config):
     fields = _fields(config)
-    key = tuple(sorted(fields.items()))
+    key = json.dumps(fields, sort_keys=True)     # a plugin's `options` is a dict, so the fields themselves are no key
     if key not in _cache: _cache[key] = ModelConfig(**fields)
     c = _cache[key]
     if "layer_mixers" in config and config["layer_mixers"] != c.serialized().get("layer_mixers"):

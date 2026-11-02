@@ -5,10 +5,10 @@ import pytest
 
 def test_schema_and_home(store, tmp_path):
     assert store.home == tmp_path / "home"
-    assert (store.home / "gym.db").exists() and store.schema_version == len(MIGRATIONS) == 2
+    assert (store.home / "gym.db").exists() and store.schema_version == len(MIGRATIONS) == 3
     assert store.one("PRAGMA journal_mode")[0] == "wal"
     # Reopening runs no migration twice.
-    again = Store(store.home); assert again.schema_version == 2; again.close()
+    again = Store(store.home); assert again.schema_version == 3; again.close()
 
 
 def test_big_flops_roundtrip(store):

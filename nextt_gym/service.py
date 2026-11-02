@@ -415,6 +415,9 @@ class GymService:
         if run["status"] in TERMINAL: raise GymError("ALREADY_TERMINAL", f"run {run_id} is {run['status']}")
         if run.get("handle"): self._backend(run["backend_id"]).cancel(run["handle"])
         self._refresh(run, terminal_status="cancelled", reason=reason)
+        # The backend measures the stopped job only when its driver has seen the end: poll() takes it then.
+        run = self.archive.get_run(run_id)
+        self.archive.update_run(run_id, extra=dict(run.get("extra") or {}, metering_pending=True))
         run = self.archive.get_run(run_id)
         settled = self.ledger.settle(run_id, int(run["consumed"]["flops_exact"]))
         return dict(run_id=run_id, status=run["status"], consumed=run["consumed"],
@@ -426,11 +429,26 @@ class GymService:
         with self._lock:
             self._last_poll = time.monotonic()
             for run in self.archive.list_runs():
-                if run["status"] in TERMINAL or run["origin"] != "agent" or not run.get("handle"): continue
+                if run["origin"] != "agent" or not run.get("handle"): continue
                 if only and run["run_id"] != only: continue
+                if run["status"] in TERMINAL:
+                    if (run.get("extra") or {}).get("metering_pending"):
+                        try: self._final_metering(run)
+                        except Exception as exc:
+                            self.archive.append_event("run.poll_error", dict(run_id=run["run_id"]), dict(error=str(exc)[:500]))
+                    continue
                 try: self._refresh(run)
                 except Exception as exc:   # a flaky backend must not break observation tools
                     self.archive.append_event("run.poll_error", dict(run_id=run["run_id"]), dict(error=str(exc)[:500]))
+
+    def _final_metering(self, run):
+        """A cancelled run's platform GPU-hours, once the backend has finished with it (its own final state)."""
+        state = self._backend(run["backend_id"]).status(run["handle"])
+        if state.get("state") not in ("succeeded", "failed", "cancelled"): return
+        platform = state.get("platform_gpu_hours")
+        extra = {k: v for k, v in (run.get("extra") or {}).items() if k != "metering_pending"}
+        self.archive.update_run(run["run_id"], platform_gpu_hours=platform, extra=extra)
+        self.ledger.meter(run["run_id"], platform)
 
     def _refresh(self, run, terminal_status=None, reason=None):
         backend = self._backend(run["backend_id"])
@@ -440,7 +458,8 @@ class GymService:
         budget = json.loads((local / "budget.json").read_text()) if (local / "budget.json").exists() else {}
         consumed = int(budget.get("consumed_flops") or state.get("consumed_flops") or 0)
         gpu_hours = float(budget.get("gpu_hours") or state.get("gpu_hours") or 0.0)
-        charge = self.ledger.charge(run["run_id"], consumed, gpu_hours, run["gpu_type"],
+        platform = state.get("platform_gpu_hours")   # the cluster's pod time x GPUs; None where a backend cannot tell
+        charge = self.ledger.charge(run["run_id"], consumed, gpu_hours, run["gpu_type"], platform_gpu_hours=platform,
                                     breakdown=dict(train=int(budget.get("consumed_train_flops") or 0),
                                                    eval=int(budget.get("consumed_eval_flops") or 0)))
         points, latest, evals = [], dict(run.get("latest") or {}), {}
@@ -483,6 +502,7 @@ class GymService:
         phase = state.get("phase")
         if phase == "budget_exceeded" or charge.get("over"): status = "budget_exceeded"
         fields = dict(progress=progress, latest=latest, gpu_hours=gpu_hours)
+        if platform is not None: fields["platform_gpu_hours"] = platform      # provisional while the run is open
         for step in sorted(set(evals) - stored):
             self.archive.append_event("run.eval", dict(run_id=run["run_id"], attempt_id=run["attempt_id"]),
                                       dict(step=step, val_bpb_dev=evals[step]))
@@ -493,6 +513,7 @@ class GymService:
                                           restart)
             fields["extra"] = dict(run.get("extra") or {}, restarts=restarts)
         if status in TERMINAL:
+            if terminal_status is None: fields["platform_gpu_hours"] = platform   # the backend's final measurement
             final = (state.get("final") or {})
             status_file = local / "run_status.json"
             if status_file.exists(): final = json.loads(status_file.read_text()).get("final") or final
@@ -505,7 +526,7 @@ class GymService:
         if status != run["status"]: fields["status"] = status
         self.archive.update_run(run["run_id"], consumed_flops=consumed, **fields)
         if status in TERMINAL and terminal_status is None:
-            self.ledger.settle(run["run_id"], consumed, gpu_hours=gpu_hours)
+            self.ledger.settle(run["run_id"], consumed, gpu_hours=gpu_hours, platform_gpu_hours=platform)
 
     # ---- events and memory ----------------------------------------------------------------------
     def wait_events(self, cursor=None, types=None, timeout_s=30):

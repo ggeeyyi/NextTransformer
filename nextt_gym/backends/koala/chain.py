@@ -9,6 +9,7 @@ the chain in `chain.json` and holds `driver.lock` while it runs. Restarting the 
 driver exits, and a new one re-attaches to the unfinished job instead of submitting another. A cancelled run
 (the `cancelled` marker) ends the chain.
 """
+from datetime import datetime, timezone
 import fcntl
 import json
 import os
@@ -87,6 +88,41 @@ def restart_from(plan, record, outcome):
     return checkpoint
 
 
+def _when(text):
+    return datetime.fromisoformat(text.replace("Z", "+00:00")) if text else None
+
+
+def metering(koala, job, segment, gpus, saved=None):
+    """Queue time, pod time and platform GPU-hours (pod hours x GPUs) of a segment's job.
+
+    The platform's own record (`koala get --json`) gives creation, start and end; for a job the gym stopped, the record
+    `saved` before the stop (a stopped job's record keeps no times), with the end the driver saw. A record that shows
+    no start means the job never ran: no pod time. Without a record (stopped from outside the gym, or reclaimed by the
+    cluster after about two days), the driver's own times are used: the first Running state it saw and the end;
+    without those the hours are unknown (None).
+    """
+    times, source = koala.times(job), "koala get"
+    if times is None and saved: times, source = saved, "koala get before the stop"
+    stamp = lambda key: segment.get(key) and datetime.fromtimestamp(segment[key], timezone.utc)
+    submitted, finished = stamp("submitted"), stamp("finished") or datetime.now(timezone.utc)
+    if times is not None:
+        gpus = times.get("gpus") or gpus
+        created, started, ended = (_when(times.get(k)) for k in ("created", "started", "ended"))
+        created = created or submitted
+        if not started:
+            queue = round((finished - created).total_seconds(), 1) if created else None
+            return dict(source=source, gpus=gpus, queue_seconds=queue, pod_seconds=0., platform_gpu_hours=0.)
+        if not ended: ended, source = finished, f"{source}, end seen by the driver"
+    else:
+        source, created, started, ended = "driver", submitted, stamp("running_at"), finished
+        if not started:
+            return dict(source=source, gpus=gpus, queue_seconds=None, pod_seconds=None, platform_gpu_hours=None)
+    pod = max((ended - started).total_seconds(), 0.)
+    queue = round(max((started - created).total_seconds(), 0.), 1) if created else None
+    return dict(source=source, gpus=gpus, queue_seconds=queue, pod_seconds=round(pod, 1),
+                platform_gpu_hours=round(pod * gpus / 3600, 4))
+
+
 def wait_until_ended(koala, job, observe=lambda state: None):
     """The job's final platform state; `observe` sees every state read. Only an ended state ends the
     wait: an unreadable, blank or unrecognized state is unknown, and UNKNOWN_POLLS of them in a row end
@@ -130,12 +166,16 @@ def chain(run_dir):
             record["segments"].append(segment); record["state"] = "running"; write()
             if cancelled(): koala.stop(job)
         def observe(state, segment=segment):
+            if state == "Running" and "running_at" not in segment: segment["running_at"] = time.time()
             if segment.get("job_state") != state: segment["job_state"] = state; write()
         job_state = wait_until_ended(koala, segment["job"], observe)
         outcome = segment_status(plan, koala, segment["job"])
         phase = outcome["phase"]
         segment.update(job_state=job_state, status=[phase, outcome["step"], outcome["consumed"]],
                        checkpoint=outcome["checkpoint"], finished=time.time())
+        saved = run_dir / f"times-{segment['job']}.json"
+        segment["metering"] = metering(koala, segment["job"], segment, plan["gpus"] * plan["nodes"],
+                                       json.loads(saved.read_text()) if saved.exists() else None)
         if phase: record.update(phase=phase, step=outcome["step"], consumed_flops=outcome["consumed"])
         # The trainer's own files, so that status() reports what the other backends report (base.summarize).
         record.update({k: outcome[k] for k in ("budget", "run_status") if outcome[k]})

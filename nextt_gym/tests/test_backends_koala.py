@@ -237,6 +237,63 @@ def test_fake_grammar_matches_the_installed_cli():
         assert options == set(grammar["options"]), command
 
 
+def test_koala_meters_each_segment_from_the_job_record(tmp_path, fake_koala, monkeypatch):
+    """Platform GPU-hours are each job's pod time (running to end, from `koala get`) times its GPUs; queueing is apart."""
+    monkeypatch.setenv("FAKE_PHASES", "segment_complete,training_complete")
+    koala_backend = backend(tmp_path)
+    status = wait_final(koala_backend, launch(tmp_path, koala_backend))
+    assert [s["metering"] for s in status["segments"]] == [
+        dict(source="koala get", gpus=8, queue_seconds=1.0, pod_seconds=3600.0, platform_gpu_hours=8.0)] * 2
+    assert status["platform_gpu_hours"] == 16.0 and status["queue_seconds"] == 2.0
+
+
+@pytest.mark.parametrize("job_state, source", [("Running", "koala get before the stop, end seen by the driver"),
+                                                ("Queuing", "koala get before the stop")])
+def test_koala_metering_of_a_stopped_job(tmp_path, fake_koala, monkeypatch, job_state, source):
+    """A stopped job's record keeps no times, so cancel saves it first: a job that ran is metered from its start to
+    the stop the driver saw; one stopped while queued never ran, which the saved record shows (zero, not unknown)."""
+    monkeypatch.setenv("FAKE_PHASES", "hang"); monkeypatch.setenv("FAKE_JOB_STATE", job_state)
+    koala_backend = backend(tmp_path)
+    handle = launch(tmp_path, koala_backend)
+    deadline = time.time() + 30
+    while time.time() < deadline and (koala_backend.status(handle)["segments"] or [{}])[-1].get("job_state") != job_state:
+        time.sleep(0.2)
+    koala_backend.cancel(handle)
+    status = wait_final(koala_backend, handle)
+    meter = status["segments"][-1]["metering"]
+    assert meter["source"] == source and meter["platform_gpu_hours"] is not None
+    assert meter["pod_seconds"] == 0. if job_state == "Queuing" else meter["pod_seconds"] < 60
+    assert status["platform_gpu_hours"] == meter["platform_gpu_hours"]
+
+
+def test_koala_times_reads_the_job_record(monkeypatch):
+    """Start: MPIJobResumed after a queue, else the Running condition; end: the Succeeded or Failed condition, whatever
+    its reason (H20 reports WorkerFailed); a record without conditions (a stopped job) is no record."""
+    def record(conditions, status="Failed"):
+        payload = json.dumps(dict(status=status, createdAt="2026-11-01T23:35:43+08:00", resources=dict(gpu=8),
+                                  conditions=conditions))
+        monkeypatch.setattr(Koala, "run", lambda self, *args, **kw: subprocess.CompletedProcess(args, 0, payload, ""))
+        return Koala("h20").times("job")
+    c = lambda type, reason, at, status="True": dict(type=type, reason=reason, lastTransitionTime=at, status=status)
+    assert record([c("Created", "MPIJobCreated", "2026-11-01T15:35:43Z"), c("Suspended", "MPIJobResumed", "2026-11-01T20:50:48Z", "False"),
+                   c("Running", "MPIJobRunning", "2026-11-01T20:51:02Z", "False"), c("Failed", "WorkerFailed", "2026-11-01T21:37:22Z")]) \
+        == dict(created="2026-11-01T15:35:43Z", started="2026-11-01T20:50:48Z", ended="2026-11-01T21:37:22Z", gpus=8,
+                status="Failed")
+    assert record([], status="Stopped") is None
+
+
+def test_koala_metering_without_a_record_uses_the_driver(tmp_path):
+    """A reclaimed job (no record): pod time from the first Running state the driver saw; unknown without one."""
+    from nextt_gym.backends.koala.chain import metering
+
+    class Gone:
+        def times(self, job): return None
+    seen = dict(submitted=1000., running_at=1100., finished=1100. + 1800.)
+    assert metering(Gone(), "job", seen, 8) == dict(source="driver", gpus=8, queue_seconds=100.0, pod_seconds=1800.0,
+                                                   platform_gpu_hours=4.0)
+    assert metering(Gone(), "job", dict(submitted=1000., finished=2000.), 8)["platform_gpu_hours"] is None
+
+
 def test_only_restartable_backends_accept_max_restarts(tmp_path):
     from nextt_gym.backends import LocalBackend
     with pytest.raises(ValueError, match="max_restarts"): LocalBackend("local", dict(max_restarts=1))

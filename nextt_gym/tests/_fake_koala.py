@@ -15,7 +15,11 @@ Each submitted segment runs instantly: it writes the trainer's status files into
   FAKE_JOB_STATE     the state of a hanging job (default Running; Queuing and Updating are also active)
   FAKE_CRASH_STATE   the state a crashed job ends in (default Failed)
   FAKE_STOP_STATE    the state after `koala stop` (default Deleting, as observed on H20)
+Job times (`get --json` conditions): a job is created when it is submitted; one that runs (every phase but `hang`
+under a queued FAKE_JOB_STATE) starts running 1 s later, and a finished one ends 3,600 s after that. A stopped job keeps
+no conditions at all, as on H20: its record cannot tell whether it ran.
 """
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -23,6 +27,7 @@ from pathlib import Path
 import shlex
 import subprocess
 import sys
+import time
 
 # Options of each command: flags take no value, options take one; positionals are (min, max), max None = any.
 GRAMMAR = {
@@ -113,7 +118,7 @@ def main(argv=None):
     print(f"[koala] 集群: fake-{cluster or 'h20'}", file=sys.stderr)
     record = lambda job: jobs / f"{job}.json"
     read = lambda job: json.loads(record(job).read_text()) if record(job).exists() else None
-    write = lambda job, data: record(job).write_text(json.dumps(data))
+    write = lambda job, data: record(job).write_text(json.dumps(dict(dict(created=int(time.time())), **data)))
     missing = lambda job: print(f"未找到任务: {job}；请核对集群，或确认任务是否已回收。", file=sys.stderr)
 
     if command == "code publish":
@@ -142,9 +147,10 @@ def main(argv=None):
             (run / "run_status.json").unlink(missing_ok=True)
             (run / "budget.json").write_text(json.dumps(dict(step=300, consumed_flops="300", gpu_hours=0.3)))
             if phase == "crash": (run / "latest.json").write_text(json.dumps(dict(step=250)))
-            write(job, dict(state=os.environ.get("FAKE_CRASH_STATE", "Failed"), crashed=True))
+            write(job, dict(state=os.environ.get("FAKE_CRASH_STATE", "Failed"), crashed=True, ran=True))
         elif phase == "hang":
-            write(job, dict(state=os.environ.get("FAKE_JOB_STATE", "Running")))
+            state = os.environ.get("FAKE_JOB_STATE", "Running")
+            write(job, dict(state=state, ran=state not in ("Queuing", "Updating")))
         else:
             final = {"val_bpb_dev": 0.9} if phase != "segment_complete" else None
             (run / "run_status.json").write_text(json.dumps(dict(phase=phase, step=256 * n, consumed_flops=str(1000 * n),
@@ -154,7 +160,7 @@ def main(argv=None):
             (run / "metrics.jsonl").write_text('{"event": "train", "step": 1, "loss": 10.0}\n')
             (run / f"val_{256 * n:08d}_dev.json").write_text("{}")
             (out / "remote_status.json").write_text(json.dumps(dict(phase="exited", returncode=0)))
-            write(job, dict(state="Succeeded"))
+            write(job, dict(state="Succeeded", ran=True))
         if not (options.get("-q") or options.get("--quiet")): print(f"已提交 {job}")
         print(job)
         return 0
@@ -162,10 +168,20 @@ def main(argv=None):
         if not positionals: print(json.dumps(dict(cluster=cluster or "h20"))); return 0
         job = read(positionals[0])
         if job is None: missing(positionals[0]); return 1
-        print(json.dumps(dict(name=positionals[0], resourceName="k1-fake", status=job["state"], reason="fake")))
+        stamp = lambda seconds: datetime.fromtimestamp(job.get("created", 0) + seconds, timezone.utc).strftime(
+            "%Y-%m-%dT%H:%M:%SZ")
+        conditions = [] if job.get("wiped") else [dict(type="Created", status="True", reason="MPIJobCreated",
+                                                        lastTransitionTime=stamp(0))]
+        if job.get("ran") and conditions:
+            conditions.append(dict(type="Running", status="True", reason="MPIJobRunning", lastTransitionTime=stamp(1)))
+        if job["state"] in ("Succeeded", "Failed") and conditions:
+            conditions.append(dict(type=job["state"], status="True", reason=f"MPIJob{job['state']}",
+                                   lastTransitionTime=stamp(3601)))
+        print(json.dumps(dict(name=positionals[0], resourceName="k1-fake", status=job["state"], reason="fake",
+                              createdAt=stamp(0), resources=dict(gpu=8), conditions=conditions)))
         return 0
     if command == "wait":
-        import time; time.sleep(0.2)
+        time.sleep(0.2)
         states = [(read(name) or {}).get("state") for name in positionals]
         codes = [0 if s == "Succeeded" else 1 if s == "Failed" else 2 for s in states]   # 2: timeout or deleted
         return max(codes)
@@ -173,7 +189,7 @@ def main(argv=None):
         for name in positionals:
             job = read(name)
             if job is None: missing(name); return 1
-            write(name, dict(job, state=os.environ.get("FAKE_STOP_STATE", "Deleting")))
+            write(name, dict(job, state=os.environ.get("FAKE_STOP_STATE", "Deleting"), wiped=True))
         return 0
     if command == "log":
         job = read(positionals[0])

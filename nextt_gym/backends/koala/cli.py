@@ -66,6 +66,27 @@ class Koala:
         try: return json.loads(result.stdout).get("status")
         except json.JSONDecodeError: return None
 
+    def times(self, job):
+        """When the job was created, started and ended, and its GPUs, from `koala get --json`.
+
+        Start is when the job last began running (MPIJobResumed after a queue, else the Running condition); end is the
+        Succeeded or Failed condition (reasons vary, e.g. WorkerFailed). Pod time (end - start) times GPUs is the
+        platform's GPU-hours. None when the record is unreadable or has no conditions: a stopped job keeps only its
+        status (H20, 2026-11-03), so its record cannot tell a job that ran from one that never left the queue.
+        """
+        result = self.run("get", job, "--json")
+        if result.returncode: return None
+        try: data = json.loads(result.stdout)
+        except json.JSONDecodeError: return None
+        conditions = data.get("conditions") or []
+        if not conditions: return None
+        when = lambda match: next((c.get("lastTransitionTime") for c in conditions if match(c)), None)
+        gpus = (data.get("resources") or {}).get("gpu") or (data.get("submitParams") or {}).get("totalGpus")
+        return dict(created=when(lambda c: c.get("reason") == "MPIJobCreated") or data.get("createdAt"),
+                    started=when(lambda c: c.get("reason") == "MPIJobResumed") or when(lambda c: c.get("type") == "Running"),
+                    ended=when(lambda c: c.get("type") in ("Succeeded", "Failed") and c.get("status") == "True"),
+                    gpus=int(gpus) if gpus else None, status=data.get("status"))
+
     def wait(self, job, timeout="2h"):
         """Block until the job ends or `timeout` passes; returns koala's exit code (0, 1, 2 or 130)."""
         return self.run("wait", job, "--timeout", timeout).returncode
