@@ -111,7 +111,7 @@ accelerate launch --config_file launch/accelerate.yaml \
 | 模型族 | 模型 |
 |---|---|
 | <img src="https://img.shields.io/badge/Baseline-7A8288?style=flat-square" alt="基线"> | Dense Baseline |
-| <img src="https://img.shields.io/badge/Residual-33456E?style=flat-square" alt="残差"> | Standard Residual · AttnRes · HC · mHC |
+| <img src="https://img.shields.io/badge/Residual-33456E?style=flat-square" alt="残差"> | Standard Residual · AttnRes · HC · mHC · Block AttnRes with Canon layers A–D · Full AttnRes with Canon layers A–D |
 | <img src="https://img.shields.io/badge/Looped-8B5CF6?style=flat-square" alt="循环"> | UT-ACT · Fixed Recursive · Huginn · Ouro · DeepLoop · MoR · LoopFormer · Circle Loop |
 | <img src="https://img.shields.io/badge/Sparse-E5607E?style=flat-square" alt="稀疏"> | DSA · QSA · NSA · SeerAttention-style · MoBA |
 | <img src="https://img.shields.io/badge/Linear-3F7FD9?style=flat-square" alt="线性"> | DeltaNet · GSA + QK-norm · GLA · KDA · RetNet · ELU-Norm · GDN |

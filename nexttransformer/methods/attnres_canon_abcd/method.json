@@ -1,0 +1,10 @@
+{
+ "name": "attnres_canon_abcd",
+ "family": "residual",
+ "title": "Block AttnRes with Canon layers A-D",
+ "paper": {"title": "Physics of Language Models: Part 4.1, Architecture Design and the Magic of Canon Layers", "url": "https://arxiv.org/abs/2512.17351"},
+ "options": {"groups": 8},
+ "debug_options": {"groups": 2},
+ "shell": {"layers": 23, "mlp_width": 6144, "window_pattern": "L"},
+ "layer_multiple": 1
+}
