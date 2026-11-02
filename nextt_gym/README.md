@@ -7,6 +7,7 @@ the [protocol](https://interactive-active-ai.github.io/NextTransformer/docs/prot
 it is distinct from the historical SSSL computation anchor.
 
 This page describes the implemented interface and operating workflow.
+The [arena and gym plan](../docs/src/content/docs/arena/plan.md) holds delivery state, remaining acceptance and open decisions;
 [INTERFACE.md](INTERFACE.md) specifies the 22 operations and [spec.md](spec.md) the submission contract.
 
 The gym is the research environment of the [auto-research arena](https://interactive-active-ai.github.io/NextTransformer/docs/arena/overview/): it carries out the research that

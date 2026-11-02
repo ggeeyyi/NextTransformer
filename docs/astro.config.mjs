@@ -48,7 +48,7 @@ export default defineConfig({
           'results/leaderboard', 'results/records', 'results/evidence',
           { slug: 'results/runs', label: 'Run notes', translations: { 'zh-CN': '运行说明' } },
         ]),
-        group('Arena', '竞技场', ['arena/overview', 'arena/rules', 'arena/task', 'arena/disclosure', 'arena/circle-loop'],
+        group('Arena', '竞技场', ['arena/overview', 'arena/rules', 'arena/task', 'arena/disclosure', 'arena/circle-loop', 'arena/plan'],
           { badge: { text: 'v2 · Nov 14', variant: 'note' } }),
         group('Project', '项目', ['roadmap', 'community']),
       ],

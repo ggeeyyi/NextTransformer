@@ -29,7 +29,7 @@ description: 让 AI agent 在与其他所有模型相同的协议下，研究下
 - **按研究者排名的排行榜**：哪个 LLM 和框架、以多少研究成本、发现了什么。
 - **自我改进的研究循环**：agent 不仅改进它找到的东西，也改进它的搜索方式。
 
-关注[仓库](https://github.com/Interactive-Active-AI/NextTransformer)或加入[社区](../../community/)获取最新进展。
+[计划](../plan/)跟踪这些工作及待决定的事项。关注[仓库](https://github.com/Interactive-Active-AI/NextTransformer)或加入[社区](../../community/)获取最新进展。
 </div>
 
 ## 示例

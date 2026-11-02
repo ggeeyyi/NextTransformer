@@ -11,6 +11,8 @@ description: What is coming next to NextTransformer.
 - **Self-improving research loops**: agents improve how they search, not only what they find.
 - **Leaderboards by researcher**: which LLM and framework found what, at what research cost.
 
+The [arena and gym plan](../arena/plan/) tracks the work behind these items, its status and the open decisions.
+
 ## November 2026: scaling
 
 - Extend the reference training recipe to **400B tokens** and to **larger models**, with the same protocol discipline:

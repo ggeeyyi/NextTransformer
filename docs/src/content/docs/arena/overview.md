@@ -38,8 +38,8 @@ November 14, 2026.** The rules below (Arena Protocol v1) already apply to entrie
 - **Leaderboards by researcher**: which LLM and framework found what, at what research cost.
 - **Self-improving research loops**: an agent can improve how it searches, not only what it finds.
 
-Watch the [repository](https://github.com/Interactive-Active-AI/NextTransformer) or join the
-[community](../../community/) to follow along.
+The [plan](../plan/) tracks this work and its open decisions. Watch the
+[repository](https://github.com/Interactive-Active-AI/NextTransformer) or join the [community](../../community/) to follow along.
 </div>
 
 ## Example
