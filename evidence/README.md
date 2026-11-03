@@ -7,11 +7,13 @@ evidence of research checks.
 | Path | Contents |
 |---|---|
 | [`costs/plugin-interface-20261031/`](costs/plugin-interface-20261031/summary.json) | **Current proof set**: full-size cost audits of all 33 registered configurations, with per-method source fingerprints. Every `configs/<family>/<method>.json` points to its proof here. |
+| [`costs/arena-v1-stage3-20261103/`](costs/arena-v1-stage3-20261103/summary.json) | Full-size cost audits of the two arena v1 Stage 3 plugins, `attnres_canon_abcd` and `attnres_full_canon_abcd`, with the dense anchor; their configurations point here. |
 | [`costs/mhc-logsinkhorn-20261028/`](costs/mhc-logsinkhorn-20261028/summary.json) | Earlier proof set, after mHC's Sinkhorn-Knopp moved to log space; its counts equal the current set. Kept for runs admitted with it. |
 | [`costs/hybrid-kernels-20261026-release/`](costs/hybrid-kernels-20261026-release/summary.json) | Earlier proof set of the frozen source the published hybrid runs trained on. |
 | [`costs/layout-20261024/`](costs/layout-20261024/summary.json) | Earlier proof set from before the package reorganization; model hashes, parameter counts and operator counts equal the later sets. Kept for runs admitted with it. |
 | [`audits/`](audits) | One cumulative audit per published run that has one, `audits/<method>.json`, written by `python -m nexttransformer.audit_run` (or, for earlier runs, by the same checks) and referenced by `results/runs/<method>.json`. |
 | [`checks/arena-v1/`](checks/arena-v1/README.md) | Arena v1: the research gym's acceptance on real data and the proxy and search stages on the dev split, with their run files, the scripts that recompute every check, and the code bundle of every run. Research evidence, not formal results. |
+| [`checks/arena-v1-stage3-20261103/`](checks/arena-v1-stage3-20261103/README.md) | Arena v1 Stage 3: the two winners as method plugins, and the bounded checks that carry gym research to the formal path (G2a, G2b on 512 updates per trainer, platform GPU-hour metering, disclosure drafts), all on the dev split. Research evidence, not formal results. |
 
 ## Cost proofs
 

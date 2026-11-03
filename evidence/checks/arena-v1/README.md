@@ -63,7 +63,8 @@ without `torch.compile`, and in it the best candidate takes 1.66× the time per 
 
 **Next.** By the preregistered rule, `attnres_full_canon_abcd` and `attnres_canon_abcd` are the Stage 3 candidates:
 port them into `nexttransformer/methods/` with calibration, proofs, tests, a model card and a disclosure card, and enter
-them through the arena's two pull requests. Stage 3 has not started; a formal run needs its own authorization.
+them through the arena's two pull requests. The port and its checks are done
+([Stage 3](../arena-v1-stage3-20261103/README.md)); a formal run needs its own authorization.
 
 ## Code provenance
 
