@@ -3,10 +3,13 @@ title: Community
 description: Where to talk, how to contribute, and how to cite NextTransformer.
 ---
 
+import { Badge, Card, LinkButton } from '@astrojs/starlight/components';
 import WeChatInvite from '../../components/WeChatInvite.astro';
 
 ## Talk to us
 
+- **Discord** — [join the community](https://discord.gg/k2XPXW6Jz) for conversations with the team and other researchers.
+  This permanent invite takes you to **#general**.
 - **GitHub Discussions** — [questions, ideas and show-and-tell](https://github.com/Interactive-Active-AI/NextTransformer/discussions),
   searchable for everyone.
 - **Issues** — [bugs, new methods and results](https://github.com/Interactive-Active-AI/NextTransformer/issues/new/choose).
@@ -20,7 +23,7 @@ import WeChatInvite from '../../components/WeChatInvite.astro';
 ## Contribute
 
 New methods, results, fixes and documentation are welcome. Start with an issue for anything larger than a fix, then
-open a pull request from your fork; one method or one result per pull request. The
+work on your fork. For a new method, open one pull request with the plugin and its audited formal result. The
 [contributing guide](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/CONTRIBUTING.md) has the
 details, and these guides cover the common paths:
 
@@ -32,6 +35,29 @@ Everyone taking part is expected to follow the
 [code of conduct](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/CODE_OF_CONDUCT.md). Report
 security issues privately, as described in the
 [security policy](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/SECURITY.md).
+
+## Built on NextTransformer
+
+Community projects that extend NextTransformer.
+
+<Card title="NextTransformer-V">
+  [![NextTransformer-V: a multimodal track for NextTransformer](https://raw.githubusercontent.com/Enderfga/NextTransformer-V/8cd729800cea4ab23fdc5c083e8e2c68f2e654f7/docs/assets/banner.webp)](https://github.com/Enderfga/NextTransformer-V)
+
+  <Badge text="Multimodal" /> by [@Enderfga](https://github.com/Enderfga)
+
+  Every NextTransformer method on frozen SigLIP2 image tokens interleaved with text at an 8,192-token context,
+  compute-matched within 1%. Its first study, pre-registered, asks where hybrid backbones read the 2D layout of an
+  image.
+
+  <LinkButton href="https://github.com/Enderfga/NextTransformer-V" variant="secondary" icon="github" iconPlacement="start">View on GitHub</LinkButton>
+</Card>
+
+<Card title="Your project here">
+  Built something on NextTransformer's code or protocol? Share it in Show and tell or open a pull request that adds a
+  card with a wide banner image. Listed projects are public and say in their README that they build on NextTransformer.
+
+  <LinkButton href="https://github.com/Interactive-Active-AI/NextTransformer/discussions/categories/show-and-tell" variant="minimal" icon="right-arrow">Share your project</LinkButton>
+</Card>
 
 ## Cite
 

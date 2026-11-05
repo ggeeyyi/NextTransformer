@@ -3,10 +3,12 @@ title: 社区
 description: 在哪里交流、如何贡献，以及如何引用 NextTransformer。
 ---
 
+import { Badge, Card, LinkButton } from '@astrojs/starlight/components';
 import WeChatInvite from '../../../components/WeChatInvite.astro';
 
 ## 交流
 
+- **Discord** — [加入社区](https://discord.gg/k2XPXW6Jz)，与团队和其他研究者交流。此永久邀请链接进入 **#general** 频道。
 - **GitHub Discussions** — [提问、想法和成果分享](https://github.com/Interactive-Active-AI/NextTransformer/discussions)，所有人都可以搜索到。
 - **Issues** — [bug、新方法和结果](https://github.com/Interactive-Active-AI/NextTransformer/issues/new/choose)。
 
@@ -18,7 +20,7 @@ import WeChatInvite from '../../../components/WeChatInvite.astro';
 
 ## 参与贡献
 
-欢迎贡献新方法、结果、修复和文档。比修复更大的改动请先开 issue，然后从你的 fork 提交 pull request；每个 pull request 只包含一个方法或一个结果。
+欢迎贡献新方法、结果、修复和文档。比修复更大的改动请先开 issue，然后在你的 fork 上开发。新方法须在取得正式结果并通过审计后，将插件和结果放在同一个 PR 中提交。
 详见[贡献指南](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/CONTRIBUTING.md)，常见路径见：
 
 - [以插件形式添加方法](../guides/plugins/)
@@ -26,6 +28,26 @@ import WeChatInvite from '../../../components/WeChatInvite.astro';
 - [修改共享代码](../guides/changing-shared-code/)
 
 所有参与者都应遵守[行为准则](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/CODE_OF_CONDUCT.md)。安全问题请按[安全策略](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/SECURITY.md)私下报告。
+
+## 基于 NextTransformer 的项目
+
+扩展 NextTransformer 的社区项目。
+
+<Card title="NextTransformer-V">
+  [![NextTransformer-V：NextTransformer 的多模态版本](https://raw.githubusercontent.com/Enderfga/NextTransformer-V/8cd729800cea4ab23fdc5c083e8e2c68f2e654f7/docs/assets/banner.webp)](https://github.com/Enderfga/NextTransformer-V)
+
+  <Badge text="多模态" /> 作者 [@Enderfga](https://github.com/Enderfga)
+
+  冻结的 SigLIP2 图像 token 与文本交错排进 8,192 长度的上下文，NextTransformer 的每种方法都不用改动就能直接训练，训练算力对齐到 1% 以内。第一项研究经过预注册，探讨混合架构从哪里读取图像的二维布局。
+
+  <LinkButton href="https://github.com/Enderfga/NextTransformer-V" variant="secondary" icon="github" iconPlacement="start">在 GitHub 上查看</LinkButton>
+</Card>
+
+<Card title="你的项目">
+  做了基于 NextTransformer 代码或协议的项目？欢迎在 Show and tell 分享，或提交 pull request 加一张卡片，并附一张宽幅横幅图。收录的项目需公开，并在 README 中注明基于 NextTransformer。
+
+  <LinkButton href="https://github.com/Interactive-Active-AI/NextTransformer/discussions/categories/show-and-tell" variant="minimal" icon="right-arrow">分享你的项目</LinkButton>
+</Card>
 
 ## 引用
 

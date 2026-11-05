@@ -15,6 +15,7 @@
 <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-F2A93B?style=flat-square"></a>
 <img alt="Python 3.10-3.13" src="https://img.shields.io/badge/python-3.10--3.13-3776AB?style=flat-square&logo=python&logoColor=white">
 <img alt="PyTorch 2.9.1" src="https://img.shields.io/badge/PyTorch-2.9.1-EE4C2C?style=flat-square&logo=pytorch&logoColor=white">
+<a href="https://discord.gg/k2XPXW6Jz"><img alt="Discord" src="https://img.shields.io/badge/Discord-join-74638C?style=flat-square&logo=discord&logoColor=white"></a>
 <a href="https://interactive-active-ai.github.io/NextTransformer/docs/community/#wechat"><img alt="WeChat group" src="https://img.shields.io/badge/WeChat-group-E5607E?style=flat-square&logo=wechat&logoColor=white"></a>
 <a href="https://github.com/Interactive-Active-AI/NextTransformer/discussions"><img alt="GitHub Discussions" src="https://img.shields.io/badge/discussions-ask-7A5AF0?style=flat-square&logo=github&logoColor=white"></a>
 </p>
@@ -32,9 +33,10 @@ result is an audited, file-backed record, and AI agents can research new archite
 
 ## News
 
+- <img src="https://img.shields.io/badge/RFC-8B5CF6?style=flat-square" alt="RFC" height="18"> **2026-11-05** · **[Scaling RFC](https://github.com/Interactive-Active-AI/NextTransformer/discussions/22)**: 4K-context Dense and MoE pretraining on ClimbMix at **200B and 400B tokens**. Feedback on data, model configurations and evaluation is welcome.
+- <img src="https://img.shields.io/badge/COMMUNITY-2A78D6?style=flat-square" alt="Community" height="18"> **2026-11-04** · **[NextTransformer-V](https://github.com/Enderfga/NextTransformer-V)** by [@Enderfga](https://github.com/Enderfga): a community multimodal track that trains every NextTransformer method on interleaved image and text tokens under the same compute-matched contract. Its first study, pre-registered, asks where hybrid backbones get the 2D layout of an image.
 - <img src="https://img.shields.io/badge/NEW-E5607E?style=flat-square" alt="New" height="18"> **2026-10-31** · NextTransformer is now open source: 31 finished runs, 36 model cards, the full protocol, the documentation and the observatory.
 - <img src="https://img.shields.io/badge/SOON-8B5CF6?style=flat-square" alt="Soon" height="18"> **By 2026-11-14** · **Arena v2**, with full support for autonomous agent research.
-- <img src="https://img.shields.io/badge/SOON-8B5CF6?style=flat-square" alt="Soon" height="18"> **November 2026** · Training recipes for **400B tokens and larger models**.
 
 ## Highlights
 
@@ -56,7 +58,7 @@ your browser.
 ## Results
 
 <!-- generated:leaderboard -->
-<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-en.svg" alt="CORE at update 46,875 for all 33 runs, against the Dense Baseline" width="100%"></a>
+<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-en.svg" alt="CORE at update 46,875 for all 35 runs, against the Dense Baseline" width="100%"></a>
 
 [Full leaderboard](https://interactive-active-ai.github.io/NextTransformer/docs/results/leaderboard/) · [Training replay](https://interactive-active-ai.github.io/NextTransformer/#leaderboard)
 <!-- /generated:leaderboard -->
@@ -118,7 +120,7 @@ covers smoke tests, evaluation, auditing and exporting a result.
 | <img src="https://img.shields.io/badge/Looped-8B5CF6?style=flat-square" alt="Looped"> | UT-ACT · Fixed Recursive · Huginn · Ouro · DeepLoop · MoR · LoopFormer · Circle Loop |
 | <img src="https://img.shields.io/badge/Sparse-E5607E?style=flat-square" alt="Sparse"> | DSA · QSA · NSA · SeerAttention-style · MoBA |
 | <img src="https://img.shields.io/badge/Linear-3F7FD9?style=flat-square" alt="Linear"> | DeltaNet · GSA + QK-norm · GLA · KDA · RetNet · ELU-Norm · GDN |
-| <img src="https://img.shields.io/badge/Hybrid-F07856?style=flat-square" alt="Hybrid"> | GDN–MHA · GDN–SWA · DeltaNet–MHA\* · KDA–MLA-NoPE · GDN–QSA\* · MoBA–MHA\* |
+| <img src="https://img.shields.io/badge/Hybrid-F07856?style=flat-square" alt="Hybrid"> | GDN–MHA · GDN–SWA · DeltaNet–MHA · KDA–MLA-NoPE · GDN–QSA\* · MoBA–MHA |
 | <img src="https://img.shields.io/badge/Others-D99A2B?style=flat-square" alt="Others"> | SSSL · MQA · GQA · MLA-QK · MLA-NoPE-QK |
 <!-- /generated:model-zoo -->
 
@@ -142,9 +144,11 @@ what is counted.
 
 ## Add your method
 
-1. **Write a plugin**: a folder `nexttransformer/methods/<name>/` with a `method.json` and a few hooks. No shared file changes.
-2. **Calibrate** it to the shared budget: `python -m nexttransformer.protocol.calibrate --methods <name> ...`
-3. **Open a pull request.** Once admitted, train it with `--formal` and submit the result in a second pull request.
+New methods and Arena entries follow the same submission process.
+
+1. [Open a proposal issue](https://github.com/Interactive-Active-AI/NextTransformer/issues/new/choose) to discuss the method and run plan.
+2. Implement the plugin on your fork, calibrate it to the shared budget, and complete a `--formal` run.
+3. Once you have audited and exported the result, open **one pull request** to upstream `main` with the implementation and result. Link the proposal issue.
 
 Start with the [plugin guide](https://interactive-active-ai.github.io/NextTransformer/docs/guides/plugins/) and
 [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -162,21 +166,44 @@ Any LLM, with or without a research framework, can already enter an architecture
 protocol, ranked on the same leaderboard, and disclosed with how it was found. See the
 [arena](https://interactive-active-ai.github.io/NextTransformer/docs/arena/overview/).
 
+## Built on NextTransformer
+
+Community projects that extend NextTransformer.
+
+<table>
+<tr>
+<td width="50%" valign="top">
+<a href="https://github.com/Enderfga/NextTransformer-V"><img src="https://raw.githubusercontent.com/Enderfga/NextTransformer-V/8cd729800cea4ab23fdc5c083e8e2c68f2e654f7/docs/assets/banner.webp" alt="NextTransformer-V: a multimodal track for NextTransformer" width="100%"></a>
+<h3><a href="https://github.com/Enderfga/NextTransformer-V">NextTransformer-V</a></h3>
+<p><img src="https://img.shields.io/badge/Multimodal-1BAF7A?style=flat-square" alt="Multimodal"> by <a href="https://github.com/Enderfga">@Enderfga</a></p>
+<p>Every NextTransformer method on frozen SigLIP2 image tokens interleaved with text at an 8,192-token context, compute-matched within 1%. Its first study, pre-registered, asks where hybrid backbones read the 2D layout of an image.</p>
+</td>
+<td width="50%" align="center">
+<h3>Your project here</h3>
+<p>Built something on NextTransformer's code or protocol? Share it in <a href="https://github.com/Interactive-Active-AI/NextTransformer/discussions/categories/show-and-tell">Show and tell</a> or open a pull request that adds a card with a wide banner image.</p>
+<sub>Listed projects are public and say in their README that they build on NextTransformer.</sub>
+</td>
+</tr>
+</table>
+
 ## Roadmap
 
 - **By November 14, 2026:** Arena v2 and agent-native research.
-- **November 2026:** recipes for 400B tokens and larger models.
-- **Upcoming results:** Hyper-Connections, mHC, four more hybrids and three controls.
+- **November 2026:** 4K-context pretraining on ClimbMix at **200B and 400B tokens**, with **Dense and MoE** models.
+- **Open for feedback:** data mixtures, model configurations and evaluation beyond CORE in the [scaling RFC](https://github.com/Interactive-Active-AI/NextTransformer/discussions/22).
+- **Upcoming results:** GDN + QSA and MoBA + MHA hybrids.
 - **Planned:** checkpoints and the tokenizer on the Hugging Face Hub.
 
 More on the [roadmap](https://interactive-active-ai.github.io/NextTransformer/docs/roadmap/).
 
 ## Community
 
+- [Discord](https://discord.gg/k2XPXW6Jz) — chat with the community in #general (permanent invite)
 - [GitHub Discussions](https://github.com/Interactive-Active-AI/NextTransformer/discussions) for questions and ideas
 - [WeChat group](https://interactive-active-ai.github.io/NextTransformer/docs/community/#wechat)
 
 Contributions are welcome; please read [CONTRIBUTING.md](CONTRIBUTING.md) and the [code of conduct](CODE_OF_CONDUCT.md).
+Community projects are listed under [Built on NextTransformer](#built-on-nexttransformer).
 
 ## Citation
 

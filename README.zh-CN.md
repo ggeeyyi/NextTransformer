@@ -15,6 +15,7 @@
 <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-F2A93B?style=flat-square"></a>
 <img alt="Python 3.10-3.13" src="https://img.shields.io/badge/python-3.10--3.13-3776AB?style=flat-square&logo=python&logoColor=white">
 <img alt="PyTorch 2.9.1" src="https://img.shields.io/badge/PyTorch-2.9.1-EE4C2C?style=flat-square&logo=pytorch&logoColor=white">
+<a href="https://discord.gg/k2XPXW6Jz"><img alt="Discord" src="https://img.shields.io/badge/Discord-join-74638C?style=flat-square&logo=discord&logoColor=white"></a>
 <a href="https://interactive-active-ai.github.io/NextTransformer/docs/zh-cn/community/#wechat"><img alt="微信交流群" src="https://img.shields.io/badge/WeChat-group-E5607E?style=flat-square&logo=wechat&logoColor=white"></a>
 <a href="https://github.com/Interactive-Active-AI/NextTransformer/discussions"><img alt="GitHub Discussions" src="https://img.shields.io/badge/discussions-ask-7A5AF0?style=flat-square&logo=github&logoColor=white"></a>
 </p>
@@ -31,9 +32,10 @@ AI agent 也可以在完全相同的规则下研究新架构。
 
 ## 新闻
 
+- <img src="https://img.shields.io/badge/RFC-8B5CF6?style=flat-square" alt="RFC" height="18"> **2026-11-05** · **[Scaling 提案](https://github.com/Interactive-Active-AI/NextTransformer/discussions/22)**：在 ClimbMix 上以 **4K 序列**训练 **200B／400B tokens 的 Dense 和 MoE 模型**，征集数据、模型配置和评测建议。
+- <img src="https://img.shields.io/badge/COMMUNITY-2A78D6?style=flat-square" alt="Community" height="18"> **2026-11-04** · 社区项目 **[NextTransformer-V](https://github.com/Enderfga/NextTransformer-V)**（作者 [@Enderfga](https://github.com/Enderfga)）：多模态版本，在同一套算力对齐的约定下，用图文交错的 token 训练 NextTransformer 的每种方法。第一项研究经过预注册，探讨混合架构从哪里得到图像的二维布局。
 - <img src="https://img.shields.io/badge/NEW-E5607E?style=flat-square" alt="New" height="18"> **2026-10-31** · NextTransformer 正式开源：31 个完成的运行、36 张模型卡片、完整的协议、文档和观测站。
 - <img src="https://img.shields.io/badge/SOON-8B5CF6?style=flat-square" alt="Soon" height="18"> **2026-11-14 前** · **Arena v2**：全面支持 agent 自主研究。
-- <img src="https://img.shields.io/badge/SOON-8B5CF6?style=flat-square" alt="Soon" height="18"> **2026 年 11 月** · **400B tokens 和更大模型**的训练配方。
 
 ## 亮点
 
@@ -54,7 +56,7 @@ AI agent 也可以在完全相同的规则下研究新架构。
 ## 结果
 
 <!-- generated:leaderboard -->
-<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-zh.svg" alt="全部 33 个运行在第 46,875 次更新时的 CORE，与 Dense Baseline 对比" width="100%"></a>
+<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-zh.svg" alt="全部 35 个运行在第 46,875 次更新时的 CORE，与 Dense Baseline 对比" width="100%"></a>
 
 [完整排行榜](https://interactive-active-ai.github.io/NextTransformer/docs/zh-cn/results/leaderboard/) · [训练回放](https://interactive-active-ai.github.io/NextTransformer/#leaderboard)
 <!-- /generated:leaderboard -->
@@ -115,7 +117,7 @@ accelerate launch --config_file launch/accelerate.yaml \
 | <img src="https://img.shields.io/badge/Looped-8B5CF6?style=flat-square" alt="循环"> | UT-ACT · Fixed Recursive · Huginn · Ouro · DeepLoop · MoR · LoopFormer · Circle Loop |
 | <img src="https://img.shields.io/badge/Sparse-E5607E?style=flat-square" alt="稀疏"> | DSA · QSA · NSA · SeerAttention-style · MoBA |
 | <img src="https://img.shields.io/badge/Linear-3F7FD9?style=flat-square" alt="线性"> | DeltaNet · GSA + QK-norm · GLA · KDA · RetNet · ELU-Norm · GDN |
-| <img src="https://img.shields.io/badge/Hybrid-F07856?style=flat-square" alt="混合"> | GDN–MHA · GDN–SWA · DeltaNet–MHA\* · KDA–MLA-NoPE · GDN–QSA\* · MoBA–MHA\* |
+| <img src="https://img.shields.io/badge/Hybrid-F07856?style=flat-square" alt="混合"> | GDN–MHA · GDN–SWA · DeltaNet–MHA · KDA–MLA-NoPE · GDN–QSA\* · MoBA–MHA |
 | <img src="https://img.shields.io/badge/Others-D99A2B?style=flat-square" alt="其他"> | SSSL · MQA · GQA · MLA-QK · MLA-NoPE-QK |
 <!-- /generated:model-zoo -->
 
@@ -137,9 +139,11 @@ accelerate launch --config_file launch/accelerate.yaml \
 
 ## 添加你的方法
 
-1. **编写插件**：一个 `nexttransformer/methods/<name>/` 目录，包含 `method.json` 和几个 hook。无需修改共享文件。
-2. **校准**到共同预算：`python -m nexttransformer.protocol.calibrate --methods <name> ...`
-3. **提交 pull request。** 准入之后用 `--formal` 训练，并在第二个 pull request 中提交结果。
+新方法和竞技场参赛项目采用相同的提交流程。
+
+1. 先[开提案 issue](https://github.com/Interactive-Active-AI/NextTransformer/issues/new/choose)，讨论方法和实验计划。
+2. 在自己的 fork 上实现插件，按统一算力预算完成校准，并用 `--formal` 完成正式训练。
+3. 审计并导出结果后，再向上游 `main` 提交**一个 PR**，同时包含方法实现和正式结果，并关联提案 issue。
 
 从[插件指南](https://interactive-active-ai.github.io/NextTransformer/docs/zh-cn/guides/plugins/)和 [CONTRIBUTING.md](CONTRIBUTING.md) 开始。
 
@@ -153,21 +157,43 @@ accelerate launch --config_file launch/accelerate.yaml \
 
 现在任何 LLM（无论是否借助研究框架）就已经可以提交架构参赛：它在相同的协议下训练、在同一个排行榜上排名，并披露它是如何被发现的。见[竞技场](https://interactive-active-ai.github.io/NextTransformer/docs/zh-cn/arena/overview/)。
 
+## 基于 NextTransformer 的项目
+
+扩展 NextTransformer 的社区项目。
+
+<table>
+<tr>
+<td width="50%" valign="top">
+<a href="https://github.com/Enderfga/NextTransformer-V"><img src="https://raw.githubusercontent.com/Enderfga/NextTransformer-V/8cd729800cea4ab23fdc5c083e8e2c68f2e654f7/docs/assets/banner.webp" alt="NextTransformer-V：NextTransformer 的多模态版本" width="100%"></a>
+<h3><a href="https://github.com/Enderfga/NextTransformer-V">NextTransformer-V</a></h3>
+<p><img src="https://img.shields.io/badge/Multimodal-1BAF7A?style=flat-square" alt="多模态"> 作者 <a href="https://github.com/Enderfga">@Enderfga</a></p>
+<p>冻结的 SigLIP2 图像 token 与文本交错排进 8,192 长度的上下文，NextTransformer 的每种方法都不用改动就能直接训练，训练算力对齐到 1% 以内。第一项研究经过预注册，探讨混合架构从哪里读取图像的二维布局。</p>
+</td>
+<td width="50%" align="center">
+<h3>你的项目</h3>
+<p>做了基于 NextTransformer 代码或协议的项目？欢迎在 <a href="https://github.com/Interactive-Active-AI/NextTransformer/discussions/categories/show-and-tell">Show and tell</a> 分享，或提交 pull request 加一张卡片，并附一张宽幅横幅图。</p>
+<sub>收录的项目需公开，并在 README 中注明基于 NextTransformer。</sub>
+</td>
+</tr>
+</table>
+
 ## 路线图
 
 - **2026 年 11 月 14 日前：** Arena v2 和 agent 原生研究。
-- **2026 年 11 月：** 400B tokens 和更大模型的配方。
-- **即将发布的结果：** Hyper-Connections、mHC、另外四个混合架构和三个对照实验。
+- **2026 年 11 月：** 在 ClimbMix 上采用 **4K 序列**，以 **200B 和 400B tokens** 两档预算训练 **Dense 和 MoE** 模型。
+- **征集建议：** 数据混合、模型配置和 CORE 之外的评测，见 [scaling 提案](https://github.com/Interactive-Active-AI/NextTransformer/discussions/22)。
+- **即将发布的结果：** GDN + QSA 和 MoBA + MHA 混合架构。
 - **计划中：** 在 Hugging Face Hub 上发布检查点和分词器。
 
 详见[路线图](https://interactive-active-ai.github.io/NextTransformer/docs/zh-cn/roadmap/)。
 
 ## 社区
 
+- [Discord](https://discord.gg/k2XPXW6Jz)：加入 #general 交流（永久邀请链接）
 - [微信交流群](https://interactive-active-ai.github.io/NextTransformer/docs/zh-cn/community/#wechat)
 - [GitHub Discussions](https://github.com/Interactive-Active-AI/NextTransformer/discussions)：提问与想法
 
-欢迎参与贡献；请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 和[行为准则](CODE_OF_CONDUCT.md)。
+欢迎参与贡献；请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 和[行为准则](CODE_OF_CONDUCT.md)。社区项目见[基于 NextTransformer 的项目](#基于-nexttransformer-的项目)。
 
 ## 引用
 

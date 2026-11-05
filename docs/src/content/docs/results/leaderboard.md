@@ -21,6 +21,7 @@ full-attention **Dense Baseline** at the same checkpoint: below zero is better f
 | [Native Sparse Attention · NSA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/nsa.json) | sparse | 0.6678 | +0.0006 | 33.78 | +0.69 | 4.639 |
 | [Hybrid GDN + SWA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gdn_hybrid_swa.json) | hybrid | 0.6656 | -0.0015 | 33.66 | +0.57 | 4.647 |
 | [Hybrid GDN + MHA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gdn_hybrid.json) | hybrid | 0.6647 | -0.0025 | 33.37 | +0.28 | 4.704 |
+| [Hybrid MoBA + MHA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/moba_hybrid.json) | hybrid | 0.6702 | +0.0031 | 32.74 | -0.35 | 4.660 |
 | [Grouped-Query Attention · GQA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gqa.json) | others | 0.6741 | +0.0069 | 32.62 | -0.47 | 4.687 |
 | [Multi-head Latent Attention · MLA + QK-norm](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/mla_qknorm.json) | others | 0.6759 | +0.0087 | 32.53 | -0.56 | 4.670 |
 | [Fixed Recursive](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/fixed_recursive.json) | looped | 0.6784 | +0.0112 | 32.45 | -0.65 | 4.663 |
@@ -36,6 +37,7 @@ full-attention **Dense Baseline** at the same checkpoint: below zero is better f
 | [Gated DeltaNet · GDN](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gdn.json) | linear | 0.6700 | +0.0028 | 30.55 | -2.55 | 4.687 |
 | [Mixture-of-Recursions · MoR](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/mor.json) | looped | 0.6838 | +0.0166 | 30.37 | -2.73 | 4.958¹ |
 | [Universal Transformer · ACT](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/ut_act.json) | looped | 0.6894 | +0.0222 | 30.07 | -3.03 | 4.660 |
+| [Hybrid DeltaNet + MHA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/deltanet_hybrid.json) | hybrid | 0.6731 | +0.0059 | 29.90 | -3.19 | 4.675 |
 | [Qwen Sparse Attention · QSA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/qsa.json) | sparse | 0.6708 | +0.0036 | 29.82 | -3.27 | 4.628 |
 | [RetNet · Retention](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/retnet.json) | linear | 0.6825 | +0.0153 | 29.36 | -3.73 | 4.630 |
 | [Circle Loop](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/circle.json) | looped | 0.6912 | +0.0240 | 28.97 | -4.12 | 4.977¹ |
