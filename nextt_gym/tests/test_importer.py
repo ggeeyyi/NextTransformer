@@ -39,7 +39,7 @@ def test_import_upstream_idempotent(archive, ledger):
             assert audit["scales"]["C"]["stage_steps"] == {"burnin": 6, "joint": 506}   # scaled to 512 updates
             assert audit["scales"]["L"]["stage_steps"] == {"burnin": 512, "joint": 46363}
     assert "nextt_gym.upstream_model" in dense["file_contents"]["model.py"]
-    board = archive.leaderboard("L", split="official")
+    board = archive.leaderboard("L", split="official", limit=len(records))
     accepted = [e for e in board["entries"] if e["accepted"]]
     expected = sorted((r for r in finished if r.get("complete")), key=lambda r: r["finalBpb"])
     assert [e["title"] for e in accepted] == [r["methodId"] for r in expected]
