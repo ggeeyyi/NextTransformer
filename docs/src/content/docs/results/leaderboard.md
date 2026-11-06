@@ -8,12 +8,14 @@ The interactive leaderboard, with replay over training, every CORE task and the 
 `python -m nexttransformer.export_run --summary`.
 
 Validation BPB is the periodic evaluation at update 46,875; CORE is shown ×100. Δ columns are differences from the
-full-attention **Dense Baseline** at the same checkpoint: below zero is better for BPB, above zero for CORE.
+full-attention **Dense Baseline** at the same checkpoint: below zero is better for BPB, above zero for CORE. Rows are
+ordered by CORE. Arena entries (auto-research) rank on CORE only; their validation BPB is shown, not ranked.
 
 <!-- generated:leaderboard -->
 | Model | Family | Val BPB ↓ | Δ BPB | CORE ↑ | Δ CORE | Training GFLOPs / token |
 |---|---|---:|---:|---:|---:|---:|
 | **[Dense Baseline](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/dense_full.json)** | baseline | 0.6672 | — | 33.10 | — | 4.675 |
+| [AttnRes-Canon](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/attnres_full_canon_abcd.json) | residual | 0.6605 | -0.0067 | 35.99 | +2.90 | 4.695 |
 | [Manifold-Constrained Hyper-Connections · mHC](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/mhc.json) | residual | 0.6617 | -0.0055 | 35.33 | +2.23 | 4.674 |
 | [Hyper-Connections · HC](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/hc.json) | residual | 0.6644 | -0.0028 | 35.09 | +2.00 | 4.698 |
 | [Block Attention Residuals · AttnRes](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/attnres.json) | residual | 0.6630 | -0.0042 | 34.00 | +0.90 | 4.680 |

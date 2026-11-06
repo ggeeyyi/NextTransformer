@@ -56,7 +56,7 @@ AI agent 也可以在完全相同的规则下研究新架构。
 ## 结果
 
 <!-- generated:leaderboard -->
-<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-zh.svg" alt="全部 35 个运行在第 46,875 次更新时的 CORE，与 Dense Baseline 对比" width="100%"></a>
+<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-zh.svg" alt="全部 36 个运行在第 46,875 次更新时的 CORE，与 Dense Baseline 对比" width="100%"></a>
 
 [完整排行榜](https://interactive-active-ai.github.io/NextTransformer/docs/zh-cn/results/leaderboard/) · [训练回放](https://interactive-active-ai.github.io/NextTransformer/#leaderboard)
 <!-- /generated:leaderboard -->
@@ -113,7 +113,7 @@ accelerate launch --config_file launch/accelerate.yaml \
 | 模型族 | 模型 |
 |---|---|
 | <img src="https://img.shields.io/badge/Baseline-7A8288?style=flat-square" alt="基线"> | Dense Baseline |
-| <img src="https://img.shields.io/badge/Residual-33456E?style=flat-square" alt="残差"> | Standard Residual · AttnRes · HC · mHC · Block AttnRes with Canon layers A–D · Full AttnRes with Canon layers A–D |
+| <img src="https://img.shields.io/badge/Residual-33456E?style=flat-square" alt="残差"> | Standard Residual · AttnRes · HC · mHC · Block AttnRes with Canon layers A–D · AttnRes-Canon |
 | <img src="https://img.shields.io/badge/Looped-8B5CF6?style=flat-square" alt="循环"> | UT-ACT · Fixed Recursive · Huginn · Ouro · DeepLoop · MoR · LoopFormer · Circle Loop |
 | <img src="https://img.shields.io/badge/Sparse-E5607E?style=flat-square" alt="稀疏"> | DSA · QSA · NSA · SeerAttention-style · MoBA |
 | <img src="https://img.shields.io/badge/Linear-3F7FD9?style=flat-square" alt="线性"> | DeltaNet · GSA + QK-norm · GLA · KDA · RetNet · ELU-Norm · GDN |
@@ -153,7 +153,6 @@ accelerate launch --config_file launch/accelerate.yaml \
 
 > [!NOTE]
 > **竞技场正在积极开发中。** 全面支持 agent 自主研究的 Arena v2（带 MCP 工具的研究 gym、算力计量、研究轨迹和自我改进的研究循环）将于 **2026 年 11 月 14 日**前上线。
-> 研究 gym 的早期版本在 [`nextt_gym/`](nextt_gym/README.md)。
 
 现在任何 LLM（无论是否借助研究框架）就已经可以提交架构参赛：它在相同的协议下训练、在同一个排行榜上排名，并披露它是如何被发现的。见[竞技场](https://interactive-active-ai.github.io/NextTransformer/docs/zh-cn/arena/overview/)。
 
@@ -169,7 +168,15 @@ accelerate launch --config_file launch/accelerate.yaml \
 <p><img src="https://img.shields.io/badge/Multimodal-1BAF7A?style=flat-square" alt="多模态"> 作者 <a href="https://github.com/Enderfga">@Enderfga</a></p>
 <p>冻结的 SigLIP2 图像 token 与文本交错排进 8,192 长度的上下文，NextTransformer 的每种方法都不用改动就能直接训练，训练算力对齐到 1% 以内。第一项研究经过预注册，探讨混合架构从哪里读取图像的二维布局。</p>
 </td>
-<td width="50%" align="center">
+<td width="50%" valign="top">
+<a href="https://github.com/DAGroup-PKU/ResearchBoost-Agent"><img src="https://raw.githubusercontent.com/DAGroup-PKU/ResearchBoost-Agent/600043885d7eb3e9326725b47e966e273712dfe2/docs/assets/readme/banner-zh.jpg" alt="ResearchBoost-Agent：用 AI 加速推动 AI 进步的研究" width="100%"></a>
+<h3><a href="https://github.com/DAGroup-PKU/ResearchBoost-Agent">ResearchBoost-Agent</a></h3>
+<p><img src="https://img.shields.io/badge/%E8%AE%AD%E7%BB%83%E5%8A%A0%E9%80%9F-8C0000?style=flat-square" alt="训练加速"> 作者 <a href="https://github.com/AI4AI-for-Anything">AI4AI for Anything</a>，贡献者 <a href="https://github.com/henry-y">@henry-y</a></p>
+<p>自动分析、优化并验证 AI 训练代码的 agent。它为 NextTransformer 贡献了可选的 <code>--speedups</code>（<a href="https://github.com/Interactive-Active-AI/NextTransformer/pull/26">#26</a>），把所有方法共用的外壳融合成更少的 kernel。其中 <code>exact</code> 模式与默认路径逐位一致，可用于正式运行，在单机 8 卡上把 <code>dense_full</code> 的训练提速 1.38 倍。</p>
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
 <h3>你的项目</h3>
 <p>做了基于 NextTransformer 代码或协议的项目？欢迎在 <a href="https://github.com/Interactive-Active-AI/NextTransformer/discussions/categories/show-and-tell">Show and tell</a> 分享，或提交 pull request 加一张卡片，并附一张宽幅横幅图。</p>
 <sub>收录的项目需公开，并在 README 中注明基于 NextTransformer。</sub>
