@@ -460,6 +460,102 @@ assert sum(int(report[k]) for k in ('forward','backward','optimizer'))==original
     assert result.returncode == 0, result.stderr
 
 
+def anchor_candidate_bytes():
+    """A native plugin with the dense anchor's architecture, and so its cost."""
+    import zipfile
+
+    files = {
+        "proposal.json": json.dumps(
+            {
+                "schema_version": "gym.candidate.v1",
+                "sdk_version": "reference_plugin_v1",
+                "method": "anchor_shape",
+                "parent_ids": [],
+                "hypothesis": "The dense anchor, for admission cost tests.",
+            }
+        ),
+        "architecture.json": json.dumps(
+            {"layers": 24, "mlp_width": 6144, "window_pattern": "SSSL"}
+        ),
+        "plugin/anchor_shape/method.json": json.dumps(
+            {
+                "name": "anchor_shape",
+                "family": "others",
+                "options": {},
+                "shell": {"window_pattern": "SSSL"},
+            }
+        ),
+        "plugin/anchor_shape/__init__.py": (
+            "from nexttransformer.models.lm import ReferenceLM\n\n\n"
+            "class AnchorShape(ReferenceLM):\n    pass\n\n\nmodel = AnchorShape\n"
+        ),
+    }
+    blob = io.BytesIO()
+    with zipfile.ZipFile(blob, "w") as archive:
+        for name, source in files.items():
+            archive.writestr(name, source)
+    return blob.getvalue()
+
+
+def test_admission_cost_uses_the_protocol_update_size():
+    """A final profile checks a few rows per step, but admission charges one optimizer
+    update per 1,048,576 tokens, as the protocol calibrates; the bounds stay per step."""
+    import subprocess
+    import sys
+
+    script = """import json,sys
+from nexttransformer_gym.native_plugin import activate
+candidate,profile=json.load(sys.stdin)
+activate(candidate)
+from nexttransformer_gym.numerics import ANCHOR_FLOPS_PER_TOKEN,inspect,model_config
+from nexttransformer.protocol.compute import audit_graph
+from nexttransformer.protocol.spec import Protocol
+config=model_config(candidate,profile)
+report=inspect(candidate,profile)
+step=audit_graph(config,batch=profile['batch_size'])
+update=audit_graph(config,batch=512)
+tokens=Protocol().global_batch_tokens
+assert sum(int(report[k]) for k in ('forward','backward','optimizer'))==step['total']
+assert report['admission_tokens_per_update']==tokens==512*profile['sequence_len']
+assert report['training_flops_per_token']==update['total']/tokens
+assert abs(report['anchor_ratio']-1)<1e-6,report['anchor_ratio']
+assert step['total']/(profile['batch_size']*profile['sequence_len'])/ANCHOR_FLOPS_PER_TOKEN>1.5
+"""
+    profile = {
+        "id": "final-formal",
+        "kind": "final",
+        "width": 1536,
+        "heads": 12,
+        "sequence_len": 2048,
+        "vocab_size": 32768,
+        "batch_size": 4,
+        "max_updates": 46875,
+        "dev_batches": 1,
+        "timeout_sec": 600,
+        "device": "cpu",
+        "formal_dimensions": True,
+        "data": {"kind": "synthetic_fixture"},
+    }
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        input=json.dumps([ingest(anchor_candidate_bytes()), profile]),
+        text=True,
+        capture_output=True,
+        timeout=600,
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_admission_anchor_matches_the_pinned_dense_cost():
+    from nexttransformer_gym.numerics import ANCHOR_FLOPS_PER_TOKEN
+
+    proofs = sorted(ROOT.glob("evidence/costs/*/dense.json"))
+    assert proofs
+    assert {
+        json.loads(p.read_text())["flops_per_token"] for p in proofs
+    } == {ANCHOR_FLOPS_PER_TOKEN}
+
+
 @pytest.mark.parametrize("split", ["train", "dev"])
 def test_native_train_dev_stream_parity(tmp_path, split):
     import pyarrow as pa

@@ -44,6 +44,7 @@ def execute(request):
     from nexttransformer.models.native.config import NativeTrainConfig
     from nexttransformer.training.optimizer import build_optimizer
     from nexttransformer.native.optimizer import set_schedule
+    from nexttransformer.protocol.spec import Protocol
     from nexttransformer.runtime.process import rng_state, restore_rng
 
     torch.set_num_threads(1)
@@ -290,7 +291,7 @@ def execute(request):
         # separately from the model-arithmetic convention; report this explicitly.
         admitted = (
             all(result.values())
-            and abs(report["anchor_ratio"] - 1) <= 0.01
+            and abs(report["anchor_ratio"] - 1) <= Protocol().preflight_tolerance
             and profile.get("official_compatibility_verified", False)
         )
         if (

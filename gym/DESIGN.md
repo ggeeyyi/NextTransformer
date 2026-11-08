@@ -157,6 +157,8 @@ Restarts require the frozen execution policy, profiles, source revision, worker 
 
 Upload acceptance does not establish admission, and successful job execution does not establish that its checks passed.
 Full validation reports determine admission for the exact candidate and profile. Partial diagnostics never replace full validation.
+Final admission compares training FLOPs per token, one optimizer update included, with the pinned dense anchor within the protocol's preflight tolerance.
+It traces that cost at the protocol's update size (1,048,576 tokens, 512 rows of 2048) whatever batch the profile checks; budget bounds stay per profile step.
 `finalize` requires final admission, a reconciled account and no active jobs, then freezes one candidate.
 
 The final receipt contains `session_id`, `submission_id` and `candidate_hash`.
