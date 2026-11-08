@@ -460,13 +460,14 @@ assert sum(int(report[k]) for k in ('forward','backward','optimizer'))==original
     assert result.returncode == 0, result.stderr
 
 
-@pytest.mark.parametrize("split", ["train", "val", "dev"])
-def test_native_train_validation_stream_parity(tmp_path, split):
+@pytest.mark.parametrize("split", ["train", "dev"])
+def test_native_train_dev_stream_parity(tmp_path, split):
     import pyarrow as pa
     import pyarrow.parquet as pq
     import torch
     from nexttransformer_gym.data import parquet_stream
     from nexttransformer.runtime.data import BestFitStream
+    from nexttransformer.runtime.files import VALIDATION_SHARD
 
     class Tokenizer:
         def encode(self, texts, **kwargs):
@@ -475,17 +476,14 @@ def test_native_train_validation_stream_parity(tmp_path, split):
         def get_bos_token_id(self):
             return 1
 
-    pq.write_table(
-        pa.table({"text": ["training text"] * 3000}), tmp_path / "shard_00000.parquet"
-    )
-    pq.write_table(
-        pa.table({"text": ["validation text"] * 3000}),
-        tmp_path / "shard_06542.parquet",
-    )
-    native_split = "train" if split == "train" else "val"
-    shard = "shard_00000.parquet" if split == "train" else "shard_06542.parquet"
+    shard = "shard_00000.parquet" if split == "train" else "shard_06541.parquet"
+    pq.write_table(pa.table({"text": [f"{split} text"] * 3000}), tmp_path / shard)
+    # The native stream requires the final validation shard to exist; its
+    # training split never opens it, so an empty placeholder suffices.
+    (tmp_path / VALIDATION_SHARD).touch()
     adapted = parquet_stream([tmp_path / shard], Tokenizer(), 8, split)
-    reference = BestFitStream(tmp_path, Tokenizer(), native_split, sequence_len=8)
+    # Natively the dev shard is the last shard of the training split.
+    reference = BestFitStream(tmp_path, Tokenizer(), "train", sequence_len=8)
     assert adapted.paths == reference.paths and adapted.split == reference.split
     assert all(
         torch.equal(a, b)
@@ -504,22 +502,29 @@ def test_native_train_validation_stream_parity(tmp_path, split):
     )
 
 
-def test_last_shard_is_validation_and_penultimate_is_training(monkeypatch, tmp_path):
+def test_research_reads_the_dev_shard_and_never_the_validation_shard(
+    monkeypatch, tmp_path
+):
     from nexttransformer_gym import data
     from nexttransformer.runtime.files import VALIDATION_SHARD
 
     # Check the full inventory boundary without creating thousands of parquet files.
     monkeypatch.setattr(data, "file_hash", lambda path: path.name)
-    paths = [tmp_path / f"shard_{i:05d}.parquet" for i in range(6542)]
+    paths = [tmp_path / f"shard_{i:05d}.parquet" for i in range(6541)]
     stream = data.parquet_stream(paths, None, 8, "train")
-    assert stream.paths[-1].name == "shard_06541.parquet"
+    assert stream.paths[-1].name == "shard_06540.parquet"
+    dev = tmp_path / "shard_06541.parquet"
+    assert data.parquet_stream([dev], None, 8, "dev").paths == [dev]
     validation = tmp_path / VALIDATION_SHARD
     for invalid_paths, split in (
-        (paths + [validation], "train"),
+        (paths + [dev], "train"),
+        ([dev], "train"),
+        ([validation], "dev"),
         ([validation], "train"),
-        ([paths[-1]], "val"),
+        ([validation], "val"),
+        ([dev], "val"),
+        ([dev, validation], "dev"),
         ([paths[-1]], "dev"),
-        ([paths[-1], validation], "val"),
         (list(reversed(paths)), "train"),
     ):
         with pytest.raises(GymError):

@@ -62,13 +62,14 @@ The launcher is not a persistent service manager for multiple tenants.
 
 | Set | Data | Research access |
 | --- | --- | --- |
-| Train | Ordered ClimbMix prefix through shard 06541 at full scale | Gym training |
-| Validation | Last shard, `shard_06542.parquet`, matching native defaults | Feedback for algorithm selection |
-| Test | CORE-22 | New-candidate scores only after freezing and fresh final training |
+| Train | Ordered ClimbMix prefix before the dev shard (through shard 06540) at full scale | Gym training |
+| Dev | `shard_06541.parquet`, the last training shard in sorted order; a formal stream never reaches it | Feedback for algorithm selection |
+| Validation | Last shard, `shard_06542.parquet`, matching native defaults | Reserved for the formal run; research never opens it |
+| Test | CORE-22 | Reserved for the formal run; new-candidate scores only after freezing and fresh final training |
 
 Operators fix manifests, shard order, tokenizer and execution profiles before research.
-The adapter refuses an exhausted training prefix. Existing `dev_path`, `dev_batches` and `dev_bpb` names refer to research validation.
-Both `val` and the legacy `dev` alias use the native validation split.
+The adapter refuses an exhausted training prefix. `dev_path`, `dev_batches` and `dev_bpb` refer to the dev shard.
+Every research data view rejects the validation shard.
 
 Shipped profiles use labelled synthetic fixtures, not production ClimbMix data.
 Final ranking uses only CORE-22. Training and validation metrics remain diagnostics.
