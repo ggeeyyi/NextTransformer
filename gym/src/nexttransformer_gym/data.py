@@ -1,7 +1,9 @@
-"""Explicit native training/validation views for auto-research.
+"""Explicit native training and dev views for auto-research.
 
 Reuses the upstream best-fit algorithm without changing its source. The adapter
 sets the same stream fields but supplies a manifest-selected list of shards.
+Research never opens the validation shard: it and CORE-22 are reserved for the
+formal run (docs/src/content/docs/arena/rules.md).
 """
 
 from pathlib import Path
@@ -14,31 +16,37 @@ def parquet_stream(paths, tokenizer, sequence_len, split):
 
     paths = [Path(p) for p in paths]
     require(
-        bool(paths) and split in {"train", "val", "dev"},
+        bool(paths) and split in {"train", "dev"},
         "invalid_request",
-        "Explicit training/validation paths are required.",
+        "Explicit training/dev paths are required.",
     )
-    # Keep the existing Gym dev API names, using the native validation split.
-    split = "val" if split == "dev" else split
+    # The dev shard is the last training shard in sorted order, just before the
+    # validation shard; a formal stream never reaches it.
+    dev_index = int(VALIDATION_SHARD.removeprefix("shard_").removesuffix(".parquet")) - 1
+    dev_shard = f"shard_{dev_index:05d}.parquet"
     names = [p.name for p in paths]
     require(
-        (split == "val" and names == [VALIDATION_SHARD])
-        or (split == "train" and VALIDATION_SHARD not in names),
+        VALIDATION_SHARD not in names,
         "denied_access",
-        "Validation must use the pinned last shard; training must exclude it.",
+        "The validation shard is reserved for the formal run.",
+    )
+    require(
+        (split == "dev" and names == [dev_shard])
+        or (split == "train" and dev_shard not in names),
+        "denied_access",
+        "Dev must use the pinned dev shard; training must exclude it.",
     )
     if split == "train":
-        validation_index = int(
-            VALIDATION_SHARD.removeprefix("shard_").removesuffix(".parquet")
-        )
         require(
             names == [f"shard_{i:05d}.parquet" for i in range(len(names))]
-            and len(names) <= validation_index,
+            and len(names) <= dev_index,
             "incompatible_contract",
-            "Training view must be the pinned contiguous prefix before validation.",
+            "Training view must be the pinned contiguous prefix before dev.",
         )
     stream = object.__new__(BestFitStream)
-    stream.paths, stream.tokenizer, stream.split = paths, tokenizer, split
+    # The native stream uses its split only to choose files, which this view
+    # supplies explicitly; natively the dev shard ends the training split.
+    stream.paths, stream.tokenizer, stream.split = paths, tokenizer, "train"
     stream.rank, stream.world = 0, 1
     stream.sequence_len, stream.buffer_size = sequence_len, 1000
     stream.tokenizer_batch_size, stream.tokenizer_threads = 128, 4
