@@ -1,0 +1,24 @@
+{
+ "schema_version": "koala_gym.v1",
+ "cluster": "h200",
+ "home": "/home/<user>",
+ "koala": "/home/<user>/.local/bin/koala",
+ "staging_dir": "/home/<user>/.local/share/koala-gym/staging",
+ "remote_root": "s3://<bucket>/<user>/nextt/harbor-gym",
+ "code_project": "nextt-harbor-gym",
+ "job_prefix": "nextt-hgym",
+ "ssd_gib": 64,
+ "poll_seconds": 30,
+ "gpu_name": "NVIDIA H200",
+ "gpu_memory_total_bytes": 150754820096,
+ "gpu_memory_limit_bytes": 137438953472,
+ "site_config": null,
+ "final": {"nodes": 1, "gpus_per_node": 8},
+ "pod_isolation": "landlock",
+ "worker_python": "/home/<user>/.local/share/koala-gym/worker-venv/bin/python",
+ "pod_remote_dir": "/local-ssd/harbor-gym",
+ "data_stage": [
+  ["/local-ssd/nextt-data/climbmix-400b-shuffle", "s3://<bucket>/<user>/nextt/datasets/climbmix-400b-shuffle"],
+  ["/local-ssd/nextt-resources/native-d24", "s3://<bucket>/<user>/nextt/resources/native-d24"]
+ ]
+}

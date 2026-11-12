@@ -1,0 +1,20 @@
+{
+ "schema_version": "koala_gym.v1",
+ "cluster": "h20",
+ "home": "/home/<user>",
+ "koala": "/home/<user>/.local/bin/koala",
+ "staging_dir": "/home/<user>/.local/share/koala-gym/staging",
+ "remote_root": "/cpfs/<user>/nextt/harbor-gym",
+ "code_project": "nextt-harbor-gym",
+ "job_prefix": "nextt-hgym",
+ "ssd_gib": 64,
+ "poll_seconds": 30,
+ "gpu_name": "NVIDIA H20-3e",
+ "gpu_memory_total_bytes": 150754820096,
+ "gpu_memory_limit_bytes": 137438953472,
+ "site_config": "/cpfs/<user>/nextt/site.h20.json",
+ "final": {"nodes": 4, "gpus_per_node": 8},
+ "pod_isolation": "none",
+ "pod_network": "deny",
+ "worker_python": "/home/<user>/.local/share/koala-gym/worker-venv/bin/python"
+}
