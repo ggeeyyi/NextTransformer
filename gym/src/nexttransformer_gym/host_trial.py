@@ -194,19 +194,29 @@ def docker_gateway():
     )
 
 
-async def run_job(args, trial_id, task, host):
-    from harbor.job import Job
-    from harbor.models.job.config import JobConfig
-
-    options = (
-        {}
-        if args.agent == "oracle"
-        else {
+def agent_options(args):
+    """Harbor agent kwargs. Turn and USD limits exist only for Claude Code."""
+    if args.agent == "claude-code":
+        values = {
             "version": args.agent_version,
             "max_turns": args.max_turns,
             "max_budget_usd": args.max_budget_usd,
         }
-    )
+    elif args.agent == "codex":
+        values = {
+            "version": args.agent_version,
+            "reasoning_effort": getattr(args, "reasoning_effort", None),
+        }
+    else:
+        values = {}
+    return {name: value for name, value in values.items() if value is not None}
+
+
+async def run_job(args, trial_id, task, host):
+    from harbor.job import Job
+    from harbor.models.job.config import JobConfig
+
+    options = agent_options(args)
     config = JobConfig.model_validate(
         {
             "job_name": trial_id,

@@ -36,7 +36,7 @@ def arguments():
         parser.add_argument(f"--{role}-image", default=images.get(role))
     parser.add_argument(
         "--agent",
-        choices=("claude-code", "oracle"),
+        choices=("claude-code", "codex", "oracle"),
         default=agent.get("name", "claude-code"),
     )
     parser.add_argument(
@@ -44,12 +44,21 @@ def arguments():
         default=agent.get("model")
         or os.environ.get(agent.get("model_env", "GYM_RESEARCH_MODEL")),
     )
-    parser.add_argument("--agent-version", default=agent.get("version", "2.1.312"))
+    parser.add_argument(
+        "--agent-version",
+        default=agent.get("version"),
+        help="Agent CLI version; Claude Code defaults to 2.1.312, Codex must be pinned",
+    )
     parser.add_argument("--max-turns", type=int, default=agent.get("max_turns", 64))
     parser.add_argument(
         "--max-budget-usd",
         default=agent.get("max_budget_usd"),
         help="Optional Claude Code API cost limit in USD",
+    )
+    parser.add_argument(
+        "--reasoning-effort",
+        default=agent.get("reasoning_effort"),
+        help="Optional Codex model_reasoning_effort",
     )
     parser.add_argument(
         "--timeout-sec", type=int, default=runtime.get("timeout_sec", 1800)
@@ -77,8 +86,17 @@ def arguments():
                 raise ValueError
         except (InvalidOperation, ValueError):
             parser.error("Agent USD limit must be finite and positive")
-    if args.agent == "claude-code" and not args.model:
-        parser.error("Set --model or the configured model_env for Claude Code")
+    if args.agent != "oracle" and not args.model:
+        parser.error("Set --model or the configured model_env for the agent")
+    if args.agent == "claude-code" and args.agent_version is None:
+        args.agent_version = "2.1.312"
+    if args.agent == "codex":
+        if not args.agent_version:
+            parser.error("Pin the Codex CLI version with --agent-version")
+        if args.max_budget_usd is not None:
+            parser.error("Codex has no USD limit; set a provider limit instead")
+    elif args.reasoning_effort is not None:
+        parser.error("--reasoning-effort applies to Codex only")
     roles = ("client", "verifier")
     if any(not getattr(args, role + "_image") for role in roles):
         parser.error("Prebuilt images are required for: " + ", ".join(roles))
@@ -94,16 +112,13 @@ def arguments():
 
 
 def agent_arguments(args):
+    from nexttransformer_gym.host_trial import agent_options
+
     command = ["--agent", args.agent]
-    if args.agent == "claude-code":
+    if args.agent != "oracle":
         command += ["--model", args.model]
-        for name, value in (
-            ("version", args.agent_version),
-            ("max_turns", args.max_turns),
-            ("max_budget_usd", args.max_budget_usd),
-        ):
-            if value is not None:
-                command += ["--agent-kwarg", f"{name}={value}"]
+        for name, value in agent_options(args).items():
+            command += ["--agent-kwarg", f"{name}={value}"]
     return command
 
 

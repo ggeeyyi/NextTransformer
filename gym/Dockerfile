@@ -11,6 +11,15 @@ COPY gym/examples/make_candidate.py gym/tasks/architecture-research/environment/
 WORKDIR /workspace
 USER agent
 
+# Codex client. The trial container drops every capability, so Harbor cannot install ripgrep or the CLI inside it;
+# with the pinned CLI already present, Harbor skips installation.
+FROM client AS client-codex
+ARG CODEX_VERSION=0.167.0
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends ripgrep && rm -rf /var/lib/apt/lists/* \
+    && npm install -g @openai/codex@${CODEX_VERSION} && npm cache clean --force
+USER agent
+
 FROM ${BASE_IMAGE} AS verifier
 ENV PYTHONPATH=/opt/gym/src PYTHONDONTWRITEBYTECODE=1
 # nexttransformer_gym.api imports jsonschema; versions from gym/uv.lock.
