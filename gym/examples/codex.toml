@@ -1,0 +1,20 @@
+# Harbor Codex; this fixture budget is not a production allocation.
+# Build the client image with: docker build -f gym/Dockerfile --target client-codex -t nt-gym-client:local-codex .
+# Authenticate with OPENAI_API_KEY, or set CODEX_AUTH_JSON_PATH to an auth.json that Harbor copies into the trial.
+# Codex has no turn or USD limit here; set a provider limit for a billing cap.
+[agent]
+name = "codex"
+model_env = "GYM_RESEARCH_MODEL"
+version = "0.167.0"
+reasoning_effort = "high"
+
+[budget]
+research_flops_limit = "1000000000000"
+
+[runtime]
+jobs_dir = ".agent-work/harbor-gym-codex"
+timeout_sec = 1800
+
+[images]
+client = "nt-gym-client:local-codex"
+verifier = "nt-gym-verifier:local"

@@ -200,3 +200,59 @@ def test_launcher_rejects_unresolved_or_duplicate_physical_gpus(monkeypatch, cas
     monkeypatch.setitem(resolve.__globals__, "discover", lambda: observation)
     with pytest.raises(SystemExit):
         resolve(configuration({"gpu_ids": selectors}))
+
+
+CODEX_ARGV = [
+    "run_trial.py",
+    "--agent",
+    "codex",
+    "--model",
+    "test-model",
+    "--research-flops-limit",
+    "1000000000000",
+    "--client-image",
+    "nt-gym-client:local",
+    "--verifier-image",
+    "nt-gym-verifier:local",
+]
+
+
+def test_launcher_codex_options(monkeypatch):
+    from harbor.agents.installed.codex import CodexOptions
+
+    runner = runpy.run_path(str(ROOT / "gym/run_trial.py"))
+    argv = CODEX_ARGV + ["--agent-version", "0.167.0", "--reasoning-effort", "high"]
+    monkeypatch.setattr(sys, "argv", argv)
+    args = runner["arguments"]()
+    native = runner["agent_arguments"](args)
+    assert native[:4] == ["--agent", "codex", "--model", "test-model"]
+    options = dict(
+        native[i + 1].split("=", 1)
+        for i, item in enumerate(native)
+        if item == "--agent-kwarg"
+    )
+    assert options == {"version": "0.167.0", "reasoning_effort": "high"}
+    parsed = CodexOptions.model_validate(options)
+    assert parsed.version == "0.167.0" and parsed.reasoning_effort == "high"
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [
+        [],
+        ["--agent-version", "0.167.0", "--max-budget-usd", "1"],
+    ],
+)
+def test_launcher_codex_rejects_unpinned_or_usd_limit(monkeypatch, extra):
+    runner = runpy.run_path(str(ROOT / "gym/run_trial.py"))
+    monkeypatch.setattr(sys, "argv", CODEX_ARGV + extra)
+    with pytest.raises(SystemExit):
+        runner["arguments"]()
+
+
+def test_launcher_reasoning_effort_is_codex_only(monkeypatch):
+    runner = runpy.run_path(str(ROOT / "gym/run_trial.py"))
+    argv = [a if a != "codex" else "claude-code" for a in CODEX_ARGV]
+    monkeypatch.setattr(sys, "argv", argv + ["--reasoning-effort", "high"])
+    with pytest.raises(SystemExit):
+        runner["arguments"]()
