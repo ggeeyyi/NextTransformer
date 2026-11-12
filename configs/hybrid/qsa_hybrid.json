@@ -112,13 +112,13 @@
   "calibration": {
     "status": "theoretical_preflight_passed",
     "formula_version": "reference-aten-math-v2",
-    "source_hash": "622bea9deb5a13c39a992577e300a8d10474a50d5acc974b8bed0d3c65b60d11",
-    "method_source_hash": "b856932ce96d1e06cfbeea673007163012f595be13c1c240cfdeebea2022156a",
+    "source_hash": "8b6f899af5af45f0399a52fd9f3d32ccecf0dab38e04828a250c9c4ce9b8e4be",
+    "method_source_hash": "7e1d330326843b77b4a07069760684bdcded12412cff79794fad6f846c85d31e",
     "torch": "2.9.1+cu128",
     "dense_flops_per_token": 4672398325.44785,
     "flops_per_token": 4691636932.460713,
     "relative_error": 0.004117501478433816,
     "cumulative_run_audit": "not_run",
-    "cost_record": "../../evidence/costs/plugin-interface-20261031/qsa_hybrid.json"
+    "cost_record": "../../evidence/costs/audit-42818390581/qsa_hybrid.json"
   }
 }

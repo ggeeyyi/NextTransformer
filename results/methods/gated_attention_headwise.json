@@ -1,0 +1,36 @@
+{
+ "id": "gated_attention_headwise",
+ "name": "Gated Attention · headwise",
+ "family": "others",
+ "tagline": "One sigmoid gate per head, computed from the block input, scales each head's SDPA output before the output projection.",
+ "description": "The Dense Baseline's full causal attention with the paper's headwise gate: each head's SDPA output Y_h is multiplied by one score σ(X w_h), where X is the block's pre-normalized input. The scores come from a bias-free 1536 × 12 layer, output_gate, initialized with c_q's uniform rule and trained by AdamW in the auxiliary group; c_q, c_k, c_v and c_proj stay with Muon. The gate adds 0.42M parameters and 0.06% compute, so the calibrated shell is Dense's own: 23 layers, FFN 6144, 12 value-embedding tables.",
+ "paperTitle": "Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free",
+ "paperUrl": "https://arxiv.org/abs/2505.06708",
+ "mechanism": [
+  "Y'_h = Y_h · σ(X w_h) for each of the 12 heads, before c_proj; X is the block's pre-normalized input",
+  "w: bias-free 1536 × 12 output_gate, c_q's uniform initialization, AdamW (auxiliary group)",
+  "Dense's shell otherwise: 23 full-attention layers, FFN 6144, value embeddings, RoPE and QK norm"
+ ],
+ "limitations": "Single seed 42. It differs from the Dense Baseline only by the gate, so the pair isolates the headwise gate at matched compute. The official code appends the gate scores to q_proj and trains every weight with AdamW; here they come from a separate layer so that they can stay with AdamW while c_q uses Muon. Parameters, memory and speed are outcomes, not controls.",
+ "diagram": "custom",
+ "architecture": {
+  "kind": "custom",
+  "nodes": [
+   "Pre-norm X",
+   "q · k · v → SDPA",
+   "× σ(X W_θ) per head",
+   "c_proj"
+  ],
+  "loop": false
+ },
+ "blocks": 23,
+ "ffn": 6144,
+ "params": 1356234504,
+ "flops": 4.677384,
+ "error": 0.107,
+ "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/gated_attention_headwise/__init__.py",
+ "cohort": "reference-v1",
+ "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#others",
+ "costModel": "reference-aten-math-v2",
+ "order": 47
+}

@@ -30,6 +30,7 @@ export default defineConfig({
       },
       sidebar: [
         { label: 'Observatory ↗', translations: { 'zh-CN': '观测站 ↗' }, link: observatory, attrs: { target: '_self' } },
+        { label: 'Research blog ↗', translations: { 'zh-CN': '研究博客 ↗' }, link: 'https://interactive-active-ai.github.io/NextT-Blogs/' },
         group('Start here', '开始', [
           'getting-started/installation', 'getting-started/quick-start', 'getting-started/data',
           'getting-started/models', 'getting-started/repository',
@@ -48,6 +49,7 @@ export default defineConfig({
           'results/leaderboard', 'results/records', 'results/evidence',
           { slug: 'results/runs', label: 'Run notes', translations: { 'zh-CN': '运行说明' } },
         ]),
+        group('Scaling', '规模扩展', ['scaling/overview', 'scaling/protocol', 'scaling/contribute']),
         group('Arena', '竞技场', ['arena/overview', 'arena/rules', 'arena/task', 'arena/disclosure', 'arena/circle-loop', 'arena/plan'],
           { badge: { text: 'v2 · Nov 14', variant: 'note' } }),
         group('Project', '项目', ['roadmap', 'community']),

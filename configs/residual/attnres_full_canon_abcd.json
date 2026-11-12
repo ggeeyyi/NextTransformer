@@ -86,13 +86,13 @@
   "calibration": {
     "status": "theoretical_preflight_passed",
     "formula_version": "reference-aten-math-v2",
-    "source_hash": "f5e46218d8e8065f51107b0c4dab3d0a91468be78b6bf5a40f05140144059df7",
-    "method_source_hash": "70761a734972d9a75c2f0f8f3a2f961df4cefc9c2e18b746ddcfa8393315d85b",
+    "source_hash": "8b6f899af5af45f0399a52fd9f3d32ccecf0dab38e04828a250c9c4ce9b8e4be",
+    "method_source_hash": "e84edb04f4cc66268b628d6adb0d949bf77eda36b7151c3a7ced01fa490d2830",
     "torch": "2.9.1+cu128",
     "dense_flops_per_token": 4672398325.44785,
     "flops_per_token": 4695109917.384431,
     "relative_error": 0.004860799605393984,
     "cumulative_run_audit": "not_run",
-    "cost_record": "../../evidence/costs/arena-v1-stage3-20261103/attnres_full_canon_abcd.json"
+    "cost_record": "../../evidence/costs/audit-42818390581/attnres_full_canon_abcd.json"
   }
 }

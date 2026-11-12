@@ -3,7 +3,7 @@ title: Model zoo
 description: Every method in NextTransformer, by family.
 ---
 
-NextTransformer has 38 model cards in seven families. Every method runs in the same shell and is calibrated to
+NextTransformer has 40 model cards in seven families. Every method runs in the same shell and is calibrated to
 the same training compute. Open a method in the [observatory](https://interactive-active-ai.github.io/NextTransformer/#atlas) for its architecture diagram, curves and
 model card; "registered" methods have a card and a configuration but no published run.
 
@@ -47,5 +47,7 @@ model card; "registered" methods have a card and a configuration but no publishe
 | Others | Grouped-Query Attention · GQA (`gqa`) | [GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints](https://arxiv.org/abs/2305.13245) | published |
 | Others | Multi-head Latent Attention · MLA + QK-norm (`mla_qknorm`) | [DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model](https://arxiv.org/abs/2405.04434) | published |
 | Others | MLA-NoPE + QK-norm (`mla_nope_qknorm`) | [DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model](https://arxiv.org/abs/2405.04434) | published |
+| Others | Gated Attention · elementwise (`gated_attention`) | [Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free](https://arxiv.org/abs/2505.06708) | published |
+| Others | Gated Attention · headwise (`gated_attention_headwise`) | [Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free](https://arxiv.org/abs/2505.06708) | published |
 
 See the [configuration reference](../configurations/) for training configurations. Add your own as a [plugin](../../guides/plugins/).

@@ -1,0 +1,36 @@
+{
+ "id": "gated_attention",
+ "name": "Gated Attention · elementwise",
+ "family": "others",
+ "tagline": "A sigmoid gate computed from the block input scales every channel of every head's SDPA output before the output projection.",
+ "description": "The Dense Baseline's full causal attention with the paper's best gate (elementwise, head-specific, multiplicative, sigmoid): Y' = Y ⊙ σ(X W_θ), where Y is each head's SDPA output and X the block's pre-normalized input. W_θ is a bias-free 1536 × 1536 layer, output_gate, initialized with c_q's uniform rule and trained by AdamW in the auxiliary group, as the paper trained it; c_q, c_k, c_v and c_proj stay with Muon. The gate costs about 7% of the shared budget at 23 layers, so calibration reduced the depth to 21 layers and widened the FFN to 6272; the model has one value-embedding table fewer than Dense.",
+ "paperTitle": "Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free",
+ "paperUrl": "https://arxiv.org/abs/2505.06708",
+ "mechanism": [
+  "Y' = Y ⊙ σ(X W_θ) on each head's SDPA output, before c_proj; X is the block's pre-normalized input",
+  "W_θ: bias-free 1536 × 1536 output_gate, c_q's uniform initialization, AdamW (auxiliary group)",
+  "21 full-attention layers, FFN 6272, 11 value-embedding tables; RoPE, QK norm and the zero-initialized c_proj unchanged"
+ ],
+ "limitations": "Single seed 42. Under the shared compute budget the gate is paid for with two of Dense's 23 layers and one value-embedding table, so the comparison with Dense mixes the gate with that depth and capacity change; Gated Attention · headwise keeps Dense's shell exactly. The official code fuses W_θ into q_proj and trains every weight with AdamW; here W_θ is a separate layer so that it can stay with AdamW while c_q uses Muon. Parameters, memory and speed are outcomes, not controls.",
+ "diagram": "custom",
+ "architecture": {
+  "kind": "custom",
+  "nodes": [
+   "Pre-norm X",
+   "q · k · v → SDPA",
+   "× σ(X W_θ) per channel",
+   "c_proj"
+  ],
+  "loop": false
+ },
+ "blocks": 21,
+ "ffn": 6272,
+ "params": 1306658420,
+ "flops": 4.641914,
+ "error": -0.652,
+ "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/gated_attention/__init__.py",
+ "cohort": "reference-v1",
+ "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#others",
+ "costModel": "reference-aten-math-v2",
+ "order": 46
+}

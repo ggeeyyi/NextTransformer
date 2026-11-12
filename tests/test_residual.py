@@ -62,7 +62,7 @@ def assert_matching_gradients(model, loss, oracle_loss):
 
 def test_pre_v2_configurations_keep_their_files_and_hashes():
     pre_v2 = set(METHODS[:METHODS.index("dense_full")])
-    for path in sorted(p for p in (ROOT / "configs").glob("*/*.json") if p.parent.name != "native"):
+    for path in sorted(p for p in (ROOT / "configs").glob("*/*.json") if p.parent.name not in ("native", "scaling")):
         raw = json.loads(path.read_text())
         config = load_config(path)
         if config.method in pre_v2:

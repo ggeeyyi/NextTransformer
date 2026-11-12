@@ -69,6 +69,44 @@ See the [configuration reference](../configurations/) for training configuration
 """
 
 
+def dense_groups(path):
+    """Parameter groups of a dense reference, split as `GPT.num_scaling_params` does and checked against its proof."""
+    config = load(ROOT/path)
+    m = config["model"]
+    width, heads, layers, ffn = m["width"], m["heads"], m["layers"], m["mlp_width"]
+    vocab = -(-m["vocab_size"]//64)*64
+    ve_layers = sum(i % 2 == (layers - 1) % 2 for i in range(layers))
+    pattern = m["window_pattern"]
+    full_layers = sum(pattern[i % len(pattern)] == "L" or i == layers - 1 for i in range(layers))
+    groups = {"blocks": layers*(4*width*width + 2*width*ffn) + ve_layers*12*heads, "wte": vocab*width,
+              "lm_head": vocab*width, "value_embeds": ve_layers*vocab*width, "scalars": 2*layers + 24 + 2}
+    groups["total"] = sum(groups.values())
+    proof = load((ROOT/path).parent/config["calibration"]["cost_record"])
+    if groups["total"] != proof["parameters"]:
+        raise ValueError(f"{path}: parameter groups sum to {groups['total']:,}, its cost proof to {proof['parameters']:,}")
+    return groups, dict(width=width, vocab=vocab, layers=layers, ve_layers=ve_layers, full_layers=full_layers)
+
+
+def parameter_groups(chinese=False):
+    """The parameter-group table of the two dense references and the facts quoted around it."""
+    (full, f), (anchor, a) = dense_groups("configs/baseline/dense_full.json"), dense_groups("configs/others/dense.json")
+    if f["ve_layers"] != a["ve_layers"]: raise ValueError("the dense references differ in value-embedding tables")
+    names = {"blocks": ("Transformer 块（`transformer.h`，含 value embedding 门控）",
+                        "Transformer blocks (`transformer.h`, including value-embedding gates)"),
+             "wte": ("词嵌入（`wte`）", "Token embedding (`wte`)"),
+             "lm_head": ("输出头（`lm_head`）", "Output head (`lm_head`)"),
+             "value_embeds": (f"Value embedding（`value_embeds`，{f['ve_layers']} 张表）",
+                              f"Value embeddings (`value_embeds`, {f['ve_layers']} tables)"),
+             "scalars": ("标量", "Scalars"), "total": ("**合计**", "**Total**")}
+    rows = ["| 分组 | `dense_full`（基线） | `dense`（SSSL 锚点） |" if chinese
+            else "| Group | `dense_full` (Baseline) | `dense` (SSSL anchor) |", "|---|---:|---:|"]
+    for key, (zh, en) in names.items():
+        mark = "**" if key == "total" else ""
+        rows.append(f"| {zh if chinese else en} | {mark}{full[key]:,}{mark} | {mark}{anchor[key]:,}{mark} |")
+    return dict(table="\n".join(rows), share=100*full["value_embeds"]/full["total"], vocab=f["vocab"], width=f["width"],
+                full=f, anchor=a)
+
+
 def configurations(chinese=False):
     # The sources guide also documents the output-normalization reference used by ELU-Norm.
     documented = {p.stem for p in (ROOT/"results/methods").glob("*.json")} | {"elu_norm"}
@@ -88,6 +126,7 @@ def configurations(chinese=False):
             rows.append(f"| {label} | {method} | {proof['physical_layers']} | {proof['selected_ffn']:,} | "
                         f"{proof['parameters']:,} | {calibration['flops_per_token']/1e9:.6f} | "
                         f"{100*calibration['relative_error']:+.3f}% | {', '.join(stages)} |")
+    g = parameter_groups(chinese)
     if chinese:
         return f"""---
 title: 模型配置
@@ -101,6 +140,16 @@ description: 公开模型及其文档所列参考配置的结构、参数量与�
 {chr(10).join(rows)}
 
 循环方法跨轮复用物理块，展开后的深度会大于表内块数，详见[方法来源与实现](../sources/)。各阶段按更新次数加权。DSA、QSA、Seer 和 QSA 混合架构先做 512 步稠密预热，Ouro 在最后 1,024 步仅训练退出门。Huginn 按固定种子逐步采样深度，凭证枚举了全部 46,875 次采样。
+
+## 参数构成
+
+上表的参数量中，value embedding 查找表占了很大一部分。两个稠密参考模型的参数按 `nexttransformer/models/backbone.py` 中 `GPT.num_scaling_params` 的分组拆分如下。各分组由配置推算，合计与成本凭证中的参数量一致：
+
+{g['table']}
+
+每张 value embedding 表是 {g['vocab']:,} × {g['width']:,} 的查找表，每隔一层配置一张，最后一层总有一张。这些表合计占基线参数量的 {g['share']:.1f}%，但算力账本对查表不计 FLOPs，反向每张表每 token 只计 {g['width']:,} FLOPs，而每 token 的总算力约为 4.67 GFLOPs。因此参数量不反映每 token 的算力：`kda_hybrid` 没有 value embedding，在同等算力下比其他混合方法少约 0.6B 参数。token 与参数的比例随计入的分组而变化。
+
+排行榜上的稠密基线和算力锚点是两个不同的模型。基线是 `dense_full`，{g['full']['layers']} 层全部使用完整因果注意力。所有方法校准对齐的锚点是 `dense`，共 {g['anchor']['layers']} 层，按 SSSL 模式每三层短滑动窗口注意力（每个 token 最多可见 513 个 token）接一层完整因果注意力，最后一层总是完整注意力，因此只有 {g['anchor']['full_layers']} 层看到完整上下文，详见[模型外壳](../../protocol/model-shell/)。文档其他位置所说的“约 1.4B 参数”是全部分组的合计。
 
 ## 阅读配置
 
@@ -125,6 +174,27 @@ Blocks count physical layers; looped methods reuse them across loops, so their u
 [source notes](../sources/)). Multi-stage methods weight each stage by its updates: DSA, QSA, Seer and the QSA hybrid run
 512 dense burn-in updates before sparse training; Ouro trains its exit gate alone for the final 1,024 updates; Huginn
 samples a depth per update from a fixed seed, and its proof enumerates all 46,875 samples.
+
+## Parameter groups
+
+Value-embedding tables account for a large share of the parameter counts above. The two dense references split as
+follows, using the groups of `GPT.num_scaling_params` in `nexttransformer/models/backbone.py`. The groups are derived
+from the configurations, and their totals match the parameter counts in the cost proofs:
+
+{g['table']}
+
+Each value-embedding table is a {g['vocab']:,} × {g['width']:,} lookup on alternating layers, the last layer included.
+Together they hold {g['share']:.1f}% of the Baseline's parameters, yet the cost ledger charges no FLOPs for the lookup
+and {g['width']:,} FLOPs per token per table for its backward, against about 4.67 GFLOPs per token in total. Parameter
+counts therefore do not track per-token compute: `kda_hybrid` has no value embeddings and about 0.6B fewer parameters
+than the other hybrids at the same compute. Ratios of tokens to parameters change with the groups they count.
+
+The leaderboard's Dense Baseline and the compute anchor are different models. The Baseline is `dense_full`, with full
+causal attention in all {g['full']['layers']} layers. The anchor that every method is calibrated against is `dense`, with
+{g['anchor']['layers']} layers in the SSSL pattern: three short sliding-window layers (at most 513 visible tokens) to one
+full causal layer, and the last layer always full, so {g['anchor']['full_layers']} layers see the whole context (see the
+[model shell](../../protocol/model-shell/)). The "about 1.4B parameters" quoted elsewhere in the documentation is the
+total over all groups.
 
 ## Reading a configuration
 

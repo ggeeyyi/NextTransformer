@@ -31,10 +31,12 @@ def _load_flash_attention_3():
         import os
         os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
         from kernels import get_kernel, has_kernel
-        # The varunneal kernel obtains better results for H100/Hopper
+        # Hopper: kernels>=0.17 refuses a kernel without a version, and the third-party varunneal build now also
+        # needs trust_remote_code. Use the community FA3 build, pinned to its v1 commit so that every restart loads
+        # the same kernel, also with HF_HUB_OFFLINE=1 once the snapshot is cached.
         if major == 9:
-            hf_kernel = "varunneal/flash-attention-3"
-            return get_kernel(hf_kernel).flash_attn_interface
+            hf_kernel = "kernels-community/flash-attn3"
+            return get_kernel(hf_kernel, revision="7cb368cf8278b583132eb72cbf312d54586df2e2").flash_attn_interface
         else:
             hf_kernel = "kernels-community/flash-attn3"
             if has_kernel(hf_kernel):

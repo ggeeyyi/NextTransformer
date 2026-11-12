@@ -87,13 +87,13 @@
   "calibration": {
     "status": "theoretical_preflight_passed",
     "formula_version": "reference-aten-math-v2",
-    "source_hash": "622bea9deb5a13c39a992577e300a8d10474a50d5acc974b8bed0d3c65b60d11",
-    "method_source_hash": "b54557e2924c23d00ed44e60265544dd8e6c530200c48a7897a824a95e62e5e9",
+    "source_hash": "8b6f899af5af45f0399a52fd9f3d32ccecf0dab38e04828a250c9c4ce9b8e4be",
+    "method_source_hash": "f51aa749107f30b551c4b7ab7578c26d1ce91ee375a4d520a0d2f715a0ec06ee",
     "torch": "2.9.1+cu128",
     "dense_flops_per_token": 4672398325.44785,
     "flops_per_token": 4679857323.887021,
     "relative_error": 0.0015963960946021594,
     "cumulative_run_audit": "not_run",
-    "cost_record": "../../evidence/costs/plugin-interface-20261031/attnres.json"
+    "cost_record": "../../evidence/costs/audit-42818390581/attnres.json"
   }
 }

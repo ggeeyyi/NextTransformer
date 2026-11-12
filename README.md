@@ -11,16 +11,19 @@
 </p>
 
 <p>
-<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img alt="Leaderboard" src="https://img.shields.io/badge/leaderboard-live-8B5CF6?style=flat-square"></a>
-<a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-F2A93B?style=flat-square"></a>
-<img alt="Python 3.10-3.13" src="https://img.shields.io/badge/python-3.10--3.13-3776AB?style=flat-square&logo=python&logoColor=white">
-<img alt="PyTorch 2.9.1" src="https://img.shields.io/badge/PyTorch-2.9.1-EE4C2C?style=flat-square&logo=pytorch&logoColor=white">
-<a href="https://discord.gg/k2XPXW6Jz"><img alt="Discord" src="https://img.shields.io/badge/Discord-join-74638C?style=flat-square&logo=discord&logoColor=white"></a>
-<a href="https://interactive-active-ai.github.io/NextTransformer/docs/community/#wechat"><img alt="WeChat group" src="https://img.shields.io/badge/WeChat-group-E5607E?style=flat-square&logo=wechat&logoColor=white"></a>
-<a href="https://github.com/Interactive-Active-AI/NextTransformer/discussions"><img alt="GitHub Discussions" src="https://img.shields.io/badge/discussions-ask-7A5AF0?style=flat-square&logo=github&logoColor=white"></a>
+<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img alt="Leaderboard" src="https://img.shields.io/badge/leaderboard-live-96C1F1?style=flat&amp;labelColor=D1E5FF" height="19"></a>&thinsp;
+<a href="https://interactive-active-ai.github.io/NextT-Blogs/"><img alt="NextTransformer research blog" src="https://img.shields.io/badge/Blog-F6D7AB?style=flat" height="19"></a>&thinsp;
+<a href="https://huggingface.co/NextTransformer"><img alt="Model weights on Hugging Face" src="https://img.shields.io/badge/Hugging%20Face-models-F5CE70?style=flat&amp;logo=huggingface&amp;logoColor=79501F&amp;labelColor=FFF0BB" height="19"></a>&thinsp;
+<a href="https://discord.gg/k2XPXW6Jz"><img alt="Join Discord" src="https://img.shields.io/badge/Discord-D3C2F3?style=flat&amp;logo=discord&amp;logoColor=574589" height="19"></a>&thinsp;
+<a href="https://interactive-active-ai.github.io/NextTransformer/docs/community/#wechat"><img alt="WeChat group" src="https://img.shields.io/badge/WeChat-F5CED9?style=flat&amp;logo=wechat&amp;logoColor=8B4161" height="19"></a>&thinsp;
+<a href="https://github.com/Interactive-Active-AI/NextTransformer/discussions"><img alt="GitHub Discussions" src="https://img.shields.io/badge/Discussions-C4D4F6?style=flat&amp;logo=github&amp;logoColor=475D8A" height="19"></a>
+<br>
+<img alt="Python 3.10–3.13" src="https://img.shields.io/badge/Python-3.10--3.13-A4CBEB?style=flat&amp;logo=python&amp;logoColor=345B86&amp;labelColor=D7EBFA" height="19">&thinsp;
+<img alt="PyTorch 2.9.1" src="https://img.shields.io/badge/PyTorch-2.9.1-F4AF98?style=flat&amp;logo=pytorch&amp;logoColor=9D4436&amp;labelColor=FFE0D2" height="19">&thinsp;
+<a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/MIT-E3D7F4?style=flat" height="19"></a>&thinsp;
+<a href="CITATION.cff"><img alt="Cite NextTransformer" src="https://img.shields.io/badge/Cite-F6D7AB?style=flat" height="19"></a>&thinsp;
+<img alt="English (current language)" src="https://img.shields.io/badge/English-A9C7EB?style=flat" height="19">&nbsp;<a href="README.zh-CN.md"><img alt="简体中文" src="https://img.shields.io/badge/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-E9EFF6?style=flat" height="19"></a>
 </p>
-
-<b>English</b> · <a href="README.zh-CN.md">简体中文</a>
 
 </div>
 
@@ -33,6 +36,7 @@ result is an audited, file-backed record, and AI agents can research new archite
 
 ## News
 
+- <img src="https://img.shields.io/badge/BLOG-F6D7AB?style=flat-square" alt="Blog" height="18"> **2026-11-11** · The research blog is live. The first post traces [how Opus found AttnRes-Canon](https://interactive-active-ai.github.io/NextT-Blogs/attnres-canon/en/). [Blog repository](https://github.com/Interactive-Active-AI/NextT-Blogs)
 - <img src="https://img.shields.io/badge/RFC-8B5CF6?style=flat-square" alt="RFC" height="18"> **2026-11-05** · **[Scaling RFC](https://github.com/Interactive-Active-AI/NextTransformer/discussions/22)**: 4K-context Dense and MoE pretraining on ClimbMix at **200B and 400B tokens**. Feedback on data, model configurations and evaluation is welcome.
 - <img src="https://img.shields.io/badge/COMMUNITY-2A78D6?style=flat-square" alt="Community" height="18"> **2026-11-04** · **[NextTransformer-V](https://github.com/Enderfga/NextTransformer-V)** by [@Enderfga](https://github.com/Enderfga): a community multimodal track that trains every NextTransformer method on interleaved image and text tokens under the same compute-matched contract. Its first study, pre-registered, asks where hybrid backbones get the 2D layout of an image.
 - <img src="https://img.shields.io/badge/NEW-E5607E?style=flat-square" alt="New" height="18"> **2026-10-31** · NextTransformer is now open source: 31 finished runs, 36 model cards, the full protocol, the documentation and the observatory.
@@ -58,7 +62,7 @@ your browser.
 ## Results
 
 <!-- generated:leaderboard -->
-<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-en.svg" alt="CORE at update 46,875 for all 36 runs, against the Dense Baseline" width="100%"></a>
+<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-en.svg" alt="CORE at update 46,875 for all 38 runs, against the Dense Baseline" width="100%"></a>
 
 [Full leaderboard](https://interactive-active-ai.github.io/NextTransformer/docs/results/leaderboard/) · [Training replay](https://interactive-active-ai.github.io/NextTransformer/#leaderboard)
 <!-- /generated:leaderboard -->
@@ -109,6 +113,10 @@ covers smoke tests, evaluation, auditing and exporting a result.
 
 ## Model zoo
 
+The [NextTransformer organization on Hugging Face](https://huggingface.co/NextTransformer) is the home for model weights. Check its **Models** tab for available downloads. The [leaderboard](https://interactive-active-ai.github.io/NextTransformer/#leaderboard) lists evaluated runs, including those whose weights have not yet been released.
+
+Contributor-hosted weights: [AttnRes-Canon (49B comparison)](https://huggingface.co/GY2233/nextt-arena-attnres-full-canon-abcd) · [Dense (200B-token scaling run)](https://huggingface.co/Enderfga/nextt-scaling-dense-200b-4k).
+
 <details open>
 <summary><b>Browse architectures by family</b></summary>
 
@@ -121,7 +129,7 @@ covers smoke tests, evaluation, auditing and exporting a result.
 | <img src="https://img.shields.io/badge/Sparse-E5607E?style=flat-square" alt="Sparse"> | DSA · QSA · NSA · SeerAttention-style · MoBA |
 | <img src="https://img.shields.io/badge/Linear-3F7FD9?style=flat-square" alt="Linear"> | DeltaNet · GSA + QK-norm · GLA · KDA · RetNet · ELU-Norm · GDN |
 | <img src="https://img.shields.io/badge/Hybrid-F07856?style=flat-square" alt="Hybrid"> | GDN–MHA · GDN–SWA · DeltaNet–MHA · KDA–MLA-NoPE · GDN–QSA\* · MoBA–MHA |
-| <img src="https://img.shields.io/badge/Others-D99A2B?style=flat-square" alt="Others"> | SSSL · MQA · GQA · MLA-QK · MLA-NoPE-QK |
+| <img src="https://img.shields.io/badge/Others-D99A2B?style=flat-square" alt="Others"> | SSSL · MQA · GQA · MLA-QK · MLA-NoPE-QK · Gated Attention · elementwise · Gated Attention · headwise |
 <!-- /generated:model-zoo -->
 
 \* Results coming soon. Papers, adaptations and configurations are in the [model zoo](https://interactive-active-ai.github.io/NextTransformer/docs/methods/zoo/).

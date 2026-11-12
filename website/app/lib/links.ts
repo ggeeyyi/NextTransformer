@@ -1,5 +1,6 @@
 // Every external address the site links to.
 export const REPO_URL = 'https://github.com/Interactive-Active-AI/NextTransformer';
+export const BLOG_URL = 'https://interactive-active-ai.github.io/NextT-Blogs/';
 export const REPO_API = 'https://api.github.com/repos/Interactive-Active-AI/NextTransformer';
 export const REPO_FILE = REPO_URL+'/blob/main/';
 export const DISCUSSIONS_URL = REPO_URL+'/discussions';

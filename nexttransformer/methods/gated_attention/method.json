@@ -1,0 +1,9 @@
+{
+ "name": "gated_attention",
+ "family": "others",
+ "title": "Gated Attention · elementwise",
+ "paper": {"title": "Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free", "url": "https://arxiv.org/abs/2505.06708"},
+ "options": {"granularity": "elementwise"},
+ "debug_options": {"granularity": "elementwise"},
+ "shell": {"layers": 24, "mlp_width": 6144, "window_pattern": "L"}
+}

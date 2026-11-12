@@ -86,13 +86,13 @@
   "calibration": {
     "status": "theoretical_preflight_passed",
     "formula_version": "reference-aten-math-v2",
-    "source_hash": "622bea9deb5a13c39a992577e300a8d10474a50d5acc974b8bed0d3c65b60d11",
-    "method_source_hash": "f19db033767f0903ab0dbff57bb72000fc85541c72b3d864463fbc7dc75318e2",
+    "source_hash": "8b6f899af5af45f0399a52fd9f3d32ccecf0dab38e04828a250c9c4ce9b8e4be",
+    "method_source_hash": "1703904575d50063d50707a23d10babfea72a4193da875236c661568c5a48f06",
     "torch": "2.9.1+cu128",
     "dense_flops_per_token": 4672398325.44785,
     "flops_per_token": 4660529228.311522,
     "relative_error": -0.0025402579809354897,
     "cumulative_run_audit": "not_run",
-    "cost_record": "../../evidence/costs/plugin-interface-20261031/deeploop.json"
+    "cost_record": "../../evidence/costs/audit-42818390581/deeploop.json"
   }
 }

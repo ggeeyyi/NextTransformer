@@ -14,10 +14,12 @@ description: 同一参考协议下完成的正式训练，以及各方法与 Den
 | [AttnRes-Canon](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/attnres_full_canon_abcd.json) | 残差 | 0.6605 | -0.0067 | 35.99 | +2.90 | 4.695 |
 | [Manifold-Constrained Hyper-Connections · mHC](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/mhc.json) | 残差 | 0.6617 | -0.0055 | 35.33 | +2.23 | 4.674 |
 | [Hyper-Connections · HC](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/hc.json) | 残差 | 0.6644 | -0.0028 | 35.09 | +2.00 | 4.698 |
+| [Gated Attention · headwise](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gated_attention_headwise.json) | 其他 | 0.6674 | +0.0002 | 34.27 | +1.18 | 4.677 |
 | [Block Attention Residuals · AttnRes](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/attnres.json) | 残差 | 0.6630 | -0.0042 | 34.00 | +0.90 | 4.680 |
 | [SSSL](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/sssl.json) | 其他 | 0.6671 | ±0.0000 | 33.78 | +0.69 | 4.775¹ |
 | [Native Sparse Attention · NSA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/nsa.json) | 稀疏 | 0.6678 | +0.0006 | 33.78 | +0.69 | 4.639 |
 | [Hybrid GDN + SWA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gdn_hybrid_swa.json) | 混合 | 0.6656 | -0.0015 | 33.66 | +0.57 | 4.647 |
+| [Gated Attention · elementwise](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gated_attention.json) | 其他 | 0.6695 | +0.0023 | 33.58 | +0.49 | 4.642 |
 | [Hybrid GDN + MHA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gdn_hybrid.json) | 混合 | 0.6647 | -0.0025 | 33.37 | +0.28 | 4.704 |
 | [Hybrid MoBA + MHA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/moba_hybrid.json) | 混合 | 0.6702 | +0.0031 | 32.74 | -0.35 | 4.660 |
 | [Grouped-Query Attention · GQA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gqa.json) | 其他 | 0.6741 | +0.0069 | 32.62 | -0.47 | 4.687 |

@@ -1,0 +1,43 @@
+name: Scaling cell claim
+description: Claim one open cell of the scaling ladder and train it under the scaling protocol.
+title: "[Scaling] Claim <cell id>"
+labels: [scaling]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cells are listed in `results/scaling/ladder.json` and on the observatory's Scaling page. Read the
+        [contribution guide](https://interactive-active-ai.github.io/NextTransformer/docs/scaling/contribute/) first.
+        A maintainer marks the cell claimed; a claim without progress for two weeks is released.
+  - type: input
+    id: cell
+    attributes:
+      label: Cell id
+      description: For example dense-T3-L24.
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of run
+      options:
+        - First run of an open cell
+        - Another seed of a recorded cell
+    validations:
+      required: true
+  - type: input
+    id: compute
+    attributes:
+      label: Compute plan
+      description: Number of GPUs and the expected finish date. GPU models stay out of the public record.
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Before training
+      options:
+        - label: I will train with the frozen scaling recipe and the cell's token count, and export the run with `python -m nexttransformer.scaling.export`.
+          required: true
+        - label: I will publish the final checkpoint and link it from the record.
+          required: true

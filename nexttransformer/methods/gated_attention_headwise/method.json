@@ -1,0 +1,9 @@
+{
+ "name": "gated_attention_headwise",
+ "family": "others",
+ "title": "Gated Attention · headwise",
+ "paper": {"title": "Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free", "url": "https://arxiv.org/abs/2505.06708"},
+ "options": {"granularity": "headwise"},
+ "debug_options": {"granularity": "headwise"},
+ "shell": {"layers": 24, "mlp_width": 6144, "window_pattern": "L"}
+}
