@@ -13,5 +13,8 @@ USER agent
 
 FROM ${BASE_IMAGE} AS verifier
 ENV PYTHONPATH=/opt/gym/src PYTHONDONTWRITEBYTECODE=1
+# nexttransformer_gym.api imports jsonschema; versions from gym/uv.lock.
+RUN pip install --no-cache-dir jsonschema==4.26.0 jsonschema-specifications==2025.9.1 referencing==0.37.0 \
+    rpds-py==2026.9.1 attrs==26.1.0 typing-extensions==4.16.0
 COPY gym/src /opt/gym/src
 COPY gym/tasks/architecture-research/tests /tests
