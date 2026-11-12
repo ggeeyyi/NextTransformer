@@ -551,9 +551,9 @@ def test_admission_anchor_matches_the_pinned_dense_cost():
 
     proofs = sorted(ROOT.glob("evidence/costs/*/dense.json"))
     assert proofs
-    assert {
-        json.loads(p.read_text())["flops_per_token"] for p in proofs
-    } == {ANCHOR_FLOPS_PER_TOKEN}
+    assert {json.loads(p.read_text())["flops_per_token"] for p in proofs} == {
+        ANCHOR_FLOPS_PER_TOKEN
+    }
 
 
 @pytest.mark.parametrize("split", ["train", "dev"])

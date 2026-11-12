@@ -22,7 +22,9 @@ def parquet_stream(paths, tokenizer, sequence_len, split):
     )
     # The dev shard is the last training shard in sorted order, just before the
     # validation shard; a formal stream never reaches it.
-    dev_index = int(VALIDATION_SHARD.removeprefix("shard_").removesuffix(".parquet")) - 1
+    dev_index = (
+        int(VALIDATION_SHARD.removeprefix("shard_").removesuffix(".parquet")) - 1
+    )
     dev_shard = f"shard_{dev_index:05d}.parquet"
     names = [p.name for p in paths]
     require(
