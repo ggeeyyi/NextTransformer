@@ -1,10 +1,10 @@
 # Contributing
 
-Thank you for helping. NextTransformer compares architectures under one fixed
-[protocol](https://interactive-active-ai.github.io/NextTransformer/docs/protocol/overview/), so every contribution
-arrives as a pull request that keeps that protocol intact. The
-[documentation](https://interactive-active-ai.github.io/NextTransformer/docs/) has the full guides; this page is the
-short version.
+Choose a track from the [Contribute page](https://interactive-active-ai.github.io/NextTransformer/#contribute). The 49B benchmark and 2K scaling study have separate protocols.
+
+## Join the 2K scaling study
+
+Pick a T3 cell on the [Contribute page](https://interactive-active-ai.github.io/NextTransformer/#contribute) to find its reference code, outstanding work and coordination issue form. Consult the [T3 contribution guide](https://interactive-active-ai.github.io/NextTransformer/docs/scaling/contribute/) for all four families. The [T3 manifest](configs/scaling/t3.json) is a design specification. Formal training needs a corresponding verified implementation and cost proof.
 
 ## How to contribute
 
@@ -22,6 +22,7 @@ By contributing you agree that your contribution is licensed under the [MIT Lice
 
 | Contribution | Files | Guide |
 |---|---|---|
+| A T3 scaling contribution | The selected cell ID, implementation or cost proof, or a reviewed result under `results/scaling/runs/` | [T3 contribution guide](https://interactive-active-ai.github.io/NextTransformer/docs/scaling/contribute/) |
 | A new result for an existing method | `results/runs/<method>.json` from `export_run`, its audit `evidence/audits/<method>.json` from `audit_run`, a run-notes page, and the tables refreshed by `docs/scripts/generate.py` | [Submit a result](https://interactive-active-ai.github.io/NextTransformer/docs/guides/submit-a-result/) |
 | A new method | A plugin `nexttransformer/methods/<method>/`, a calibrated `configs/<family>/<method>.json` and its cost proof under `evidence/costs/`, tests, a model card `results/methods/<method>.json`, a source-notes entry, and the formal run artifacts from the row above | [Method plugins](https://interactive-active-ai.github.io/NextTransformer/docs/guides/plugins/) |
 | Documentation or the website | Pages under `docs/`, code under `website/` | [Documentation README](docs/README.md), [website README](website/README.md) |

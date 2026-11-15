@@ -1,0 +1,9 @@
+{
+ "name": "simplehc",
+ "family": "residual",
+ "title": "SimpleHC",
+ "paper": {"title": "On the Design of Hyper-Connections: Simplification, Stability, and Scalability", "url": "https://arxiv.org/abs/2611.05984"},
+ "options": {"streams": 4, "group": 4, "init_std": 0.006, "alpha_init": 0.01},
+ "shell": {"layers": 23, "mlp_width": 6144, "window_pattern": "L"},
+ "layer_multiple": 1
+}

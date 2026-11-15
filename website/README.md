@@ -3,8 +3,9 @@
 The observatory is the public face of NextTransformer: learning curves, CORE breakdowns, a leaderboard, the
 arena, and an atlas of architecture diagrams for every registered method. It is a static single-page app built
 with Vite and React. At build time it bundles the run records in [`results/runs/`](../results/runs), the model
-cards in [`results/methods/`](../results/methods), the arena cards in [`results/arena/`](../results/arena), and the
-scaling records and ladder in [`results/scaling/`](../results/scaling); it queries no service and stores nothing.
+cards in [`results/methods/`](../results/methods), the arena cards in [`results/arena/`](../results/arena), the
+[T3 design manifest](../configs/scaling/t3.json) and [published scaling results](../results/scaling/).
+The Scaling and Contribute tabs use these files for budgets and publication status.
 
 ## Local development
 

@@ -7,6 +7,8 @@ on:
       - "website/**"
       - "docs/**"
       - "results/**"
+      - "configs/scaling/t3.json"
+      - "nexttransformer/scaling/reference_blocks.py"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 

@@ -1,8 +1,8 @@
 {
  "id": "gdn_hybrid_swa",
- "name": "Hybrid GDN + SWA",
+ "name": "Hybrid GDN + MHA 1:1",
  "family": "hybrid",
- "tagline": "Alternating gated delta blocks and sliding-window attention blocks.",
+ "tagline": "Alternating gated delta and full-attention blocks; the registered 2048-key window spans the whole 2K context.",
  "description": "A 22-layer, 1.330B-parameter hybrid alternating GDN and sliding-window attention (SWA) eleven times: 11 GDN layers at one-based odd layers and 11 SWA layers at even layers. The 1:1 layout follows the Gated DeltaNet H1 recipe (lit_gpt gated_delta_per_layer=2) with a registered 2048-token window, while the mixers and shared shell retain this repository's GDN and native attention adaptations. At the 2048-token training context, the 2048-key window (left window 2047 plus the current token) covers every causal key, so SWA layers compute full causal attention and this model evaluates a 1:1 GDN/global-attention alternation at 2K context. Width is 1536, with 12 heads of dimension 128, FFN width 6528, vocabulary 32768, and a 2048-token context. Blocks have independent weights; this is not a recursive or weight-tied model.",
  "paperTitle": "Gated Delta Networks: Improving Mamba2 with Delta Rule",
  "paperUrl": "https://arxiv.org/abs/2412.06464",

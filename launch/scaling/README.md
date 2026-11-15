@@ -1,4 +1,8 @@
-# Scaling-stage runs
+# Historical 4K Dense launcher
+
+For the 2K study, consult the [T3 public design](../../configs/scaling/t3.json) and [protocol](../../docs/src/content/docs/scaling/protocol.md). The commands below reproduce the archived Dense reference.
+
+The new 2K MoE has a [Megatron-Core integration and CPU acceptance guide](../../nexttransformer/scaling/MEGATRON.md). Its CPU checks do not use these historical launch scripts; GPU and formal-run validation remain pending.
 
 `nexttransformer.scaling.train` pretrains the dense backbone with a scaling-stage configuration such as
 `configs/scaling/dense_200b.json` (4,096-token context, about 200B tokens). It is separate from the frozen 49B comparison

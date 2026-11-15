@@ -1,43 +1,33 @@
-name: Scaling cell claim
-description: Claim one open cell of the scaling ladder and train it under the scaling protocol.
-title: "[Scaling] Claim <cell id>"
+name: T3 scaling study
+description: Coordinate an implementation, cost proof or planned training run.
+title: "[Scaling] T3 cell "
 labels: [scaling]
 body:
   - type: markdown
     attributes:
       value: |
-        Cells are listed in `results/scaling/ladder.json` and on the observatory's Scaling page. Read the
-        [contribution guide](https://interactive-active-ai.github.io/NextTransformer/docs/scaling/contribute/) first.
-        A maintainer marks the cell claimed; a claim without progress for two weeks is released.
+        Review the [2K contribution guide](https://interactive-active-ai.github.io/NextTransformer/docs/scaling/contribute/) and the T3 design manifest in `configs/scaling/t3.json`.
   - type: input
     id: cell
     attributes:
-      label: Cell id
-      description: For example dense-T3-L24.
+      label: Cell ID
+      placeholder: dense-T3-L20
     validations:
       required: true
   - type: dropdown
     id: kind
     attributes:
-      label: Kind of run
+      label: Contribution
       options:
-        - First run of an open cell
-        - Another seed of a recorded cell
+        - Implementation or cost proof
+        - Training a verified configuration
+        - Audit or analysis
     validations:
       required: true
-  - type: input
-    id: compute
+  - type: textarea
+    id: plan
     attributes:
-      label: Compute plan
-      description: Number of GPUs and the expected finish date. GPU models stay out of the public record.
+      label: Plan
+      description: Identify the implementation, its verification status and any resources needed.
     validations:
       required: true
-  - type: checkboxes
-    id: terms
-    attributes:
-      label: Before training
-      options:
-        - label: I will train with the frozen scaling recipe and the cell's token count, and export the run with `python -m nexttransformer.scaling.export`.
-          required: true
-        - label: I will publish the final checkpoint and link it from the record.
-          required: true

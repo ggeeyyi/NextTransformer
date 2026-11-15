@@ -1,0 +1,356 @@
+{
+  "protocol": "nextt-scale-2k-v1",
+  "tier": "T3",
+  "trainingFlops": 100000000000000000000,
+  "depths": [
+    16,
+    20,
+    28,
+    32
+  ],
+  "sequenceLength": 2048,
+  "seed": 42,
+  "globalBatchTokens": 1048576,
+  "vocabSize": 32768,
+  "valueEmbeddings": false,
+  "data": {
+    "dataset": "karpathy/climbmix-400b-shuffle",
+    "revision": "915333b4f8b8684f39aeaafea600fea6f43fb703",
+    "packing": "BOS best-fit",
+    "devShard": 6541,
+    "validationShard": 6542
+  },
+  "training": {
+    "precision": "BF16",
+    "optimizer": "Muon + AdamW",
+    "warmupUpdates": 40,
+    "warmdownFraction": 0.65,
+    "finalLearningRateFraction": 0.05,
+    "validationEvery": 1000,
+    "coreEvery": 20000,
+    "finalBpbTokens": 20971520
+  },
+  "evaluation": [
+    "Validation BPB",
+    "CORE-22"
+  ],
+  "nodeSize": 8,
+  "overheadFraction": 0.15,
+  "hardware": [
+    "A100",
+    "H200"
+  ],
+  "families": [
+    {
+      "id": "dense",
+      "name": "Vanilla Dense",
+      "description": "Full causal multi-head attention with an independent dense FFN in every layer.",
+      "recipe": {
+        "attention": "full causal MHA",
+        "ffn": "ReLU²",
+        "ffnWidthMultiplier": 4
+      },
+      "effectiveTflops": [
+        [
+          95,
+          125,
+          150
+        ],
+        [
+          250,
+          370,
+          475
+        ]
+      ]
+    },
+    {
+      "id": "moe",
+      "name": "Vanilla MoE",
+      "description": "Full attention and a dense first FFN. Subsequent layers route each token to eight of 256 experts plus one shared expert.",
+      "recipe": {
+        "attention": "full causal MHA",
+        "firstLayerDense": true,
+        "ffn": "ReLU²",
+        "routedExperts": 256,
+        "selectedExperts": 8,
+        "sharedExperts": 1,
+        "expertWidthDivisor": 4
+      },
+      "effectiveTflops": [
+        [
+          35,
+          65,
+          95
+        ],
+        [
+          70,
+          145,
+          245
+        ]
+      ]
+    },
+    {
+      "id": "kda-dsa",
+      "name": "Dense KDA–DSA",
+      "description": "Three KDA layers followed by one sparse retrieval layer. Every layer retains a dense FFN.",
+      "recipe": {
+        "pattern": [
+          "KDA",
+          "KDA",
+          "KDA",
+          "DSA"
+        ],
+        "ffn": "dense ReLU²",
+        "sparseTopK": 256,
+        "indexHeads": 4,
+        "indexDim": 128,
+        "indexRotaryDim": 64,
+        "burnInUpdates": 512,
+        "kdaGateRank": 16,
+        "kdaConvWidth": 4,
+        "kdaChunk": 64
+      },
+      "effectiveTflops": [
+        [
+          30,
+          60,
+          90
+        ],
+        [
+          65,
+          135,
+          230
+        ]
+      ]
+    },
+    {
+      "id": "looped",
+      "name": "Fixed Recursive",
+      "description": "A shared core runs twice between independent input and output blocks, with full backpropagation through both passes.",
+      "recipe": {
+        "attention": "full causal MHA",
+        "loops": 2,
+        "backpropagation": "full",
+        "ffn": "dense ReLU²"
+      },
+      "effectiveTflops": [
+        [
+          80,
+          110,
+          135
+        ],
+        [
+          190,
+          295,
+          400
+        ]
+      ]
+    }
+  ],
+  "cells": [
+    {
+      "id": "dense-T3-L16",
+      "family": "dense",
+      "layers": 16,
+      "width": 1024,
+      "heads": 8,
+      "headDim": 128,
+      "ffnWidth": 4096,
+      "estimatedUpdates": 52633,
+      "estimatedTokens": 55189700608
+    },
+    {
+      "id": "dense-T3-L20",
+      "family": "dense",
+      "layers": 20,
+      "width": 1280,
+      "heads": 10,
+      "headDim": 128,
+      "ffnWidth": 5120,
+      "estimatedUpdates": 29433,
+      "estimatedTokens": 30862737408
+    },
+    {
+      "id": "dense-T3-L28",
+      "family": "dense",
+      "layers": 28,
+      "width": 1792,
+      "heads": 14,
+      "headDim": 128,
+      "ffnWidth": 7168,
+      "estimatedUpdates": 11833,
+      "estimatedTokens": 12407799808
+    },
+    {
+      "id": "dense-T3-L32",
+      "family": "dense",
+      "layers": 32,
+      "width": 2048,
+      "heads": 16,
+      "headDim": 128,
+      "ffnWidth": 8192,
+      "estimatedUpdates": 8167,
+      "estimatedTokens": 8563720192
+    },
+    {
+      "id": "moe-T3-L16",
+      "family": "moe",
+      "layers": 16,
+      "width": 1024,
+      "heads": 8,
+      "headDim": 128,
+      "ffnWidth": 4096,
+      "expertWidth": 256,
+      "estimatedUpdates": 63357,
+      "estimatedTokens": 66434629632
+    },
+    {
+      "id": "moe-T3-L20",
+      "family": "moe",
+      "layers": 20,
+      "width": 1280,
+      "heads": 10,
+      "headDim": 128,
+      "ffnWidth": 5120,
+      "expertWidth": 320,
+      "estimatedUpdates": 36348,
+      "estimatedTokens": 38113640448
+    },
+    {
+      "id": "moe-T3-L28",
+      "family": "moe",
+      "layers": 28,
+      "width": 1792,
+      "heads": 14,
+      "headDim": 128,
+      "ffnWidth": 7168,
+      "expertWidth": 448,
+      "estimatedUpdates": 15107,
+      "estimatedTokens": 15840837632
+    },
+    {
+      "id": "moe-T3-L32",
+      "family": "moe",
+      "layers": 32,
+      "width": 2048,
+      "heads": 16,
+      "headDim": 128,
+      "ffnWidth": 8192,
+      "expertWidth": 512,
+      "estimatedUpdates": 10545,
+      "estimatedTokens": 11057233920
+    },
+    {
+      "id": "kda-dsa-T3-L16",
+      "family": "kda-dsa",
+      "layers": 16,
+      "width": 1024,
+      "heads": 8,
+      "headDim": 128,
+      "ffnWidth": 4096,
+      "kdaLayers": 12,
+      "dsaLayers": 4,
+      "estimatedUpdates": null,
+      "estimatedTokens": null
+    },
+    {
+      "id": "kda-dsa-T3-L20",
+      "family": "kda-dsa",
+      "layers": 20,
+      "width": 1280,
+      "heads": 10,
+      "headDim": 128,
+      "ffnWidth": 5120,
+      "kdaLayers": 15,
+      "dsaLayers": 5,
+      "estimatedUpdates": null,
+      "estimatedTokens": null
+    },
+    {
+      "id": "kda-dsa-T3-L28",
+      "family": "kda-dsa",
+      "layers": 28,
+      "width": 1792,
+      "heads": 14,
+      "headDim": 128,
+      "ffnWidth": 7168,
+      "kdaLayers": 21,
+      "dsaLayers": 7,
+      "estimatedUpdates": null,
+      "estimatedTokens": null
+    },
+    {
+      "id": "kda-dsa-T3-L32",
+      "family": "kda-dsa",
+      "layers": 32,
+      "width": 2048,
+      "heads": 16,
+      "headDim": 128,
+      "ffnWidth": 8192,
+      "kdaLayers": 24,
+      "dsaLayers": 8,
+      "estimatedUpdates": null,
+      "estimatedTokens": null
+    },
+    {
+      "id": "looped-T3-L16",
+      "family": "looped",
+      "layers": 16,
+      "width": 1024,
+      "heads": 8,
+      "headDim": 128,
+      "ffnWidth": 4096,
+      "preLayers": 2,
+      "coreLayers": 6,
+      "postLayers": 2,
+      "uniqueLayers": 10,
+      "estimatedUpdates": 52633,
+      "estimatedTokens": 55189700608
+    },
+    {
+      "id": "looped-T3-L20",
+      "family": "looped",
+      "layers": 20,
+      "width": 1280,
+      "heads": 10,
+      "headDim": 128,
+      "ffnWidth": 5120,
+      "preLayers": 3,
+      "coreLayers": 7,
+      "postLayers": 3,
+      "uniqueLayers": 13,
+      "estimatedUpdates": 29433,
+      "estimatedTokens": 30862737408
+    },
+    {
+      "id": "looped-T3-L28",
+      "family": "looped",
+      "layers": 28,
+      "width": 1792,
+      "heads": 14,
+      "headDim": 128,
+      "ffnWidth": 7168,
+      "preLayers": 4,
+      "coreLayers": 10,
+      "postLayers": 4,
+      "uniqueLayers": 18,
+      "estimatedUpdates": 11833,
+      "estimatedTokens": 12407799808
+    },
+    {
+      "id": "looped-T3-L32",
+      "family": "looped",
+      "layers": 32,
+      "width": 2048,
+      "heads": 16,
+      "headDim": 128,
+      "ffnWidth": 8192,
+      "preLayers": 4,
+      "coreLayers": 12,
+      "postLayers": 4,
+      "uniqueLayers": 20,
+      "estimatedUpdates": 8167,
+      "estimatedTokens": 8563720192
+    }
+  ]
+}

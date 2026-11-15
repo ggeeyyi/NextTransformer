@@ -3,7 +3,7 @@ title: 模型库
 description: 按模型族浏览已注册的架构、论文和结果状态。
 ---
 
-当前共有 40 张模型卡。各方法在同一骨干上校准至相同训练算力。在[观测站](https://interactive-active-ai.github.io/NextTransformer/#atlas)选择模型可查看结构图、曲线和模型卡。“已注册”表示已有配置与模型卡，尚无公开运行结果。
+当前共有 42 张模型卡。各方法在同一骨干上校准至相同训练算力。在[观测站](https://interactive-active-ai.github.io/NextTransformer/#atlas)选择模型可查看结构图、曲线和模型卡。“已注册”表示已有配置与模型卡，尚无公开运行结果。
 
 | 模型族 | 方法 | 论文 | 结果 |
 |---|---|---|---|
@@ -34,8 +34,10 @@ description: 按模型族浏览已注册的架构、论文和结果状态。
 | 残差 | Manifold-Constrained Hyper-Connections · mHC (`mhc`) | [mHC: Manifold-Constrained Hyper-Connections](https://arxiv.org/abs/2512.24880) | 已发布 |
 | 残差 | Block AttnRes with Canon layers A–D (`attnres_canon_abcd`) | [Physics of Language Models: Part 4.1, Architecture Design and the Magic of Canon Layers](https://arxiv.org/abs/2512.17351) | 已注册 |
 | 残差 | AttnRes-Canon (`attnres_full_canon_abcd`) | [Physics of Language Models: Part 4.1, Architecture Design and the Magic of Canon Layers](https://arxiv.org/abs/2512.17351) | 已发布 |
-| 混合 | Hybrid GDN + MHA (`gdn_hybrid`) | [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) | 已发布 |
-| 混合 | Hybrid GDN + SWA (`gdn_hybrid_swa`) | [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) | 已发布 |
+| 残差 | SimpleHC (`simplehc`) | [On the Design of Hyper-Connections: Simplification, Stability, and Scalability](https://arxiv.org/abs/2611.05984) | 已发布 |
+| 混合 | Hybrid GDN + MHA 3:1 (`gdn_hybrid`) | [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) | 已发布 |
+| 混合 | Hybrid GDN + MHA 1:1 (`gdn_hybrid_swa`) | [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) | 已发布 |
+| 混合 | Hybrid GDN + SWA (`gdn_hybrid_swa512`) | [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) | 已发布 |
 | 混合 | Hybrid DeltaNet + MHA (`deltanet_hybrid`) | [Parallelizing Linear Transformers with the Delta Rule over Sequence Length](https://arxiv.org/abs/2406.06484) | 已发布 |
 | 混合 | Hybrid KDA + MLA-NoPE (`kda_hybrid`) | [Kimi Linear: An Expressive, Efficient Attention Architecture](https://arxiv.org/abs/2510.26692) | 已发布 |
 | 混合 | Hybrid GDN + QSA (`qsa_hybrid`) | [Qwen3.8-Next technical report · §2.1.2 QSA](https://arxiv.org/html/2608.30320v1#S2.SS1.SSS2) | 待发布 |

@@ -34,7 +34,7 @@
 .observatory .intro-facts button { color:#8D677A; }
 .observatory .workspace-navigation { background:transparent; border:0; backdrop-filter:none; padding:10px 0; }
 .observatory .tabs button { color:#606A72; font-size:15px; font-weight:500; height:38px; padding:0 16px; border-radius:999px; }
-.observatory .tabs button.active { color:var(--tab-ink,#526B85); background:var(--tab-soft,#EAF1F7); font-weight:650; box-shadow:0 1px 3px #494E5207; }
+.observatory .tabs button.active { color:var(--tab-ink,#526B85); background:var(--tab-soft,#EAF1F7); font-weight:500; box-shadow:0 1px 3px #494E5207; }
 .observatory .tabs button.active:after { display:none; }
 .observatory .family-filter button { color:#68717A; }
 .observatory .family-filter button[aria-pressed=true] { background:#EEF4F9; border-color:#D8E3ED; color:#526B85; }

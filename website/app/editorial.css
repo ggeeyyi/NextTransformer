@@ -139,3 +139,21 @@
 .observatory .leaderboard-metric button svg { width:13px; height:13px; }
 .observatory .leaderboard-view { gap:2px; }
 .observatory .leaderboard-view button { height:30px; padding:4px 11px; font-size:13px; border-radius:6px; }
+
+/* Give compact native selects the same arrow inset as the benchmark selector. */
+.observatory :is(.ts-join-select, .ts-scenario, .results-mobile-method) select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2368717a' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  text-overflow: ellipsis;
+}
+@media (forced-colors: active) {
+  .observatory :is(.ts-join-select, .ts-scenario, .results-mobile-method) select {
+    appearance: auto;
+    padding-right: 9px;
+    background-image: none;
+  }
+}

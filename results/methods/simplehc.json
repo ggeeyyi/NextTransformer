@@ -1,0 +1,36 @@
+{
+ "id": "simplehc",
+ "name": "SimpleHC",
+ "family": "residual",
+ "tagline": "Four residual streams with identity transitions, full-state read/write gates, and gate inputs shared over four sublayers.",
+ "description": "SimpleHC on the full-attention shell: the embedding is replicated into four 1536-wide streams, each sublayer reads a weighted sum of the streams and adds its weighted output back without stream-to-stream mixing (identity transitions), and consecutive groups of four sublayers generate their sigmoid read and 2·sigmoid write gates from one normalized group-entry state. Within each group, earlier sublayer outputs reach later sublayer inputs through exact scalar dot-product corrections d_{j,k} = h_pre_j · h_post_k, writing back to the four streams once at the group boundary. Keeps Dense's 23 layers and FFN 6144 at +0.441% of the shared budget.",
+ "paperTitle": "On the Design of Hyper-Connections: Simplification, Stability, and Scalability",
+ "paperUrl": "https://arxiv.org/abs/2611.05984",
+ "mechanism": [
+  "Four 1536-wide streams with identity residual transitions: no learned stream-mixing matrix or Sinkhorn projection",
+  "Groups of 4 sublayers (11×4 + 2 over 46 sublayers) share one normalized 6144-wide gate input; read = σ, write = 2σ",
+  "Intra-group scalar corrections d_{j,k} = h_pre_j · h_post_k propagate outputs without materializing intermediate 4×1536 states"
+ ],
+ "limitations": "Single seed 42. Read results as paired differences from Standard Residual (both use 23 full-attention layers and FFN 6144; mHC narrows FFN to 6016). Expresses the paper's shared-memory-access algebra in PyTorch without its fused DeepGEMM/Triton kernels; gate parameters train in the shared auxiliary AdamW group without weight decay. Parameters, memory and speed are outcomes, not controls.",
+ "diagram": "custom",
+ "architecture": {
+  "kind": "custom",
+  "nodes": [
+   "Embedding ×4 streams",
+   "Shared gates (K=4)",
+   "Identity + scalar d",
+   "Sum → LM head"
+  ],
+  "loop": false
+ },
+ "blocks": 23,
+ "ffn": 6144,
+ "params": 1358072020,
+ "flops": 4.692986,
+ "error": 0.441,
+ "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/simplehc/__init__.py",
+ "cohort": "reference-v1",
+ "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#full-attention-dense-and-residual-family",
+ "costModel": "reference-aten-math-v2",
+ "order": 48
+}

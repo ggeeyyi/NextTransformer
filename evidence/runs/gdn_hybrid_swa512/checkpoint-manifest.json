@@ -1,0 +1,54 @@
+{
+ "status": "passed",
+ "step": 46875,
+ "world_size": 8,
+ "files": {
+  "model.pt": {
+   "bytes": 4306136010,
+   "sha256": "f5d63fe6c5d323a4a66a4f984aabde75b62dc1e2f6e963baefd44cb5d6bb5ce8",
+   "archive_generation": 1794630200890706
+  },
+  "rank_0000.pt": {
+   "bytes": 982232202,
+   "sha256": "42e073a50e53c6f089a74b2ecb1448328ff7456d4d728fbe1387e5ee4c4a7301",
+   "archive_generation": 1794630266231140
+  },
+  "rank_0001.pt": {
+   "bytes": 988072010,
+   "sha256": "a9230720766e02817b8c8e1065bc1b7f92349a94d803be6de1a764d142f59147",
+   "archive_generation": 1794630290286512
+  },
+  "rank_0002.pt": {
+   "bytes": 983561994,
+   "sha256": "9e3354f3528d4453685e4e8fdc2f55708ea5957f6e080e7f98f795bca1d44415",
+   "archive_generation": 1794630315248374
+  },
+  "rank_0003.pt": {
+   "bytes": 979038730,
+   "sha256": "25861cccc294f79f1dff47b2956c0700c7a876d73f64d5bf2be412cbbd098920",
+   "archive_generation": 1794630350555064
+  },
+  "rank_0004.pt": {
+   "bytes": 984415562,
+   "sha256": "2965ff5d3a8ae6c6266a6278a76fbdfa783c75653d5ea1055073a23710375036",
+   "archive_generation": 1794630375260152
+  },
+  "rank_0005.pt": {
+   "bytes": 991074570,
+   "sha256": "9bd205d1933e8867708e20cfc061f1f7b9335009d862c5ec02cff9116fdd3c18",
+   "archive_generation": 1794630399025465
+  },
+  "rank_0006.pt": {
+   "bytes": 998345098,
+   "sha256": "7978114169740b80d2717ef2f9bb182c0f17da837830ff6075c8c476dd5f1371",
+   "archive_generation": 1794630423470051
+  },
+  "rank_0007.pt": {
+   "bytes": 989325002,
+   "sha256": "a232a7a7eb126c8f09dcb3fbd4ea4baa4f260fd2e5a1d2052c44a1062e6da9de",
+   "archive_generation": 1794630450788380
+  }
+ },
+ "verification": "Local payloads rehashed and compared with the complete manifest and generation-pinned archive SHA readback receipts.",
+ "availability": "Model and per-rank payloads are retained in the contributor archive. Public download URLs have not been published."
+}

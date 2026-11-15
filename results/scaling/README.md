@@ -1,19 +1,11 @@
-# Scaling-stage records
+# Scaling study
 
-Runs trained with a scaling-stage configuration (`configs/scaling/`), outside the frozen 49B comparison protocol.
-They are not leaderboard entries: each one names its own protocol version, token budget, context length and batch.
+The [2K T3 manifest](../../configs/scaling/t3.json) contains the published planning configurations, FLOPs budget and hardware assumptions. The [observatory](https://interactive-active-ai.github.io/NextTransformer/#scaling) presents the current design. Later stages are listed as milestones.
 
-| Path | Contents |
-|---|---|
-| `runs/<id>.json` | One record per finished run, written by `python -m nexttransformer.scaling.export` from the run directory |
-| `ladder.json` | The scaling ladder: budgets, family size rules, and every planned cell with its size, token count, status and claim |
+## Progress in the observatory
 
-A record holds the configuration and its hash, parameter counts, the training budget and measured cost, the source,
-data and software fingerprints, every scheduled validation BPB and CORE evaluation, the final BPB and per-task CORE,
-and links to the W&B run and the released checkpoint. It describes the protocol, not the machines: no host names,
-paths, device models or commands. Records are immutable; `python -m nexttransformer.scaling.export --check`
-validates all of them.
+A published 2K result uses its T3 cell ID as the run ID and filename under `runs/` (for example `dense-T3-L20.json`). Commit reviewed, complete records with the matching family, 2K protocol and context, width and head count, final validation BPB, and a final-step CORE score with all 22 task scores. The Scaling and Contribute views read these records when the site builds. A missing record is displayed as pending publication. It does not report the status of private training jobs.
 
-| Record | Model | Tokens | Context | Notes |
-|---|---|---|---|---|
-| [`dense_200b`](runs/dense_200b.json) | Dense, 40 layers, width 2,560 | 200B | 4,096 | Reference run of the scaling stage ([config](../../configs/scaling/dense_200b.json)) |
+## Historical compute reference
+
+The [Dense 200B-token, 4K record](runs/dense_200b.json) supplies the historical compute anchor. Its data, [configuration](../../configs/scaling/dense_200b.json), checkpoint and provenance remain available. Its metrics are excluded from the 2K study. The [archive launcher](../../launch/scaling/README.md) and `python -m nexttransformer.scaling.export --check` support reproduction and validation of the published record.

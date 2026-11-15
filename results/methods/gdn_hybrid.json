@@ -1,6 +1,6 @@
 {
  "id": "gdn_hybrid",
- "name": "Hybrid GDN + MHA",
+ "name": "Hybrid GDN + MHA 3:1",
  "family": "hybrid",
  "tagline": "Three gated delta blocks, then one full-attention block.",
  "description": "A 24-layer, 1.399B-parameter hybrid repeating GDN, GDN, GDN, full causal MHA six times: 18 GDN layers and 6 MHA layers. The 3:1 layout follows Qwen3-Next, while the mixers and shared shell retain this repository's GDN and native MHA adaptations. Width is 1536, with 12 heads of dimension 128, FFN width 5760, vocabulary 32768, and a 2048-token context. Blocks have independent weights; this is not a recursive or weight-tied model.",

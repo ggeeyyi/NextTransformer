@@ -23,6 +23,9 @@ PRIVATE_IP = re.compile(r"\b(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d
 GPU = re.compile(r"(?<![A-Za-z0-9])(?:A800|A100|H800|H100|H200|H20|B200|B300|B30Z|GB200|GB300|L40S|RTX[ _-]?\d{4})(?![A-Za-z0-9])", re.IGNORECASE)
 GPU_SCOPE = ("results/", "evidence/", "configs/", "docs/", "launch/", "README", "website/", ".github/assets/")
 GPU_EXEMPT = ("results/arena/",)
+# These two product names identify the public T3 budget scenarios, never run provenance.
+PLANNING_HARDWARE_FILES = {"configs/scaling/t3.json", "website/app/lib/scaling.ts",
+                           "website/app/scaling.tsx", "website/tests/scaling.test.mjs"}
 SELF = "nexttransformer/checks/public.py"
 SKIP = ("uv.lock", "package-lock.json", ".lock.txt", ".woff2", ".png", ".jpg", ".jpeg", ".ico", ".pdf", "-OFL.txt")
 
@@ -48,7 +51,8 @@ def scan(paths):
             hits += [m.group(0) for m in EMAIL.finditer(line) if not EMAIL_OK.search(m.group(0))]
             hits += [m.group(0) for m in PRIVATE_IP.finditer(line)]
             if gpu:
-                hits += [m.group(0) for m in GPU.finditer(line)]
+                hits += [m.group(0) for m in GPU.finditer(line)
+                         if path not in PLANNING_HARDWARE_FILES or m.group(0) not in {"A100", "H200"}]
             findings += [f"{path}:{number}: {hit}" for hit in hits]
     return findings
 

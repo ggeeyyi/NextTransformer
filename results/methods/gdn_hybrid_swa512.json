@@ -1,0 +1,36 @@
+{
+ "id": "gdn_hybrid_swa512",
+ "name": "Hybrid GDN + SWA",
+ "family": "hybrid",
+ "tagline": "Alternating gated delta blocks and 512-key sliding-window attention at 2K context.",
+ "description": "H03-SWA512 uses 24 independent layers alternating 12 GDN and 12 sliding-window attention blocks. Each attention query sees up to 512 keys, including itself. Width is 1536, with 12 heads of dimension 128, FFN width 6016, a 32768-token vocabulary, and a 2048-token training context. This is a completed configuration of the frozen gdn_hybrid_swa implementation.",
+ "paperTitle": "Gated Delta Networks: Improving Mamba2 with Delta Rule",
+ "paperUrl": "https://arxiv.org/abs/2412.06464",
+ "mechanism": [
+  "GDN at one-based odd layers and SWA at even layers, repeated twelve times. SWA uses a left window of 511 plus the current token.",
+  "GDN uses input-dependent scalar decay per head, delta-rule correction, length-4 causal convolutions, L2-normalized q/k, sigmoid beta and gated normalized output. The fla_chunk64 backend uses the chunked KDA kernel with a broadcast per-head gate.",
+  "The native shell retains untied embeddings, ReLU-squared FFNs, RMSNorm, smear, backout and learned residual/x0 coefficients. SWA retains QK normalization, RoPE and the native value-embedding placement.",
+  "Formal training from random initialization used seed 42, 49.152B input tokens, 46,875 updates and the common Muon+AdamW recipe. All 189 validation events and six complete CORE-22 evaluations are included."
+ ],
+ "limitations": "Single-seed, 2K-context result from frozen source revision 4926c5de832968957cd84411b1fa24ca0ada81c4. The 2048-window result uses 22 layers and FFN width 6528, while this 512-window result uses 24 layers and FFN width 6016, so their difference also includes depth and FFN changes. Training used FLA for GDN and deterministic SDPA with FlashAttention disabled for SWA. CORE used a site CUDA-graph evaluation wrapper with original-shape forward checks; its source and validation evidence are archived with the run. Timing includes site pacing. The results cover the fixed 2K protocol; long-context quality and deployment speed require separate measurements.",
+ "diagram": "custom",
+ "architecture": {
+  "kind": "custom",
+  "nodes": [
+   "Embedding",
+   "(GDN + SWA-512) x12",
+   "LM head"
+  ],
+  "loop": false
+ },
+ "blocks": 24,
+ "ffn": 6016,
+ "params": 1403661866,
+ "flops": 4.685968542148813,
+ "error": 0.29043364361840407,
+ "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/4926c5de832968957cd84411b1fa24ca0ada81c4/nexttransformer/models/lm.py",
+ "cohort": "reference-v1",
+ "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/results/runs/gdn_hybrid_swa512/",
+ "costModel": "reference-aten-math-v2",
+ "order": 30.5
+}

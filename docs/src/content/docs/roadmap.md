@@ -46,31 +46,9 @@ Use historical Arena v1 research data for the example. Mark Opus, GLM and DeepSe
 
 The [arena and gym plan](../arena/plan/) tracks the work behind these items, its status and the open decisions.
 
-## November 2026: scaling
+## 2K scaling
 
-### Agreed scope
-
-- **4,096-token sequences** for the main pretraining stage.
-- **200B-token and 400B-token training budgets**, measured as consumed training tokens with our tokenizer.
-- **ClimbMix as the primary dataset**, retaining the existing **32,768-token tokenizer**.
-- **Dense and sparse MoE models** at each token budget.
-- **Validation BPB and CORE-22** remain part of the evaluation suite.
-
-This is the scope of the next training recipe. It will have its own versioned protocol, with pinned data and
-explicit compute accounting. The existing 49.152B-token, 2K benchmark remains the reference for published results.
-
-### Open for community feedback
-
-The [scaling RFC in Discussion #22](https://github.com/Interactive-Active-AI/NextTransformer/discussions/22) contains the candidate model configurations and asks for advice on:
-
-- **Data composition:** whether 4K pretraining should supplement ClimbMix, which datasets to use, and how to mix or
-  sample longer documents.
-- **Dense/MoE configurations:** model sizes, depth and width, expert counts and routing, and whether to add
-  matched-compute comparisons. The candidate parameter counts and model shapes are still under review.
-- **Evaluation beyond CORE:** **HELMET's RAG tasks** and **RULER** are the initial candidates for controlled 2K/4K
-  evaluation on base models. The final benchmark selection and any later context extension remain open.
-
-Community feedback will help prioritize pilot ablations and finalize the recipe before the full runs.
+The T3 sweep compares model size and tokens for Vanilla Dense, Vanilla MoE, Dense KDA–DSA and Fixed Recursive at a fixed training budget, with a 2K window and seed 42. The T3 configurations and budgets are public. T4 refines the fit, T5 checks forecasts, and C200 is the final blind test. See the [scaling overview](../scaling/overview/).
 
 ## Upcoming results and evidence
 
@@ -85,5 +63,4 @@ Community feedback will help prioritize pilot ablations and finalize the recipe 
 - **Checkpoints and the tokenizer on the Hugging Face Hub.**
 - Port the Others implementation (MQA, GQA, MLA) into the current code.
 
-Have an idea or want to help? Join the [scaling discussion](https://github.com/Interactive-Active-AI/NextTransformer/discussions/22) or open another
-[discussion](https://github.com/Interactive-Active-AI/NextTransformer/discussions).
+Have an idea or want to help? Open a [discussion](https://github.com/Interactive-Active-AI/NextTransformer/discussions).

@@ -48,14 +48,14 @@ Trained from a frozen source revision of the Others implementation, which is not
 run has a read-only cumulative audit; per-task CORE scores, centering and aggregates are reproduced, and the MLA runs
 record deterministic mode. MQA resumed at updates 5,000 and 35,000, GQA at update 5,000; the MLA runs ran in one segment each.
 
-## Hybrids (DeltaNet + MHA, GDN + MHA, GDN + SWA, KDA + MLA-NoPE, MoBA + MHA)
+## Hybrids (DeltaNet + MHA, GDN + MHA 3:1, GDN + MHA 1:1, KDA + MLA-NoPE, MoBA + MHA)
 
-Trained from a frozen source revision; the [DeltaNet + MHA](./deltanet_hybrid/), GDN + SWA, [KDA + MLA-NoPE](./kda_hybrid/) and [MoBA + MHA](./moba_hybrid/) runs added a launch-environment
-patch whose source diff was not archived. Read-only audits pass: cumulative **+0.063%** (DeltaNet + MHA, 29.9012 CORE ×100 in one segment), **+0.672%** (GDN + MHA), **−0.542%**
-(GDN + SWA), **+0.426%** (KDA + MLA-NoPE, 31.5418 CORE ×100 in one segment without value embeddings) and **−0.266%** (MoBA + MHA, 32.7422 CORE ×100 in one segment). DeltaNet + MHA, KDA + MLA-NoPE and MoBA + MHA
+Trained from a frozen source revision; the [DeltaNet + MHA](./deltanet_hybrid/), GDN + MHA 1:1, [KDA + MLA-NoPE](./kda_hybrid/) and [MoBA + MHA](./moba_hybrid/) runs added a launch-environment
+patch whose source diff was not archived. Read-only audits pass: cumulative **+0.063%** (DeltaNet + MHA, 29.9012 CORE ×100 in one segment), **+0.672%** (GDN + MHA 3:1), **−0.542%**
+(GDN + MHA 1:1), **+0.426%** (KDA + MLA-NoPE, 31.5418 CORE ×100 in one segment without value embeddings) and **−0.266%** (MoBA + MHA, 32.7422 CORE ×100 in one segment). DeltaNet + MHA, KDA + MLA-NoPE and MoBA + MHA
 include eight-rank 12-update smoke and fresh-process resume acceptance; a separate 512-update pilot for these runs was
-not supplied, so final acceptance remains pending. At the 2,048-token context the SWA window covers every causal key, so
-GDN + SWA is a 1:1 GDN/full-attention hybrid.
+not supplied, so final acceptance remains pending. GDN + MHA 1:1 is registered as GDN + SWA with a 2,048-key window; at
+the 2,048-token context that window covers every causal key, so it is a 1:1 GDN/full-attention hybrid.
 
 ## Looped and sparse
 

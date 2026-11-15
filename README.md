@@ -36,8 +36,8 @@ result is an audited, file-backed record, and AI agents can research new archite
 
 ## News
 
+- **2026-11-13** · The [2K scaling study is open](https://interactive-active-ai.github.io/NextTransformer/#scaling), starting with 16 T3 configurations across four families. [Choose a configuration, find reference code and contribute](https://interactive-active-ai.github.io/NextTransformer/#contribute).
 - <img src="https://img.shields.io/badge/BLOG-F6D7AB?style=flat-square" alt="Blog" height="18"> **2026-11-11** · The research blog is live. The first post traces [how Opus found AttnRes-Canon](https://interactive-active-ai.github.io/NextT-Blogs/attnres-canon/en/). [Blog repository](https://github.com/Interactive-Active-AI/NextT-Blogs)
-- <img src="https://img.shields.io/badge/RFC-8B5CF6?style=flat-square" alt="RFC" height="18"> **2026-11-05** · **[Scaling RFC](https://github.com/Interactive-Active-AI/NextTransformer/discussions/22)**: 4K-context Dense and MoE pretraining on ClimbMix at **200B and 400B tokens**. Feedback on data, model configurations and evaluation is welcome.
 - <img src="https://img.shields.io/badge/COMMUNITY-2A78D6?style=flat-square" alt="Community" height="18"> **2026-11-04** · **[NextTransformer-V](https://github.com/Enderfga/NextTransformer-V)** by [@Enderfga](https://github.com/Enderfga): a community multimodal track that trains every NextTransformer method on interleaved image and text tokens under the same compute-matched contract. Its first study, pre-registered, asks where hybrid backbones get the 2D layout of an image.
 - <img src="https://img.shields.io/badge/NEW-E5607E?style=flat-square" alt="New" height="18"> **2026-10-31** · NextTransformer is now open source: 31 finished runs, 36 model cards, the full protocol, the documentation and the observatory.
 - <img src="https://img.shields.io/badge/SOON-8B5CF6?style=flat-square" alt="Soon" height="18"> **By 2026-11-14** · **Arena v2**, with full support for autonomous agent research.
@@ -48,7 +48,7 @@ result is an audited, file-backed record, and AI agents can research new archite
 
 <a href="https://interactive-active-ai.github.io/NextTransformer/docs/protocol/overview/"><img src=".github/assets/readme/card-protocol-en.webp" alt="A fair, explicit protocol: same data, tokens, optimizer, schedule and evaluation for every model; training compute matched to within 1% and audited over the whole run." width="100%"></a>
 
-<a href="https://interactive-active-ai.github.io/NextTransformer/docs/getting-started/quick-start/"><img src=".github/assets/readme/card-scale-en.webp" alt="49B tokens of pretraining for a model with about 1.4B parameters, in 2–4 days on one 8-GPU node; 400B tokens and larger models are planned for November." width="100%"></a>
+**[2K scaling study](https://interactive-active-ai.github.io/NextTransformer/#scaling)** · Compare size and token allocations across four families at one T3 training budget.
 
 <a href="https://interactive-active-ai.github.io/NextTransformer/docs/arena/task/"><img src=".github/assets/readme/card-agent-en.webp" alt="Agent-native research: hand the arena task to your agent; the full version, Arena v2, ships by November 14, 2026." width="100%"></a>
 
@@ -62,7 +62,7 @@ your browser.
 ## Results
 
 <!-- generated:leaderboard -->
-<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-en.svg" alt="CORE at update 46,875 for all 38 runs, against the Dense Baseline" width="100%"></a>
+<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-en.svg" alt="CORE at update 46,875 for all 40 runs, against the Dense Baseline" width="100%"></a>
 
 [Full leaderboard](https://interactive-active-ai.github.io/NextTransformer/docs/results/leaderboard/) · [Training replay](https://interactive-active-ai.github.io/NextTransformer/#leaderboard)
 <!-- /generated:leaderboard -->
@@ -124,11 +124,11 @@ Contributor-hosted weights: [AttnRes-Canon (49B comparison)](https://huggingface
 | Family | Models |
 |---|---|
 | <img src="https://img.shields.io/badge/Baseline-7A8288?style=flat-square" alt="Baseline"> | Dense Baseline |
-| <img src="https://img.shields.io/badge/Residual-33456E?style=flat-square" alt="Residual"> | Standard Residual · AttnRes · HC · mHC · Block AttnRes with Canon layers A–D · AttnRes-Canon |
+| <img src="https://img.shields.io/badge/Residual-33456E?style=flat-square" alt="Residual"> | Standard Residual · AttnRes · HC · mHC · Block AttnRes with Canon layers A–D · AttnRes-Canon · SimpleHC |
 | <img src="https://img.shields.io/badge/Looped-8B5CF6?style=flat-square" alt="Looped"> | UT-ACT · Fixed Recursive · Huginn · Ouro · DeepLoop · MoR · LoopFormer · Circle Loop |
 | <img src="https://img.shields.io/badge/Sparse-E5607E?style=flat-square" alt="Sparse"> | DSA · QSA · NSA · SeerAttention-style · MoBA |
 | <img src="https://img.shields.io/badge/Linear-3F7FD9?style=flat-square" alt="Linear"> | DeltaNet · GSA + QK-norm · GLA · KDA · RetNet · ELU-Norm · GDN |
-| <img src="https://img.shields.io/badge/Hybrid-F07856?style=flat-square" alt="Hybrid"> | GDN–MHA · GDN–SWA · DeltaNet–MHA · KDA–MLA-NoPE · GDN–QSA\* · MoBA–MHA |
+| <img src="https://img.shields.io/badge/Hybrid-F07856?style=flat-square" alt="Hybrid"> | GDN–MHA 3:1 · GDN–MHA 1:1 · GDN–SWA · DeltaNet–MHA · KDA–MLA-NoPE · GDN–QSA\* · MoBA–MHA |
 | <img src="https://img.shields.io/badge/Others-D99A2B?style=flat-square" alt="Others"> | SSSL · MQA · GQA · MLA-QK · MLA-NoPE-QK · Gated Attention · elementwise · Gated Attention · headwise |
 <!-- /generated:model-zoo -->
 
@@ -204,8 +204,7 @@ Community projects that extend NextTransformer.
 ## Roadmap
 
 - **By November 14, 2026:** Arena v2 and agent-native research.
-- **November 2026:** 4K-context pretraining on ClimbMix at **200B and 400B tokens**, with **Dense and MoE** models.
-- **Open for feedback:** data mixtures, model configurations and evaluation beyond CORE in the [scaling RFC](https://github.com/Interactive-Active-AI/NextTransformer/discussions/22).
+- **2K scaling:** start with the [T3 size sweep](https://interactive-active-ai.github.io/NextTransformer/#scaling), refine the fits, check preregistered forecasts, then hold out C200 for the final test.
 - **Upcoming results:** GDN + QSA and MoBA + MHA hybrids.
 - **Planned:** checkpoints and the tokenizer on the Hugging Face Hub.
 

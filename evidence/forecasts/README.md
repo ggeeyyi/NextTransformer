@@ -1,20 +1,7 @@
-# Scaling forecasts
+# 2K scaling forecasts
 
-Predictions registered before the test runs of the scaling stage start. A forecast is merged into `main` before the
-first C200 run of its family begins; the merge commit dates it. Forecasts are never edited: the outcome goes into a
-separate `<forecast>.result.json`, written after the test run's record is published, whether the prediction held or not.
+The public T3 design is in [the configuration manifest](../../configs/scaling/t3.json). Later stages register their forecasts when their configurations are released. Freeze the predictions for every family together before the corresponding test begins.
 
-One file per forecast, `<family>-<budget>-<author>.json`:
+A forecast names the protocol, seed, family, stage, input record IDs, fitting code and version, predicted depth, parameters, tokens, validation BPB and CORE-22, and the scope of its uncertainty intervals. Date it by the merge commit. Score T5 before using its observations for the final fit. Record the C200 outcome separately from the original forecast and preserve unsuccessful predictions.
 
-| Field | Contents |
-|---|---|
-| `family`, `budget` | Ladder family id and tier id, for example `dense` and `C200` |
-| `author` | GitHub handle of the person or team registering it |
-| `protocol` | The ladder's protocol version, for example `nextt-scale-4k-v1` |
-| `records` | Ids of the scaling records the fit uses, from `results/scaling/runs/` |
-| `method` | How the prediction was made: estimator, fitted form and fitted parameters, or a link to the code |
-| `optimum` | Predicted compute-optimal size at the budget: `layers`, `parameters`, `tokens` |
-| `valBpb`, `core` | Predicted final validation BPB and CORE of that optimum, each as `{"value", "low", "high"}`, a 90% interval |
-
-See the [scaling protocol](https://interactive-active-ai.github.io/NextTransformer/docs/scaling/protocol/) for how
-forecasts are tested.
+Historical 4K Dense quality values are excluded from all 2K fits and tests.

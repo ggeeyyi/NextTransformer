@@ -1,62 +1,70 @@
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
-import {test} from 'node:test';
-import {FINAL_STEP,LADDER_STATUS,VIEWS,cellStatus,compact,logTicks,plannedPoints,project,scalingPoints} from '../app/lib/scaling.ts';
-import {methods,runs} from './results.mjs';
+import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
+import { publishedCells } from '../app/lib/scaling-progress.ts';
+import { t3, budget } from '../app/lib/scaling.ts';
 
-const ladder=JSON.parse(readFileSync(new URL('../../results/scaling/ladder.json',import.meta.url),'utf8'));
-const V=32768,T=4096;
-// Theoretical training FLOPs per input token, as the scaling trainer counts them; MoE counts active parameters.
-const flops=(cell)=>{const d=cell.width,L=cell.layers;return 6*cell.activeBlockParameters+12*T*d*L+6*d*V;};
-
-test('every ladder cell names a known family and tier, with a unique id and a known status',()=>{
- const families=new Set(ladder.families.map(f=>f.id)),tiers=new Set(ladder.tiers.map(t=>t.id)),ids=ladder.cells.map(c=>c.id);
- assert.equal(new Set(ids).size,ids.length);
- for(const c of ladder.cells){
-  assert.ok(families.has(c.family)&&tiers.has(c.tier),c.id);
-  assert.ok(c.status in LADDER_STATUS,c.id);
-  assert.ok(c.claim===null||(c.claim.by&&c.claim.issue.startsWith('https://')),c.id);
- }
+test('only the sixteen public T3 designs enter the study manifest', () => {
+  assert.deepEqual(t3.depths, [16, 20, 28, 32]);
+  assert.equal(t3.sequenceLength, 2048);
+  assert.equal(t3.seed, 42);
+  assert.equal(t3.valueEmbeddings, false);
+  assert.equal(t3.trainingFlops, 1e20);
+  assert.equal(t3.families.length, 4);
+  assert.equal(t3.cells.length, 16);
+  assert.equal(new Set(t3.cells.map(c => c.id)).size, 16);
+  for (const f of t3.families) {
+    assert.deepEqual(t3.cells.filter(c => c.family === f.id).map(c => c.layers), t3.depths);
+  }
+  for (const c of t3.cells) {
+    assert.equal(c.width, c.layers * 64);
+    assert.equal(c.heads * c.headDim, c.width);
+    assert.equal(c.id, c.family + '-T3-L' + c.layers);
+    if (c.family === 'kda-dsa') {
+      assert.equal(c.kdaLayers, 3 * c.dsaLayers);
+      assert.equal(c.kdaLayers + c.dsaLayers, c.layers);
+      assert.equal(c.estimatedUpdates, null);
+      assert.equal(c.estimatedTokens, null);
+      continue;
+    }
+    if (c.family === 'looped') assert.equal(c.preLayers + 2*c.coreLayers + c.postLayers, c.layers);
+    const d = c.width, L = c.layers;
+    const active = c.family === 'moe' ? 12*d*d + (L-1)*(8.5*d*d + 256*d) : 12*d*d*L;
+    const rate = 6*active + 12*t3.sequenceLength*d*L + 6*d*t3.vocabSize;
+    assert.equal(c.estimatedUpdates, Math.round(t3.trainingFlops / rate / t3.globalBatchTokens));
+    assert.equal(c.estimatedTokens, c.estimatedUpdates * t3.globalBatchTokens);
+  }
 });
 
-test('sized cells spend their tier budget within 1%, in whole updates, at width 64 × layers',()=>{
- const tiers=Object.fromEntries(ladder.tiers.map(t=>[t.id,t]));
- for(const c of ladder.cells.filter(c=>c.layers&&c.status!=='trained')){
-  const tier=tiers[c.tier];
-  assert.equal(c.width,64*c.layers,c.id);
-  assert.equal(c.tokens,c.steps*tier.batchTokens,c.id);
-  assert.ok(Math.abs(c.tokens*flops(c)/tier.flops-1)<.01,c.id);
-  assert.equal(c.parameters,c.blockParameters+(2+c.layers/2)*V*c.width,c.id);
-  if(c.family==='dense')assert.equal(c.blockParameters,12*c.width**2*c.layers,c.id);
- }
- const reference=ladder.cells.find(c=>c.id==='dense-C200-L40');
- assert.equal(reference.record,'dense_200b');
- assert.ok(Math.abs(reference.tokens*flops(reference)/tiers.C200.flops-1)<1e-4);
+test('planning scenarios convert per-run costs to hours and eight-GPU days', () => {
+  for (const gpu of t3.hardware) for (let scenario = 0; scenario < 3; scenario++) {
+    const total = t3.families.reduce((sum, f) => {
+      const {hours, days} = budget(f, gpu, scenario);
+      assert.ok(Math.abs(days * 192 - hours) <= Number.EPSILON * hours);
+      return sum + days * t3.depths.length;
+    }, 0);
+    if (scenario === 1) assert.equal(total.toFixed(1), gpu === 'H200' ? '13.6' : '32.7');
+    assert.ok(total > 0);
+  }
+  const historical = JSON.parse(readFileSync(new URL('../../results/scaling/runs/dense_200b.json', import.meta.url)));
+  assert.equal(historical.model.sequenceLength, 4096);
 });
 
-test('a published record marks its cell recorded and takes it off the floor of the plot',()=>{
- const reference=ladder.cells.find(c=>c.record==='dense_200b'),record={id:'dense_200b'};
- assert.equal(cellStatus(reference,[]),'trained');
- assert.equal(cellStatus(reference,[record]),'recorded');
- assert.ok(plannedPoints(ladder,[]).some(p=>p.id===reference.id));
- assert.ok(!plannedPoints(ladder,[record]).some(p=>p.id===reference.id));
- assert.ok(!plannedPoints(ladder,[]).some(p=>p.id.endsWith('forecast')));
-});
-
-test('the plot shows one point per run with a final CORE, a final BPB and a parameter count',()=>{
- const all=runs(),ms=methods(),points=scalingPoints(all,ms,[]);
- const expected=all.filter(r=>r.core.some(p=>p.step===FINAL_STEP)&&Number.isFinite(r.finalBpb)&&ms.find(m=>m.id===r.methodId)?.params);
- assert.equal(points.length,expected.length);
- assert.ok(points.every(p=>p.stage==='reference'&&p.context===2048&&p.tokens===49152000000&&p.core>0&&p.bpb>0));
-});
-
-test('log ticks, compact labels and the projection behave at the preset views',()=>{
- assert.deepEqual(logTicks([8,11]),[1e8,1e9,1e10,1e11]);
- assert.deepEqual(logTicks([9.1,9.6]),[2e9]);
- assert.equal(compact(4991221760),'4.99B');
- assert.equal(compact(49152000000),'49.2B');
- const side=VIEWS.parameters,front=project(.3,-1,.5,side),back=project(.3,1,.5,side);
- assert.ok(Math.abs(front.x-back.x)<1e-12&&Math.abs(front.y-back.y)<1e-12);
- const top=VIEWS.floor,low=project(.2,.4,-1,top),high=project(.2,.4,1,top);
- assert.ok(Math.abs(low.x-high.x)<1e-12&&Math.abs(low.y-high.y)<1e-12);
+// Reuse the published 4K record's real endpoint and task schema for this fixture.
+test('only matching T3 designs with complete endpoints count as published', () => {
+  const anchor = JSON.parse(readFileSync(new URL('../../results/scaling/runs/dense_200b.json', import.meta.url)));
+  const cell = t3.cells.find(c => c.id === 'dense-T3-L20');
+  const run = { ...anchor, id: cell.id, family: cell.family, protocol: t3.protocol,
+    model: { sequenceLength: t3.sequenceLength, width: cell.width, heads: cell.heads } };
+  const partialTasks = { ...run.finalCore.tasks };
+  delete partialTasks.boolq;
+  assert.deepEqual([...publishedCells([anchor, run, run])], [cell.id]);
+  for (const change of [
+    { id: 'dense-T4-L20' }, { family: 'moe' }, { protocol: anchor.protocol },
+    { model: anchor.model }, { model: { ...run.model, width: 1 } },
+    { finalBpb: {} }, { finalCore: { ...run.finalCore, tasks: partialTasks } },
+    { core: [] }, { training: { steps: run.training.steps + 1 } },
+  ]) {
+    assert.equal(publishedCells([{ ...run, ...change }]).size, 0);
+  }
 });

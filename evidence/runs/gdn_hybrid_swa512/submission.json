@@ -1,0 +1,87 @@
+{
+ "run": "gdn_hybrid_swa512",
+ "source_method": "gdn_hybrid_swa",
+ "publication_id": "gdn_hybrid_swa512",
+ "publication_note": "Separate display identity for the 512-key configuration of the existing gdn_hybrid_swa implementation. The original training method and all scientific fingerprints are preserved in the evidence.",
+ "source_commit": "4926c5de832968957cd84411b1fa24ca0ada81c4",
+ "source_url": "https://github.com/Interactive-Active-AI/NextTransformer/tree/4926c5de832968957cd84411b1fa24ca0ada81c4",
+ "source_worktree": "Clean tracked source at the recorded revision, verified on the training host during submission preparation.",
+ "method_source_hash": "13cbe35a2ea9f60cb0d9f129463be919677e8007386486455539fa544e39a255",
+ "method_source_verification": "Recomputed from the frozen revision and the archived configuration; matches the original cost proof.",
+ "model_hash": "79eaae0c4ef8243b58d9ec70449e840163a6b69184f77243f5d0a356e6973662",
+ "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+ "metrics_sha256": "e9af36ae5e94541e2e07695ba732f0940325bbaf94810ada38967a930f2131ff",
+ "original_provenance_sha256": {
+  "provenance.json": "a10566af9696cdc6f2ac3a448980a91f6cd5431e83694770b45c7e81e62582e9",
+  "resume_00001000.json": "7a9edd356936a97fc54e973dd6a5836a99a74dd4148c4ffc021704b0fd2f53f3",
+  "resume_00007500.json": "dfb1db26132ca1ad9c27c322388a4207ea01ce53d6338411807f18a88ef63e6c"
+ },
+ "redactions": {
+  "provenance_fields_removed": {
+   "provenance.json": [
+    "config",
+    "command",
+    "host",
+    "device",
+    "kernel_caches",
+    "job_id",
+    "wandb_mode",
+    "wandb_note"
+   ],
+   "resume_00001000.json": [
+    "config",
+    "command",
+    "host",
+    "device",
+    "kernel_caches",
+    "job_id",
+    "wandb_mode",
+    "wandb_note"
+   ],
+   "resume_00007500.json": [
+    "config",
+    "command",
+    "host",
+    "device",
+    "kernel_caches",
+    "job_id",
+    "wandb_mode",
+    "wandb_note"
+   ]
+  },
+  "resumed_from": "Absolute paths replaced by their checkpoint directory names.",
+  "run_status": "Tracking-service fields removed.",
+  "scientific_values": "Model, protocol, optimizer recipe, costs, evaluation values, software versions and hashes, and batch layouts are retained."
+ },
+ "runtime_sources": {
+  "core_graph.py": "72aee4231bd798e16d80e97289d4eeb417978591b171721e21f1298f2a783a02",
+  "core_inputs.py": "98d2f8422869ec7e3e49ce905521e6c7c16d01b2f483c2eeb4ff2c726d2dbea7",
+  "prepare_core_cache.py": "3703b9af02388f7788c35d26d8ae7c28f16ae62e0a5bb3673ede0d4f36374957",
+  "core_graph_check.py": "74aef7458638edbfc3a4c01cc96512c65f864c2f4a7bc0d760bd04a53497262b",
+  "timing.py": "2a1c1ce30afadf387bc9580e4c5de43e5439b65673293d57d29004063e612a8a",
+  "core_timing.py": "dce8bf78f49fd3292747f2acbc18bbd8f6a38ef2be4e38a72edec0ccd9df78c0",
+  "checkpoint_io.py": "41424edea19919c481ef14a00560c47b22e158c64a3cef3485e074b43c8c5abc",
+  "progress.py": "d2b1271c283e14e0c0752973420e4b34afffd36c43edb014d0ec66cd66f87a24",
+  "training_rank.py": "41788ed45b77f83659bec561ed19aa04a4658635f1846cecd1f2fc8022e22fe8"
+ },
+ "runtime_scope": "Archived site wrappers used alongside the frozen tracked source. The training science hash does not include these external wrappers.",
+ "execution_notes": [
+  "Layer-boundary synchronization and pacing, rank CPU affinity, progress reporting and parallel checkpoint checksumming were applied by site wrappers.",
+  "Scheduled CORE evaluations used cached original inputs and original-shape CUDA graphs in each original rank process. Each shape group compared the first graph replay with native forward losses and predictions using exact equality. Continuation scoring and dataset rank assignment were preserved.",
+  "The checkpoint-7500 CORE validation was a bounded execution check and is excluded from the six scheduled CORE events.",
+  "Padded batching and separate-process evaluation trials were rejected after answer differences and are excluded from the published metrics.",
+  "The continuation after checkpoint 7500 reproduced logged losses, gradient norms, tokens and compute at updates 7510 through 8000. This check covers the recorded fields at the logged steps.",
+  "The fixed 24-layer, FFN-6016 candidate received a verification-only cost proof before training. The archived proof records no structural search."
+ ],
+ "artifacts": {
+  "audit-inputs.json": "5084c12a4cf0e97b730f98ff9de6e33f6d5f0caf209525ca2b9de5a2df3f1326",
+  "metrics.jsonl": "e9af36ae5e94541e2e07695ba732f0940325bbaf94810ada38967a930f2131ff",
+  "configs/hybrid/gdn_hybrid_swa.json": "b26eb14171cffe2d9e7ee7de5caaeceb7213cbb7f41613d602f16104ab7ba82a",
+  "proofs/gdn_hybrid_swa.json": "c704092f8ddde3b9a9af51b14b4dd25fbc4f49cb7e71fa384d36dd021ffbbc07",
+  "proofs/dense.json": "f25abc8597ad9497359dddb3064d798fe1d33ba26ea4914d39e9820e689199ce",
+  "core-graph-check.json": "9d852fc4f44234a69c3f4af93e4dab6c1d0b76c4e75f17d340d0e969ed845b55",
+  "resume-replay-check.json": "b76554e26eba4d4630371e9e8c1ff112d375cdb3cb0fa4d2229907122acd7d72",
+  "core-input-cache-manifest.json": "a91a62ebb493714326bc53acb10dd5f9212e59cb072768924934b03680e2685d",
+  "checkpoint-manifest.json": "72464b99bc6b0f7ff565c741e3e4680e83b5cab17c55e218e4af8334b36886fe"
+ }
+}
