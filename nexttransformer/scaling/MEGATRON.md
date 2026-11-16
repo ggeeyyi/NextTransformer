@@ -1,17 +1,30 @@
-# Megatron-Core adapter for the 2K scaling MoE family
+# Megatron-Core adapter for the 2K scaling expert families
 
 Status: CPU mathematics and optimizer continuation verified. CUDA dispatch, full-size memory,
 throughput, distributed checkpoint recovery, and long-training stability have not been verified.
 This is an integration/pilot adapter, not a formal T3 training launcher. It does not change the
-49B leaderboard protocol or the other three scaling families.
+49B leaderboard protocol or Vanilla Dense, the one family that keeps a dense FFN everywhere.
 
 ## Architecture
 
-`moe_recipe.py` reads the four MoE cells in `configs/scaling/t3.json` and refuses an incompatible
-architecture. Each cell has native full causal MHA (including the native QK normalization and
-RoPE), no value embeddings, a first dense 4d FFN, and later layers with 256 routed experts,
-normalized top-8 weights and one ungated shared expert. Each expert is a two-matrix ReLU-squared
-FFN of width d/4. The native embedding, residual, normalization and readout code is reused.
+`moe_recipe.py` reads the twelve cells of the three expert families in `configs/scaling/t3.json`
+and refuses an incompatible architecture. The guard compares only the feed-forward keys the three
+families hold in common, so a family may change its own attention or structure without review
+here, while the recipe they share may not drift unnoticed. That shared recipe is a first dense 4d
+FFN, then 256 routed experts, normalized top-8 weights and one ungated shared expert, each expert
+a two-matrix ReLU-squared FFN of width d/4. All three omit value embeddings.
+
+The families differ in what sits above that FFN. Vanilla MoE and Looped use native full causal MHA
+including the native QK normalization and RoPE; Hybrid interleaves KDA and DSA mixers, which this
+adapter does not build — see `reference_blocks.py`. Looped stores its shared core once and executes
+it twice, so a recipe carries both its executed depth, which sets cost, and its unique depth, which
+holds the weights. Because the core is stored once, the experts placed there are one set of weights
+reused across depth, which is what the family's weight sharing means.
+
+Costs follow from that split. `estimate()` charges executed layers, so Looped and Vanilla MoE plan
+the same token count at a given depth. `counts()` describes a flat stack of MHA layers only, and
+raises for the other two rather than returning a number that looks authoritative and is not;
+Hybrid's budget stays pending in the manifest for the same reason.
 
 `megatron_moe.py` replaces only FFNs after the first layer. The GPU path constructs the real
 MCore `MoELayer`, `TopKRouter`, `SequentialMLP`, `SharedExpertMLP` and all-to-all dispatcher.

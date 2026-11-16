@@ -126,7 +126,17 @@ def cuda_nodes(request):
         "resource_unavailable",
         "A scheduler GPU allocation is required.",
     )
-    nodes = [f"/dev/nvidia{gpu['device_minor']}", "/dev/nvidiactl", "/dev/nvidia-uvm"]
+    devices = gpu.get("devices", [gpu])
+    require(
+        all(
+            type(card.get("device_minor")) is int and card["device_minor"] >= 0
+            for card in devices
+        ),
+        "resource_unavailable",
+        "Invalid GPU group.",
+    )
+    nodes = [f"/dev/nvidia{card['device_minor']}" for card in devices]
+    nodes += ["/dev/nvidiactl", "/dev/nvidia-uvm"]
     require(
         all(Path(node).exists() for node in nodes),
         "resource_unavailable",

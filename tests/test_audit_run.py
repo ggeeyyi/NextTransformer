@@ -60,6 +60,19 @@ def test_a_complete_run_passes_and_the_report_names_nothing_local(tmp_path):
     assert str(tmp_path) not in text and "host" not in text and "device" not in text
 
 
+def test_registered_execution_layouts_hold_the_global_batch(tmp_path):
+    """Every multiple of eight ranks drives the same eight streams, so the global batch is the invariant."""
+    run_directory(tmp_path)
+    provenance = json.loads((tmp_path/"provenance.json").read_text())
+    for world, micro, accumulation in ((8, 8, 8), (16, 8, 4), (32, 8, 2), (64, 8, 1)):
+        write(tmp_path/"provenance.json", dict(provenance, world_size=world, micro_batch=micro,
+                                               accumulation=accumulation))
+        assert audit(tmp_path, "dense_full")[1] == []
+    # An unregistered layout is rejected even when it keeps the global batch.
+    write(tmp_path/"provenance.json", dict(provenance, world_size=128, micro_batch=4, accumulation=1))
+    assert any("unregistered world size 128" in p for p in audit(tmp_path, "dense_full")[1])
+
+
 def test_an_incomplete_run_is_reported(tmp_path):
     run_directory(tmp_path)
     (tmp_path/"val_00046875.json").unlink()

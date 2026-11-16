@@ -1,0 +1,10 @@
+{
+  "name": "xsa",
+  "family": "others",
+  "title": "Exclusive Self Attention",
+  "paper": {
+    "title": "Exclusive Self Attention",
+    "url": "https://arxiv.org/abs/2603.09078v1"
+  },
+  "shell": {"layers": 24, "mlp_width": 6144, "window_pattern": "L"}
+}

@@ -197,10 +197,17 @@ class Service:
         quota = profile.get("checkpoint_quota_bytes")
         integer(memory, 1)
         integer(quota, 1)
-        required_memory = (
-            report["parameters"] * 64
-            + profile["batch_size"] * profile["sequence_len"] * profile["width"] * 256
+        active_batch = (
+            min(
+                profile.get("microbatch_size", profile["batch_size"]),
+                profile["batch_size"],
+            )
+            if operation == "train"
+            else profile["batch_size"]
         )
+        required_memory = report["parameters"] * 64 + active_batch * profile[
+            "sequence_len"
+        ] * profile["width"] * max(256, report.get("activation_depth", 1) * 64)
         require(
             required_memory <= memory,
             "resource_unavailable",

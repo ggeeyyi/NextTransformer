@@ -1,0 +1,19 @@
+{
+  "note": "Recorded before the 64-rank layout was registered. #57 added 64 to the run audit's execution-layout allowlist, so these findings no longer reproduce and the unchanged audit now accepts both runs. The findings are kept as the state at submission time.",
+  "xsa": {
+    "upstream_audit_ok": false,
+    "problems": [
+      "provenance.json: unregistered world size 64"
+    ],
+    "all_other_checks_pass": true,
+    "local_audit": "evidence/audits/xsa.json"
+  },
+  "inkling_rel": {
+    "upstream_audit_ok": false,
+    "problems": [
+      "provenance.json: unregistered world size 64"
+    ],
+    "all_other_checks_pass": true,
+    "local_audit": "evidence/audits/inkling_rel.json"
+  }
+}

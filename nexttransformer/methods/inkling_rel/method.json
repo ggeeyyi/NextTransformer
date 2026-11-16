@@ -1,0 +1,12 @@
+{
+  "name": "inkling_rel",
+  "family": "others",
+  "title": "Inkling Relative Position Bias",
+  "paper": {
+    "title": "Inkling: content-dependent relative position logits",
+    "url": "https://huggingface.co/thinkingmachines/Inkling"
+  },
+  "options": {"d_rel": 16, "rel_extent": 2048, "rel_init_std": 0.02},
+  "debug_options": {"d_rel": 4, "rel_extent": 128},
+  "shell": {"layers": 24, "mlp_width": 6144, "window_pattern": "L"}
+}

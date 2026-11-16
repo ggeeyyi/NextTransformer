@@ -20,6 +20,8 @@ test('only the sixteen public T3 designs enter the study manifest', () => {
     assert.equal(c.width, c.layers * 64);
     assert.equal(c.heads * c.headDim, c.width);
     assert.equal(c.id, c.family + '-T3-L' + c.layers);
+    // Only Vanilla Dense keeps a dense FFN in every layer; the other three route.
+    assert.equal(c.expertWidth, c.family === 'dense' ? undefined : c.width / 4);
     if (c.family === 'kda-dsa') {
       assert.equal(c.kdaLayers, 3 * c.dsaLayers);
       assert.equal(c.kdaLayers + c.dsaLayers, c.layers);
@@ -29,7 +31,7 @@ test('only the sixteen public T3 designs enter the study manifest', () => {
     }
     if (c.family === 'looped') assert.equal(c.preLayers + 2*c.coreLayers + c.postLayers, c.layers);
     const d = c.width, L = c.layers;
-    const active = c.family === 'moe' ? 12*d*d + (L-1)*(8.5*d*d + 256*d) : 12*d*d*L;
+    const active = c.family === 'dense' ? 12*d*d*L : 12*d*d + (L-1)*(8.5*d*d + 256*d);
     const rate = 6*active + 12*t3.sequenceLength*d*L + 6*d*t3.vocabSize;
     assert.equal(c.estimatedUpdates, Math.round(t3.trainingFlops / rate / t3.globalBatchTokens));
     assert.equal(c.estimatedTokens, c.estimatedUpdates * t3.globalBatchTokens);
@@ -43,7 +45,7 @@ test('planning scenarios convert per-run costs to hours and eight-GPU days', () 
       assert.ok(Math.abs(days * 192 - hours) <= Number.EPSILON * hours);
       return sum + days * t3.depths.length;
     }, 0);
-    if (scenario === 1) assert.equal(total.toFixed(1), gpu === 'H200' ? '13.6' : '32.7');
+    if (scenario === 1) assert.equal(total.toFixed(1), gpu === 'H200' ? '15.9' : '36.9');
     assert.ok(total > 0);
   }
   const historical = JSON.parse(readFileSync(new URL('../../results/scaling/runs/dense_200b.json', import.meta.url)));

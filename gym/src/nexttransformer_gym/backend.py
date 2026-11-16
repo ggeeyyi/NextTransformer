@@ -39,6 +39,10 @@ class NativeBackend:
         for profile in self.profiles.values():
             if self.execution_config["gpu_ids"] and not profile.get("official_plan"):
                 profile["device"] = "cuda:0"
+                profile["research_device_count"] = len(self.execution_config["gpu_ids"])
+                profile["microbatch_size"] = self.execution_config[
+                    "research_microbatch_size"
+                ]
                 profile.pop("cuda_visible_devices", None)
                 profile["accelerator_class"] = "cuda"
                 profile["memory_limit_bytes"] = self.execution_config[
@@ -172,6 +176,11 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
         if gpu_id is None:
             return None
         require(
+            profile.get("research_device_count", 1) == 1,
+            "invalid_request",
+            "Multi-GPU research uses the entire operator allocation; omit gpu_id.",
+        )
+        require(
             isinstance(gpu_id, (str, int)) and not isinstance(gpu_id, bool),
             "invalid_request",
             "Invalid GPU selection.",
@@ -242,12 +251,18 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
             configured_cuda_devices=self.execution_config["gpu_ids"],
             execution_config=self.execution_config,
             worker_runtime=self.worker_runtime,
-            research_devices=["cuda:0"]
+            research_devices=[
+                f"cuda:{i}" for i in range(len(self.execution_config["gpu_ids"]))
+            ]
             if self.execution_config["gpu_ids"]
             else ["cpu"],
         )
         if self.execution_config["gpu_ids"]:
-            node["allocatable_slots"] = int(any(card["available"] for card in cards))
+            node["allocatable_slots"] = int(
+                bool(allowed)
+                and len(allowed) == len(self.execution_config["gpu_ids"])
+                and all(card["available"] for card in cards if card["id"] in allowed)
+            )
         return node
 
     def public_profiles(self):
@@ -274,7 +289,9 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
                 accelerator_class=bounded.get("accelerator_class", "cpu"),
                 device=bounded.get("device", "cpu"),
                 usable_memory_bytes_per_device=bounded.get("memory_limit_bytes"),
-                supported_device_counts=[1],
+                supported_device_counts=[bounded.get("research_device_count", 1)],
+                global_batch_size=profile["batch_size"],
+                microbatch_size=bounded.get("microbatch_size", profile["batch_size"]),
                 supported_precisions=["float32"],
                 runtime_manifest_id=self.revision,
                 checkpoint_quota_bytes=profile.get("checkpoint_quota_bytes"),
@@ -313,7 +330,9 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
                 "resource_unavailable",
                 "Research GPU execution requires a scheduler allocation.",
             )
-            env["CUDA_VISIBLE_DEVICES"] = gpu["id"]
+            env["CUDA_VISIBLE_DEVICES"] = ",".join(
+                card["id"] for card in gpu.get("devices", [gpu])
+            )
             env["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
         if official:
             require(
@@ -407,8 +426,15 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
             return costs[check]
         return (
             init
-            + updates * (fwd + bwd + opt)
-            + profile["dev_batches"] * int(report["evaluation"])
+            + updates
+            * (
+                int(report.get("research_forward", fwd))
+                + int(report.get("research_backward", bwd))
+                + int(report.get("research_reduction", 0))
+                + opt
+            )
+            + profile["dev_batches"]
+            * int(report.get("research_evaluation", report["evaluation"]))
         )
 
     def checkpoint_path(self, checkpoint_id):
@@ -465,7 +491,7 @@ class Scheduler:
                     str(profile.get("device", "cpu")).startswith("cuda")
                     and quote["operation"] != "official"
                 ):
-                    from .gpu import reserve
+                    from .gpu import reserve, reserve_group
 
                     try:
                         require(
@@ -481,7 +507,9 @@ class Scheduler:
                             ),
                         }
                         allocation = leases.enter_context(
-                            reserve(policy, quote.get("gpu_id"))
+                            reserve_group(policy)
+                            if profile.get("research_device_count", 1) > 1
+                            else reserve(policy, quote.get("gpu_id"))
                         )
                     except GymError as error:
                         if job.get("waiting_reason") != str(error):

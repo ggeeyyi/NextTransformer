@@ -204,7 +204,7 @@ def main(argv=None):
     state = initial_state(identity['data'])
     if resumed is not None:
         saved = load_checkpoint(output, resumed, model, optimizer, train, device)
-        if saved['model_config'] != asdict(mc) or saved['train_config'] != asdict(tc):
+        if not mc.matches(saved['model_config']) or saved['train_config'] != asdict(tc):
             raise ValueError('resume configuration differs from checkpoint')
         state = saved['state']
         if state['data_manifest_sha256'] != identity['data']:

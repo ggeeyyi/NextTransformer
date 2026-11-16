@@ -56,7 +56,24 @@ mkdir -p .agent-work
 cp gym/examples/resources.gpu.json .agent-work/resources.local.json
 ```
 
-Set `gpu_ids` to allocated indices or UUIDs. Set `gpu_memory_limit_bytes` to the allowed memory per GPU.
+Set `gpu_ids` to the GPUs that one research job should use on this machine, as indices or UUIDs.
+For example, `[0]`, `[0, 1]` and `[0, 1, 2, 3]` select one, two and four GPUs respectively.
+The whole group is leased together; if any selected GPU is busy, the job waits.
+Set `gpu_memory_limit_bytes` to the allowed memory per GPU and `research_microbatch_size`
+to the maximum rows per device per forward/backward pass (default: `1`).
+
+The profile's `batch_size` is the **global rows per optimizer update**, independent of GPU count.
+Use `batch_size: 512` with `sequence_len: 2048` for 1,048,576 tokens per update.
+Research training splits each global batch across the selected GPUs and accumulates gradients
+before one optimizer step. Data order, row identities and the update-based schedule stay fixed.
+Uneven final microbatches are weighted by row count. Checkpoints bind the GPU count and microbatch
+configuration through the profile identity. The operator fixes this configuration before the session;
+API callers omit `gpu_id` for a multi-GPU allocation.
+
+This path uses single-process data parallelism with persistent model replicas and explicit gradient summation in float32 with compilation disabled.
+It does not establish the formal trainer's throughput or the roadmap's 89-hour estimate.
+Dev scoring uses bounded microbatches on the primary device; named diagnostics still use their
+full pinned diagnostic batch on the primary device and are subject to its memory bound.
 Keep `max_concurrent_jobs` at `1`. Start the session with that configuration:
 
 ```sh
@@ -280,7 +297,7 @@ A CPU session can use a configuration with only this field:
 - Landlock does not restrict metadata changes such as chmod and utime.
 - CUDA needs the host PID namespace and Unix sockets, so CUDA workers keep both. Processes they detach can outlive the job.
   As `nobody`, they can connect only to Unix sockets that every user may write to.
-- CUDA workers can open every NVIDIA device node. `CUDA_VISIBLE_DEVICES` selects the allocated GPU but does not confine the worker to it.
+- CUDA workers can open every NVIDIA device node. `CUDA_VISIBLE_DEVICES` selects the allocated GPUs but does not confine the worker to them.
 
 If the controller runs as root, workers run as `nobody` under every backend. That user must be able to read the platform source and the worker Python.
 `get_resources` reports the configured backend in `execution_config`.

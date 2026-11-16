@@ -9,8 +9,12 @@ description: 从 T3 开始比较四个架构家族，先登记预测，再用独
 |---|---|
 | Vanilla Dense | 各层独立的全注意力与稠密 FFN |
 | Vanilla MoE | 全注意力与按 token 激活的专家容量 |
-| Dense KDA–DSA | 每三层 KDA 接一层 DSA，所有 FFN 稠密 |
-| Fixed Recursive | 每个 token 都两次通过同一组核心层 |
+| Hybrid | 线性注意力与稀疏检索注意力交替 |
+| Looped | 权重在深度上复用 |
+
+家族指的是一条设计轴，T3 阶段每条轴只用一个实例来研究：Hybrid 以 KDA–DSA 为例，每三层 KDA 接一层 DSA；Looped 以固定递归结构为例，每个 token 都两次通过同一组核心层。用设计轴命名，是为了后续阶段引入同族其他实例时不必再改家族名。
+
+四个家族中有三个共用 Vanilla MoE 的前馈配方：首层保持稠密，其后为 256 个宽 d/4 的路由专家，每 token 选 8 个，另加 1 个共享专家。只有 Vanilla Dense 各层都用稠密 FFN。固定前馈这一侧，是为了让 Vanilla MoE、Hybrid 与 Looped 之间的差异能被读作注意力或权重复用带来的差异，而不是专家容量的差异。
 
 [观测站](https://interactive-active-ai.github.io/NextTransformer/#scaling)可查看各尺寸配置并切换硬件预算。[T3 配置清单](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/configs/scaling/t3.json)提供机器可读设计，注明 token 数的估算口径与待核算项。
 

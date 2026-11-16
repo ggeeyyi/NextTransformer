@@ -9,8 +9,12 @@ How should each architecture divide a fixed training budget between model size a
 |---|---|
 | Vanilla Dense | Independent full-attention blocks and dense FFNs |
 | Vanilla MoE | Full attention with conditional expert capacity |
-| Dense KDA–DSA | Three KDA layers per DSA layer, dense FFNs throughout |
-| Fixed Recursive | A shared core executed twice for every token |
+| Hybrid | Linear and sparse-retrieval attention interleaved |
+| Looped | Weights reused across depth |
+
+A family names a design axis, and T3 studies each one through a single instance. Hybrid is studied as KDA–DSA, three KDA layers per DSA layer; Looped is studied as the fixed recursive shell, a shared core executed twice for every token. Naming the axis keeps room for other instances at later stages without renaming the family.
+
+Three of the four families share the Vanilla MoE feed-forward recipe: a dense first layer, then 256 routed experts of width d/4 with eight selected per token and one shared expert. Only Vanilla Dense keeps a dense FFN in every layer. Holding the feed-forward side fixed is what lets a difference between Vanilla MoE, Hybrid and Looped be read as a difference in attention or weight sharing rather than in expert capacity.
 
 Use the [observatory](https://interactive-active-ai.github.io/NextTransformer/#scaling) to inspect model shapes and switch between hardware planning estimates. The [T3 configuration](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/configs/scaling/t3.json) is the machine-readable design. It distinguishes estimated token counts from counts awaiting a cost proof.
 

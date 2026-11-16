@@ -1,10 +1,11 @@
 """Scientific configuration of a scaling-stage run.
 
-The model section is the native backbone configuration. The training section replaces the frozen
-reference protocol: it names its own protocol version, token budget, batch and evaluation cadence, and
-keeps the native optimizer recipe with the transfer rules in nexttransformer.scaling.optimizer.
+The model section is the native backbone configuration, extended with the shell settings the 2K
+scaling protocol varies. The training section replaces the frozen reference protocol: it names its own
+protocol version, token budget, batch and evaluation cadence, and keeps the native optimizer recipe
+with the transfer rules in nexttransformer.scaling.optimizer.
 """
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, fields
 import hashlib
 import json
 import math
@@ -14,6 +15,28 @@ from nexttransformer.models.native.config import NativeModelConfig
 
 # nanochat tuned its learning rates at this many tokens per update; larger batches scale them by sqrt(B/B0).
 REFERENCE_BATCH_TOKENS = 524288
+# Settings the 4K comparison never varied. A configuration that keeps the default omits them from its
+# serialized form, so configuration hashes published before these fields existed still hold.
+SCOPED_FIELDS = ('value_embeddings',)
+
+
+@dataclass(frozen=True)
+class ScalingModelConfig(NativeModelConfig):
+    # The 2K protocol runs the shell without value embeddings or their per-layer gates.
+    value_embeddings: bool = True
+
+    def serialized(self):
+        data = asdict(self)
+        defaults = {f.name: f.default for f in fields(self)}
+        for name in SCOPED_FIELDS:
+            if data[name] == defaults[name]: data.pop(name)
+        return data
+
+    def matches(self, recorded):
+        """A configuration recorded before a scoped field existed ran that field's default."""
+        defaults = {f.name: f.default for f in fields(self)}
+        return {name: value for name, value in recorded.items()
+                if not (name in SCOPED_FIELDS and value == defaults[name])} == self.serialized()
 
 
 @dataclass(frozen=True)
@@ -86,7 +109,7 @@ def load_config(path):
     raw = json.loads(Path(path).read_text())
     if set(raw) != {'model', 'train'}:
         raise ValueError('configuration requires model and train sections')
-    mc, tc = NativeModelConfig(**raw['model']), ScalingTrainConfig(**raw['train'])
+    mc, tc = ScalingModelConfig(**raw['model']), ScalingTrainConfig(**raw['train'])
     if mc.architecture != 'dense':
         raise ValueError('scaling runs support the dense backbone')
     for name in ('global_batch_tokens', 'val_tokens', 'final_bpb_tokens'):
@@ -96,4 +119,4 @@ def load_config(path):
 
 
 def config_hash(mc, tc):
-    return hashlib.sha256(json.dumps({'model': asdict(mc), 'train': asdict(tc)}, sort_keys=True).encode()).hexdigest()
+    return hashlib.sha256(json.dumps({'model': mc.serialized(), 'train': asdict(tc)}, sort_keys=True).encode()).hexdigest()

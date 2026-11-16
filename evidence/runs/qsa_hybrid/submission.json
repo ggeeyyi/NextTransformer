@@ -1,0 +1,86 @@
+{
+ "run": "qsa_hybrid",
+ "source_commit": "4926c5de832968957cd84411b1fa24ca0ada81c4",
+ "source_url": "https://github.com/Interactive-Active-AI/NextTransformer/tree/4926c5de832968957cd84411b1fa24ca0ada81c4",
+ "source_worktree": "Clean tracked source at the recorded revision, verified on the training host during submission preparation.",
+ "method_source_hash": "b856932ce96d1e06cfbeea673007163012f595be13c1c240cfdeebea2022156a",
+ "method_source_verification": "Recomputed from the frozen revision and archived configuration; matches the original cost proof.",
+ "model_hash": "02e93f56c35991d66acb43ea7f8efbb9302816a2027bcf8c3b5e4a81aa5bb7a8",
+ "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+ "metrics_sha256": "7c1dd94b658916e912aaaf3e2b673207729d7a8f3948dec0f59ce5904d2fd177",
+ "original_provenance_sha256": {
+  "provenance.json": "29c34ff350b0ac2acb41c8c570a45fa117ddb1faa5fef89fbcdc4ddc92e56d4e",
+  "resume_00001000.json": "30dd2ab22d6fbce2508294a5a91bf0b69ce17ab805111715f8f9d5babe24f82d",
+  "resume_00007500.json": "06517846ebb202f88e544331246fa022087f1849d6ad14b8ef8b5a905f056252"
+ },
+ "redactions": {
+  "provenance_fields_removed": {
+   "provenance.json": [
+    "config",
+    "command",
+    "host",
+    "device",
+    "kernel_caches",
+    "job_id",
+    "wandb_mode",
+    "wandb_note"
+   ],
+   "resume_00001000.json": [
+    "config",
+    "command",
+    "host",
+    "device",
+    "kernel_caches",
+    "job_id",
+    "wandb_mode",
+    "wandb_note"
+   ],
+   "resume_00007500.json": [
+    "config",
+    "command",
+    "host",
+    "device",
+    "kernel_caches",
+    "job_id",
+    "wandb_mode",
+    "wandb_note"
+   ]
+  },
+  "resumed_from": "Absolute paths replaced by checkpoint directory names.",
+  "run_status": "Tracking-service fields removed.",
+  "scientific_values": "Configurations, recipes, scientific values, software versions and hashes, and batch layouts retained."
+ },
+ "runtime_sources": {
+  "core_graph.py": "c8d1637e4e0a62aa608d8c7d194a2945ef5a6b91ec99aa06fecf68d25ec3c906",
+  "core_inputs.py": "98d2f8422869ec7e3e49ce905521e6c7c16d01b2f483c2eeb4ff2c726d2dbea7",
+  "prepare_core_cache.py": "3703b9af02388f7788c35d26d8ae7c28f16ae62e0a5bb3673ede0d4f36374957",
+  "core_graph_check.py": "74aef7458638edbfc3a4c01cc96512c65f864c2f4a7bc0d760bd04a53497262b",
+  "core_tail_check.py": "2b50580839ef7cec1539c0b4bdaca83810232c85d5ceedb1930912539e40c034",
+  "timing.py": "2a1c1ce30afadf387bc9580e4c5de43e5439b65673293d57d29004063e612a8a",
+  "core_timing.py": "dce8bf78f49fd3292747f2acbc18bbd8f6a38ef2be4e38a72edec0ccd9df78c0",
+  "checkpoint_io.py": "41424edea19919c481ef14a00560c47b22e158c64a3cef3485e074b43c8c5abc",
+  "progress.py": "d2b1271c283e14e0c0752973420e4b34afffd36c43edb014d0ec66cd66f87a24",
+  "training_rank.py": "41788ed45b77f83659bec561ed19aa04a4658635f1846cecd1f2fc8022e22fe8"
+ },
+ "runtime_scope": "External site wrappers alongside frozen tracked source; these wrappers are not included in its science hash.",
+ "execution_notes": [
+  "Layer-boundary synchronization and pacing, rank CPU affinity, progress reporting and parallel checkpoint hashing were applied by site wrappers.",
+  "CORE used cached original inputs and original-shape CUDA graphs in the original rank processes. Each shape group compared the first graph replay against native forward losses and predictions with exact equality. Original rank assignment, continuation slices and scoring were retained.",
+  "During graph capture only, two diagnostic edge counts in SparseMixer.forward were deferred from Python integers to tensor sums. The original forward was restored after capture; training forward was unchanged.",
+  "QSA shape groups used bounded synchronization to control rank skew. The first full checkpoint-7500 execution check completed, but its resource handoff failed; a targeted tail check preceded continuation. The checkpoint-7500 evaluations are not among the six scheduled CORE events.",
+  "Padded batching and independent-process inference trials changed answers and were rejected; their results are excluded.",
+  "The original 24-layer, FFN-5760 configuration received a verification-only cost proof. Dense burn-in covers 512 updates; joint sparse training covers 46,363 updates."
+ ],
+ "artifacts": {
+  "audit-inputs.json": "a44b69a6ae60a6d2481f91c90adb3af3d262a96132706ce95dfd23765ccb2d0c",
+  "metrics.jsonl": "7c1dd94b658916e912aaaf3e2b673207729d7a8f3948dec0f59ce5904d2fd177",
+  "configs/hybrid/qsa_hybrid.json": "f467ce21a34925db6fc3bcdcf7e9b8412fb2f234cf6a2f0db8f8b5ede8d6f3a4",
+  "proofs/qsa_hybrid.json": "c66ded32b04d32eb533860041ff1d9e857338b09adcad01cca068758b344dadf",
+  "proofs/dense.json": "45992a5c5a157ad30c5ea3425db74172a9ae1ed6c773160b8908243ff64da1e0",
+  "core-graph-check.json": "bdec6486c0a05e8bf4cce62c9e84fe45fdf1f3b9a8b65d6e55ebc0d736ff7cb0",
+  "core-tail-check.json": "21ef3e8c9cb38c556425420a6bf42d0cec27e0f0130d41f71f5474bf0b7ce270",
+  "resume-replay-check.json": "b2d11541162a20c8749bbb7aa30b51d8d39ab69181081789bff20b3401f7d5d1",
+  "rejected-core-prototypes.json": "ed3ecb49adf0630774c64b8cf7d70ec94db718ea007449a987b773a7769b7678",
+  "checkpoint-manifest.json": "59ee9dc874a2947c646d7a7fcac4e06c2a06666ba6da30ebf2a3d183908d7153"
+ }
+}

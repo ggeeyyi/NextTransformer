@@ -22,7 +22,9 @@ description: 同一参考协议下完成的正式训练，以及各方法与 Den
 | [Hybrid GDN + MHA 1:1](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gdn_hybrid_swa.json) | 混合 | 0.6656 | -0.0015 | 33.66 | +0.57 | 4.647 |
 | [Gated Attention · elementwise](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gated_attention.json) | 其他 | 0.6695 | +0.0023 | 33.58 | +0.49 | 4.642 |
 | [Hybrid GDN + MHA 3:1](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gdn_hybrid.json) | 混合 | 0.6647 | -0.0025 | 33.37 | +0.28 | 4.704 |
+| [Inkling REL](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/inkling_rel.json) | 其他 | 0.6684 | +0.0012 | 33.17 | +0.08 | 4.630 |
 | [Hybrid GDN + SWA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gdn_hybrid_swa512.json) | 混合 | 0.6665 | -0.0007 | 33.09 | -0.01 | 4.686 |
+| [Hybrid GDN + QSA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/qsa_hybrid.json) | 混合 | 0.6665 | -0.0007 | 33.00 | -0.09 | 4.692 |
 | [Hybrid MoBA + MHA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/moba_hybrid.json) | 混合 | 0.6702 | +0.0031 | 32.74 | -0.35 | 4.660 |
 | [Grouped-Query Attention · GQA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gqa.json) | 其他 | 0.6741 | +0.0069 | 32.62 | -0.47 | 4.687 |
 | [Multi-head Latent Attention · MLA + QK-norm](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/mla_qknorm.json) | 其他 | 0.6759 | +0.0087 | 32.53 | -0.56 | 4.670 |
@@ -31,6 +33,7 @@ description: 同一参考协议下完成的正式训练，以及各方法与 Den
 | [Multi-Query Attention · MQA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/mqa.json) | 其他 | 0.6769 | +0.0098 | 31.96 | -1.13 | 4.664 |
 | [Standard Residual](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/residual_standard.json) | 残差 | 0.6740 | +0.0068 | 31.95 | -1.14 | 4.674 |
 | [DeepSeek Sparse Attention · DSA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/dsa.json) | 稀疏 | 0.6679 | +0.0007 | 31.77 | -1.33 | 4.651 |
+| [XSA · Exclusive Self Attention](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/xsa.json) | 其他 | 0.6668 | -0.0003 | 31.73 | -1.36 | 4.676 |
 | [Hybrid KDA + MLA-NoPE](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/kda_hybrid.json) | 混合 | 0.6738 | +0.0066 | 31.54 | -1.55 | 4.692 |
 | [Gated Linear Attention · GLA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gla.json) | 线性 | 0.6690 | +0.0018 | 31.11 | -1.99 | 4.701² |
 | [Kimi Delta Attention · KDA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/kda.json) | 线性 | 0.6671 | ±0.0000 | 31.06 | -2.03 | 4.692 |

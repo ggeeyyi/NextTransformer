@@ -48,7 +48,7 @@ result is an audited, file-backed record, and AI agents can research new archite
 
 <a href="https://interactive-active-ai.github.io/NextTransformer/docs/protocol/overview/"><img src=".github/assets/readme/card-protocol-en.webp" alt="A fair, explicit protocol: same data, tokens, optimizer, schedule and evaluation for every model; training compute matched to within 1% and audited over the whole run." width="100%"></a>
 
-**[2K scaling study](https://interactive-active-ai.github.io/NextTransformer/#scaling)** · Compare size and token allocations across four families at one T3 training budget.
+<a href="https://interactive-active-ai.github.io/NextTransformer/#scaling"><img src=".github/assets/readme/card-scale-en.webp" alt="2K scaling study at fixed compute: Dense, MoE, KDA–DSA and Fixed Recursive each sweep four depths, 16 T3 configurations at 10²⁰ training FLOPs per run with a 2,048-token context. T3 comes first, then T4, T5 and a held-out C200 test." width="100%"></a>
 
 <a href="https://interactive-active-ai.github.io/NextTransformer/docs/arena/task/"><img src=".github/assets/readme/card-agent-en.webp" alt="Agent-native research: hand the arena task to your agent; the full version, Arena v2, ships by November 14, 2026." width="100%"></a>
 
@@ -62,7 +62,7 @@ your browser.
 ## Results
 
 <!-- generated:leaderboard -->
-<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-en.svg" alt="CORE at update 46,875 for all 40 runs, against the Dense Baseline" width="100%"></a>
+<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-en.svg" alt="CORE at update 46,875 for all 43 runs, against the Dense Baseline" width="100%"></a>
 
 [Full leaderboard](https://interactive-active-ai.github.io/NextTransformer/docs/results/leaderboard/) · [Training replay](https://interactive-active-ai.github.io/NextTransformer/#leaderboard)
 <!-- /generated:leaderboard -->
@@ -128,8 +128,8 @@ Contributor-hosted weights: [AttnRes-Canon (49B comparison)](https://huggingface
 | <img src="https://img.shields.io/badge/Looped-8B5CF6?style=flat-square" alt="Looped"> | UT-ACT · Fixed Recursive · Huginn · Ouro · DeepLoop · MoR · LoopFormer · Circle Loop |
 | <img src="https://img.shields.io/badge/Sparse-E5607E?style=flat-square" alt="Sparse"> | DSA · QSA · NSA · SeerAttention-style · MoBA |
 | <img src="https://img.shields.io/badge/Linear-3F7FD9?style=flat-square" alt="Linear"> | DeltaNet · GSA + QK-norm · GLA · KDA · RetNet · ELU-Norm · GDN |
-| <img src="https://img.shields.io/badge/Hybrid-F07856?style=flat-square" alt="Hybrid"> | GDN–MHA 3:1 · GDN–MHA 1:1 · GDN–SWA · DeltaNet–MHA · KDA–MLA-NoPE · GDN–QSA\* · MoBA–MHA |
-| <img src="https://img.shields.io/badge/Others-D99A2B?style=flat-square" alt="Others"> | SSSL · MQA · GQA · MLA-QK · MLA-NoPE-QK · Gated Attention · elementwise · Gated Attention · headwise |
+| <img src="https://img.shields.io/badge/Hybrid-F07856?style=flat-square" alt="Hybrid"> | GDN–MHA 3:1 · GDN–MHA 1:1 · GDN–SWA · DeltaNet–MHA · KDA–MLA-NoPE · GDN–QSA · MoBA–MHA |
+| <img src="https://img.shields.io/badge/Others-D99A2B?style=flat-square" alt="Others"> | SSSL · MQA · GQA · MLA-QK · MLA-NoPE-QK · Gated Attention · elementwise · Gated Attention · headwise · XSA · Exclusive Self Attention · Inkling REL |
 <!-- /generated:model-zoo -->
 
 \* Results coming soon. Papers, adaptations and configurations are in the [model zoo](https://interactive-active-ai.github.io/NextTransformer/docs/methods/zoo/).
@@ -205,7 +205,7 @@ Community projects that extend NextTransformer.
 
 - **By November 14, 2026:** Arena v2 and agent-native research.
 - **2K scaling:** start with the [T3 size sweep](https://interactive-active-ai.github.io/NextTransformer/#scaling), refine the fits, check preregistered forecasts, then hold out C200 for the final test.
-- **Upcoming results:** GDN + QSA and MoBA + MHA hybrids.
+- **Hybrid GDN + QSA:** completed formal results, cumulative audit and [run notes](https://interactive-active-ai.github.io/NextTransformer/docs/results/runs/qsa_hybrid/).
 - **Planned:** checkpoints and the tokenizer on the Hugging Face Hub.
 
 More on the [roadmap](https://interactive-active-ai.github.io/NextTransformer/docs/roadmap/).

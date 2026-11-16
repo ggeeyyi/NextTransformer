@@ -47,6 +47,6 @@ UT-ACT、Fixed Recursive、Huginn、Ouro、DeepLoop、DSA、QSA、NSA、Seer 和
 
 SSSL、MoR、LoopFormer 和 Circle Loop 是项目首批运行，采用当时的原生实现。算力依据维护者核验的最终日志，使用矩阵 FLOPs 估算（¹）。若要纳入严格的等算力比较，仍需独立的完整计算成本凭证。
 
-## 待发布的方法
+## Hybrid GDN + QSA（`qsa_hybrid`）
 
-观测站中待发布结果的模型为 GDN–QSA。
+[H05](./qsa_hybrid/) 已完成 46,875 次更新、189 次验证和六次完整 CORE-22 评估。最终定期验证 BPB 为 **0.66650463**，CORE ×100 为 **33.002036**，累计计算量相对 SSSL 锚点为 **+0.411750%**。审计与运行说明记录了冻结源码、恢复经过、CORE 执行包装器和检查点验证。

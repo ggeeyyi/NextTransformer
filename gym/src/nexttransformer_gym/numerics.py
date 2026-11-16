@@ -17,7 +17,7 @@ def build(candidate, profile):
     return model
 
 
-def inspect(candidate, profile):
+def _inspect(candidate, profile, admission=True):
     activate(candidate)
     import torch
     from torch._subclasses.fake_tensor import FakeTensorMode
@@ -43,7 +43,7 @@ def inspect(candidate, profile):
     rows = max(1, Protocol().global_batch_tokens // profile["sequence_len"])
     initialization = Ledger()
     ledger = Ledger()
-    update = ledger if rows == profile["batch_size"] else Ledger()
+    update = ledger if not admission or rows == profile["batch_size"] else Ledger()
     evaluation = Ledger()
     prediction = Ledger()
     with FakeTensorMode(allow_non_fake_inputs=True):
@@ -66,16 +66,17 @@ def inspect(candidate, profile):
             valid = torch.ones_like(x.reshape(-1), dtype=torch.bool)
             (losses * valid).sum()
     report = ledger.report()
-    admission = update.report()
+    admitted_update = update.report()
     init = initialization.report()
     unknown = {
         **report["unknown"],
-        **admission["unknown"],
+        **admitted_update["unknown"],
         **init["unknown"],
         **evaluation.report()["unknown"],
         **prediction.report()["unknown"],
     }
-    per_token = admission["total"] / (rows * profile["sequence_len"])
+    traced_rows = rows if update is not ledger else profile["batch_size"]
+    per_token = admitted_update["total"] / (traced_rows * profile["sequence_len"])
     return {
         "coverage": "complete" if not unknown else "incomplete",
         "unknown": unknown,
@@ -86,9 +87,60 @@ def inspect(candidate, profile):
         "backward": str(report["phases"]["backward"]),
         "optimizer": str(report["phases"]["optimizer"]),
         "parameters": parameters,
+        "activation_depth": model.config.maximum_depth,
         "training_flops_per_token": per_token,
         "anchor_ratio": per_token / ANCHOR_FLOPS_PER_TOKEN,
-        "admission_tokens_per_update": rows * profile["sequence_len"],
+        "admission_tokens_per_update": traced_rows * profile["sequence_len"],
         "accounting_version": report["formula_version"],
         "scope": "native plugin trace for the pinned configuration; not a proof of every Python branch",
     }
+
+
+def inspect(candidate, profile):
+    """Trace actual research microbatch shapes, retaining full-batch diagnostics."""
+    from collections import Counter
+    from .research import microbatches, replica_slices
+
+    report = _inspect(candidate, profile)
+    batch = profile["batch_size"]
+    micro = profile.get("microbatch_size", batch)
+    devices = profile.get("research_device_count", 1)
+    shapes = Counter()
+    rounds = 0
+    for start, end in microbatches(batch, micro, devices):
+        rounds += 1
+        for first, last in replica_slices(start, end, devices):
+            shapes[last - first] += 1
+    evaluation_shapes = Counter(
+        end - start for start, end in microbatches(batch, micro, 1)
+    )
+    traces = {batch: report}
+    for size in shapes.keys() | evaluation_shapes.keys():
+        if size not in traces:
+            traces[size] = _inspect(
+                candidate, {**profile, "batch_size": size}, admission=False
+            )
+        if traces[size]["coverage"] != "complete":
+            report["coverage"] = "incomplete"
+            report["unknown"].update(traces[size]["unknown"])
+    report["research_forward"] = str(
+        sum(int(traces[size]["forward"]) * count for size, count in shapes.items())
+    )
+    report["research_backward"] = str(
+        sum(int(traces[size]["backward"]) * count for size, count in shapes.items())
+    )
+    # Conservative arithmetic bound for loss scaling, gradient reduction and
+    # accumulation. Tensor copies/communication do not count as arithmetic.
+    report["research_reduction"] = str(
+        2 * sum(shapes.values())
+        + report["parameters"] * (sum(shapes.values()) + rounds)
+        if devices > 1 or micro < batch
+        else 0
+    )
+    report["research_evaluation"] = str(
+        sum(
+            int(traces[size]["evaluation"]) * count
+            for size, count in evaluation_shapes.items()
+        )
+    )
+    return report

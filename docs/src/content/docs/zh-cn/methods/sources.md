@@ -123,3 +123,11 @@ SSSL、MoR、LoopFormer-Fixed2 和 Circle Loop 使用早期原生轨道（`nextt
 在部分 GPU 和 Triton 3.4.0–3.7.0 的组合上，FLA 0.5.2 限制了 GDN 反向内核（FLA issue #640）。注册环境使用 Triton 3.5.1，因此 GDN 将标量对数衰减广播到各键通道，调用已验证的 KDA 内核。输出门控 RMSNorm 使用 FLA `rms_norm_gated`，CPU 和审计使用等价的 PyTorch 实现。
 
 KDA、RetNet、GDN 的传递状态和累加使用 FP32，操作数与分块边界状态使用 BF16。KDA 和 GDN 的三角求逆使用 TF32。已训练的强门值可能使 KDA 的整块代数在 FP32 溢出，校验这类输入时应使用 FP64 循环参考实现。当前未保证二阶导数或优化的生成缓存。所有 ELU 变体使用稳定的 FP32 特征映射，运算保持 IEEE FP32、关闭 TF32，不做重计算。
+
+## XSA 与 Inkling REL
+
+**XSA** 实现 [Exclusive Self Attention](https://arxiv.org/abs/2603.09078v1) 的公式 2 / 算法 1：在普通因果 softmax 之后，逐头移除注意力输出在当前有效 value 方向上的投影。self 项仍参与 softmax；投影方向包含共享的门控 value embedding，保留 RoPE、QK 归一化、缩放与优化器。归一化及投影在低精度输入下使用 FP32。它适配论文的机制，不复刻论文的完整训练配方。
+
+**Inkling REL** 独立替换 RoPE，使用查询相关的相对位置 logits；每头查询投影维度为 16，层内跨头共享距离表，覆盖 0–2047。实现保留共享 Dense 骨架的 QK 归一化、1.2 gain、1/sqrt(head_dim) 缩放、value embedding 与优化器，未引入源模型的 MoE、短卷积、GQA 或层布局。CPU 可微参考与原创 Triton 前向/反向计算同一函数。[插件说明](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/inkling_rel/README.md) 列出固定的上游配置与源码版本及数值边界。
+
+两个完成的 49.152B-token 运行保留原协议分数。训练后的 BOS 诊断用于解释 CORE 左截断对 SQuAD 的影响，不替换榜单结果。64-rank 布局已登记进运行审计（#57），详见各自的 run notes。

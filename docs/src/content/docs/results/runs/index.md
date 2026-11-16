@@ -70,6 +70,6 @@ The first runs of the project, trained with the original native implementations 
 matrix-FLOPs estimate (mark ¹) from maintainer-verified final training logs. They are kept for reference; entering them
 into the strict matched comparison would require independent full-cost evidence.
 
-## Coming soon
+## Hybrid GDN + QSA (`qsa_hybrid`)
 
-The observatory lists one model awaiting results: GDN–QSA.
+[H05](./qsa_hybrid/) completed 46,875 updates with 189 validation events and six full CORE-22 evaluations. Final periodic validation BPB is **0.66650463**, CORE ×100 is **33.002036**, and cumulative compute is **+0.411750%** against the SSSL anchor. The audit and run notes document the frozen source, resume history, CORE execution wrapper and checkpoint verification.

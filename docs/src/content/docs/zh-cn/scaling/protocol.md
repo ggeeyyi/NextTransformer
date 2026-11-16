@@ -15,13 +15,13 @@ description: 公共训练配方、T3 尺寸规则、预算核算与预测检验�
 
 ### 家族定义
 
-Dense 使用全因果 MHA 和宽 4d 的 ReLU² FFN。MoE 第一层保持稠密，后续各层 256 个路由专家选 8，另有 1 个共享专家，专家宽度 d/4。在 dev 试跑中冻结 router 与优化器细节。混合家族按三层 KDA 接一层 DSA 循环，每层均配稠密 FFN。DSA 用逐 token 因果 top-256、4 × 128 维索引头和 64 维旋转编码；前 512 步为稠密 burn-in，单独核算索引器、teacher、选中边和反传。原有 KDA + MLA 混合模型的第四层与新配置不同。
+Dense 使用全因果 MHA 和宽 4d 的 ReLU² FFN。MoE 第一层保持稠密，后续各层 256 个路由专家选 8，另有 1 个共享专家，专家宽度 d/4。在 dev 试跑中冻结 router 与优化器细节。Hybrid 在同一套专家配方之上按三层 KDA 接一层 DSA 循环。DSA 用逐 token 因果 top-256、4 × 128 维索引头和 64 维旋转编码；前 512 步为稠密 burn-in，单独核算索引器、teacher、选中边和反传。原有 KDA + MLA 混合模型的第四层与新配置不同。
 
-固定循环家族使用 p 层前段、c 层核心执行两遍、p 层后段，p = floor(L/8 + 0.5)，c = L/2 − p。容量按独立权重统计，算力计入两次前向访问与完整反传。
+Looped（以固定递归为例）同样建立在这套专家配方之上，使用 p 层前段、c 层核心执行两遍、p 层后段，p = floor(L/8 + 0.5)，c = L/2 − p。核心层的专家在两遍之间共享，与核心其余权重一样属于深度上的复用。容量按独立权重统计，算力计入两次前向访问与完整反传。
 
 ### 预算与预测
 
-tokens 按完整更新步取整。Dense 的训练 FLOPs/token 主项为 72Ld² + 12SLd + 6dV，S 表示窗口，V 表示词表。MoE 核算激活专家和 router。正式运行须核对累计 FLOPs，目标偏差不超过 1%。KDA–DSA 的精确 tokens 由 burn-in 与稀疏两阶段的成本证明确定。[公开配置清单](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/configs/scaling/t3.json)列出研究设计；归档 Dense 启动器用于复现旧 4K 运行。报告正式 2K 结果前，需要对应实现及成本证明。
+tokens 按完整更新步取整。Dense 的训练 FLOPs/token 主项为 72Ld² + 12SLd + 6dV，S 表示窗口，V 表示词表。三个专家家族用激活专家与 router 的开销替换稠密 FFN 项，Looped 按每次执行各计一遍，因此同一深度下 Looped 与 MoE 的计划 tokens 相同。正式运行须核对累计 FLOPs，目标偏差不超过 1%。Hybrid（以 KDA–DSA 为例）的精确 tokens 由 burn-in 与稀疏两阶段的成本证明确定。[公开配置清单](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/configs/scaling/t3.json)列出研究设计；归档 Dense 启动器用于复现旧 4K 运行。报告正式 2K 结果前，需要对应实现及成本证明。
 
 观测站按各家族假定的单卡有效吞吐换算卡时，并计入 15% 运行开销。8 张同型号 GPU 连续使用 24 小时等于 192 卡时。小试与可选补点单列。
 

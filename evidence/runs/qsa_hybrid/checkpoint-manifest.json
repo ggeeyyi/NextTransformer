@@ -1,0 +1,64 @@
+{
+ "status": "passed",
+ "step": 46875,
+ "world_size": 8,
+ "verified_at": "2026-11-14T15:10:35.687741+00:00",
+ "verification": "Payloads rehashed on the training host and matched against complete.json and archive SHA256/generation receipts.",
+ "files": [
+  {
+   "file": "model.pt",
+   "bytes": 4312209032,
+   "sha256": "c97c1489c252eedfab294fe06c90e0770103b97874cc21bd3935ae0edebab79b",
+   "archive_generation": 1794665418617210
+  },
+  {
+   "file": "rank_0000.pt",
+   "bytes": 994771414,
+   "sha256": "925d0bb25b84f5c96c092f321bb613f58991c471edd5d76e12b46bf5b66b57dc",
+   "archive_generation": 1794665481148380
+  },
+  {
+   "file": "rank_0001.pt",
+   "bytes": 1000611222,
+   "sha256": "c8167915f8ccd5b80ffc9305121152b995d5c65a0ad4be9dee5148f17718e667",
+   "archive_generation": 1794665504436069
+  },
+  {
+   "file": "rank_0002.pt",
+   "bytes": 996101142,
+   "sha256": "06e183ad57bc4c3609ca48055b22e8c1404510b678de1dc9f0349796713c00cb",
+   "archive_generation": 1794665528718565
+  },
+  {
+   "file": "rank_0003.pt",
+   "bytes": 991577942,
+   "sha256": "43e49e28cb317fc4d7c58c92e600836146e02d58319555f8636baeeea41c6d7f",
+   "archive_generation": 1794665551900649
+  },
+  {
+   "file": "rank_0004.pt",
+   "bytes": 996954774,
+   "sha256": "491e6c0653acc7ea26ccf9ae2b42c8006fd8476dd70a54fe7592dbcd7d29b421",
+   "archive_generation": 1794665574982686
+  },
+  {
+   "file": "rank_0005.pt",
+   "bytes": 1003613718,
+   "sha256": "db519ec2480b545a4c755bf0788d4be089efe65fe202ab8208959af8577eb84c",
+   "archive_generation": 1794665599178580
+  },
+  {
+   "file": "rank_0006.pt",
+   "bytes": 1010884310,
+   "sha256": "f7b9f4a9f189055b96ecdd9cfb7f430791cce9bac830a128d4711136bec5669f",
+   "archive_generation": 1794665623255570
+  },
+  {
+   "file": "rank_0007.pt",
+   "bytes": 1001864214,
+   "sha256": "decdc3d87196c68cebf978fbcfdd4af4da8705b96f11b76cd2fdb1e9e6d6fceb",
+   "archive_generation": 1794665649181562
+  }
+ ],
+ "availability": "Model and per-rank payloads are retained in the contributor archive. Public download URLs have not been published."
+}

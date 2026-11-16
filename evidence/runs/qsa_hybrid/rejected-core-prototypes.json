@@ -1,0 +1,17 @@
+{
+  "status": "rejected_not_used_for_formal_results",
+  "reason": "Padded batching and independent-process inference changed some answers; debug equivalence lines incorrectly hardcoded all_answers_equal=true even after answer_difference. Difference artifacts and raw logs retained. Corrected dormant debug reporter; production imports core_graph only.",
+  "rejected_sources": [
+    "core_batch.py",
+    "core_parallel.py",
+    "core_only.py"
+  ],
+  "production": [
+    "core_graph.py",
+    "core_inputs.py"
+  ],
+  "differences": [
+    "core-parallel-debug-20261112d-difference-6-bigbench_cs_algorithms.json",
+    "core-parallel-debug-20261112d-difference-1-squad.json"
+  ]
+}

@@ -162,3 +162,12 @@ KDA, RetNet and GDN use FP32 carry and accumulation with BF16 operands and bound
 inversion uses TF32. KDA's whole-chunk algebra can overflow FP32 for trained strong gates; use the FP64 recurrent oracle
 for trained-input checks. There are no second-order derivative or optimized generation-cache guarantees. All ELU
 variants use a stable FP32 feature map, keep their arithmetic in IEEE FP32 with TF32 disabled, and do not recompute.
+
+## XSA and Inkling REL
+
+| ID | Source and retained mechanism | Shared-shell adaptation and limits |
+|---|---|---|
+| `xsa` | [Exclusive Self Attention v1](https://arxiv.org/abs/2603.09078v1), Section 3, Equation 2 and Algorithm 1: per-head orthogonal projection against the current value | Self remains in causal softmax. Projection uses the effective value including gated VE; normalization/projection use FP32 for FP16/BF16. Retains shared RoPE, QK norm/gain, scaling and optimizer; no extra parameters or attention kernel. |
+| `inkling_rel` | [Inkling release](https://huggingface.co/thinkingmachines/Inkling), configuration revision `828496eeae4c243ff1a22f7f28ff83694f2f7bc9`; Transformers `InklingRelativeLogits`; vLLM revision `43c1db8c9f30526fe0342c700e99d2c2648d92e4`, NVIDIA attention and REL operators | Independent content-dependent relative bias with d_rel 16. Extends the released global distance extent from 1024 to 2048 and replaces RoPE, retaining shared parameter-free QK norm/gain, scaling, VE, dense FFN and optimizer. Head-shared table per layer; original Triton kernel. Does not import Inkling MoE, convolutions, GQA, local/global pattern, learned QK norm or distinct scale. Full-sequence MHA only. |
+
+Both method READMEs document the equations, numerical choices, cost evidence and tests. Their run notes retain original CORE scores and describe post-run BOS sensitivity; restored diagnostic scores are not replacement leaderboard results.

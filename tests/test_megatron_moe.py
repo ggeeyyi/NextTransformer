@@ -2,6 +2,7 @@
 from dataclasses import replace
 import importlib.util
 import io
+import tempfile
 import unittest
 
 import torch
@@ -12,17 +13,41 @@ from nexttransformer.scaling.moe_recipe import load_t3_recipe
 HAVE_MCORE = importlib.util.find_spec("megatron") is not None
 
 
+def t3_manifest():
+    import json
+    from pathlib import Path
+    return json.loads((Path(__file__).resolve().parents[1] / "configs/scaling/t3.json").read_text())
+
+
 class RecipeTests(unittest.TestCase):
     def test_t3_manifest_agrees_with_published_tokens(self):
-        import json
-        from pathlib import Path
-        data = json.loads((Path(__file__).resolve().parents[1] / "configs/scaling/t3.json").read_text())
-        for cell in data["cells"]:
-            if cell["family"] == "moe":
-                r = load_t3_recipe(cell["id"])
-                self.assertEqual(r.estimate()["estimated_tokens"], cell["estimatedTokens"])
-                self.assertFalse(r.manifest()["gpu_validated"])
-                self.assertFalse(r.estimate()["cost_proof_complete"])
+        """Every cell of the three expert families, including the two whose budget is pending."""
+        for cell in t3_manifest()["cells"]:
+            if cell["family"] == "dense":
+                continue
+            r = load_t3_recipe(cell["id"])
+            self.assertEqual(r.estimate()["estimated_tokens"], cell["estimatedTokens"])
+            self.assertEqual(r.estimate()["estimated_updates"], cell["estimatedUpdates"])
+            self.assertFalse(r.manifest()["gpu_validated"])
+            self.assertFalse(r.estimate()["cost_proof_complete"])
+
+    def test_looped_charges_every_executed_layer(self):
+        """The core is stored once and executed twice, so Looped costs what MoE costs."""
+        for depth in t3_manifest()["depths"]:
+            looped, moe = load_t3_recipe(f"looped-T3-L{depth}"), load_t3_recipe(f"moe-T3-L{depth}")
+            self.assertEqual(looped.layers, moe.layers)
+            self.assertLess(looped.unique_layers, looped.layers)
+            self.assertEqual(looped.estimate()["estimated_tokens"], moe.estimate()["estimated_tokens"])
+            # Shared-weight capacity is not this adapter's to report.
+            self.assertRaises(ValueError, looped.counts)
+
+    def test_hybrid_reports_no_budget_rather_than_a_wrong_one(self):
+        r = load_t3_recipe("kda-dsa-T3-L20")
+        self.assertEqual(r.family, "kda-dsa")
+        self.assertIsNone(r.estimate()["flops_per_token_main_term"])
+        self.assertRaises(ValueError, r.block_active)
+        self.assertRaises(ValueError, r.counts)
+        self.assertIsNone(r.manifest()["counts"])
 
     def test_counts_and_rejected_shapes(self):
         r = load_t3_recipe("moe-T3-L20")
@@ -30,7 +55,25 @@ class RecipeTests(unittest.TestCase):
         self.assertEqual(r.counts()["block_active"], 290488320)
         self.assertRaises(ValueError, replace, r, top_k=257)
         self.assertRaises(ValueError, replace, r, expert_width=640)
+        self.assertRaises(ValueError, replace, r, family="dense")
         self.assertRaises(ValueError, load_t3_recipe, "dense-T3-L20")
+
+    def test_guard_ignores_family_specifics_but_not_the_shared_recipe(self):
+        """A family may change its own attention; the recipe the three share may not drift."""
+        import json
+        from pathlib import Path
+        data = t3_manifest()
+        with tempfile.TemporaryDirectory() as tmp:
+            def write(mutate):
+                path = Path(tmp) / "t3.json"
+                copy = json.loads(json.dumps(data))
+                mutate(next(f for f in copy["families"] if f["id"] == "kda-dsa")["recipe"])
+                path.write_text(json.dumps(copy))
+                return path
+            own = write(lambda recipe: recipe.update(sparseTopK=128))
+            self.assertEqual(load_t3_recipe("kda-dsa-T3-L20", own).family, "kda-dsa")
+            shared = write(lambda recipe: recipe.update(selectedExperts=4))
+            self.assertRaises(ValueError, load_t3_recipe, "kda-dsa-T3-L20", shared)
 
 
 @unittest.skipUnless(HAVE_MCORE, "optional Megatron-Core stack is not installed")

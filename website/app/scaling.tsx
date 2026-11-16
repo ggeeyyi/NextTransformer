@@ -47,8 +47,8 @@ function Scaling() {
   const unitText=unit==='days'?'node-days':'GPU-hours';
   const tokens=cell.estimatedTokens===null?'Pending proof':number(cell.estimatedTokens/1e9,2)+'B';
   const note=cell.estimatedTokens===null?'The dense burn-in and sparse phase need separate cost proofs.':'Token and update counts use the planning ledger, rounded to whole updates.';
-  const shape=cell.preLayers!==undefined?cell.preLayers+' + '+cell.coreLayers+' × 2 + '+cell.postLayers:cell.expertWidth!==undefined?'256 / 8 / 1':cell.kdaLayers!==undefined?cell.kdaLayers+' KDA + '+cell.dsaLayers+' DSA':'4 × width';
-  const shapeLabel=cell.preLayers!==undefined?'Prelude / core / coda':cell.expertWidth!==undefined?'Routed / selected / shared':cell.kdaLayers!==undefined?'Mixer layers':'FFN expansion';
+  const shape=cell.preLayers!==undefined?cell.preLayers+' + '+cell.coreLayers+' × 2 + '+cell.postLayers:cell.kdaLayers!==undefined?cell.kdaLayers+' KDA + '+cell.dsaLayers+' DSA':cell.expertWidth!==undefined?'256 / 8 / 1':'4 × width';
+  const shapeLabel=cell.preLayers!==undefined?'Prelude / core / coda':cell.kdaLayers!==undefined?'Mixer layers':cell.expertWidth!==undefined?'Routed / selected / shared':'FFN expansion';
   return <section className="t3-study" id="scaling" aria-labelledby="ts-title">
     <header className="ts-hero">
       <div><div className="ts-eyeline"><i/>Scaling study <span>/</span> 2K pretraining</div><h1 id="ts-title">Scaling at fixed compute<span>.</span></h1>
@@ -93,7 +93,7 @@ function Scaling() {
     </section>
     <section className="ts-method"><div className="ts-section-heading"><div><h2>Reading the study</h2><p>Designs share ClimbMix, the tokenizer, seed and evaluation. Each family changes one size variable.</p></div></div>
       <div className="ts-notes"><article><Activity size={18}/><h3>Find the fit</h3><p>Use final validation BPB to select size and token count. Track CORE-22 as a downstream check.</p></article><article><CircleDashed size={18}/><h3>Forecast before training</h3><p>Publish the T5 predictions, score them, then include those observations in the final fit.</p></article><article><Check size={18}/><h3>Hold out C200</h3><p>Freeze forecasts across all four families before the final test. The historical 4K Dense run supplies the compute reference.</p></article></div>
-      <details><summary>Recipe, budget assumptions and participation</summary><p>{family.description} The selected configuration uses a {cell.ffnWidth.toLocaleString('en-US')}-wide dense FFN{family.id==='moe'?' in its first layer':''}. Model width is 64 × execution depth. All families omit value embeddings.</p>
+      <details><summary>Recipe, budget assumptions and participation</summary><p>{family.description} The selected configuration uses a {cell.ffnWidth.toLocaleString('en-US')}-wide dense FFN{cell.expertWidth===undefined?' in every layer':' in its first layer, then routes each token to eight of 256 experts of width '+cell.expertWidth.toLocaleString('en-US')+' plus one shared expert'}. Model width is 64 × execution depth. All families omit value embeddings.</p>
         <p>For {family.name} the {hardware} planning rates are {family.effectiveTflops[t3.hardware.indexOf(hardware)].join(' / ')} effective TFLOP/s per device (lower / central / higher). These are estimates pending measurements. The published configurations are planning specifications; a run requires a matching trainer and cost proof.</p>
         <a href={docs('scaling/contribute/')}>Contribution guide <ArrowUpRight size={13}/></a></details>
     </section>

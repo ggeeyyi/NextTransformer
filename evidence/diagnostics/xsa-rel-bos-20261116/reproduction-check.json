@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "scope": "Bounded reproducibility check; no additional architecture selection",
+  "method": "inkling_rel",
+  "examples": 8,
+  "variants": 24,
+  "comparison": "Every per-example record, including correctness and NLL, exactly matches the previously retained controls",
+  "script_sha256": "fa5442e48abdeccf393cd6d7f441387a1c914181ff719e3e048a0cafefd89b37"
+}

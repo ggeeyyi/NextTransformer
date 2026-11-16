@@ -1,0 +1,36 @@
+{
+ "id": "xsa",
+ "name": "XSA · Exclusive Self Attention",
+ "family": "others",
+ "tagline": "Project each attention output orthogonal to its current effective value.",
+ "description": "Exclusive Self Attention (paper Equation 2 and Algorithm 1) after ordinary full causal attention. Each head projects the attention output orthogonal to its own current-token effective value, including gated value embeddings. The self key remains in softmax. Retains RoPE and the shared QK normalization, scaling, residual shell and optimizer. No added parameters or custom kernel.",
+ "paperTitle": "Exclusive Self Attention",
+ "paperUrl": "https://arxiv.org/abs/2603.09078v1",
+ "mechanism": [
+  "Causal softmax includes self; per-head z = y - dot(y, normalize(v)) normalize(v)",
+  "Projection uses the effective attention value, with FP32 arithmetic for half-precision inputs",
+  "No added parameters; shared RoPE, QK normalization, value embeddings and optimizer"
+ ],
+ "limitations": "Single seed 42; fixed-compute mechanism adaptation, not the source model's complete training recipe. CORE left truncation removes BOS and affects SQuAD interpretation; only original protocol scores are published. The 64-rank execution layout is registered in the run audit.",
+ "diagram": "custom",
+ "architecture": {
+  "kind": "custom",
+  "nodes": [
+   "Embedding",
+   "Causal MHA",
+   "Value exclusion",
+   "LM head"
+  ],
+  "loop": false
+ },
+ "blocks": 23,
+ "ffn": 6144,
+ "params": 1355810568,
+ "flops": 4.67554461746476,
+ "error": 0.06733783803862803,
+ "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/xsa/__init__.py",
+ "cohort": "reference-v1",
+ "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#xsa-and-inkling-rel",
+ "costModel": "reference-aten-math-v2",
+ "order": 49
+}

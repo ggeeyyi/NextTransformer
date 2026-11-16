@@ -43,6 +43,8 @@ GFLOPs per input token and the deviation from the SSSL anchor (4.67239832544785)
 | others | `dense` (SSSL) | 24 | 6,144 | 1,384,122,122 | 4.672398 | +0.000% | joint |
 | others | `gated_attention` | 21 | 6,272 | 1,306,658,420 | 4.641914 | -0.652% | joint |
 | others | `gated_attention_headwise` | 23 | 6,144 | 1,356,234,504 | 4.677384 | +0.107% | joint |
+| others | `inkling_rel` | 22 | 6,272 | 1,293,026,934 | 4.629593 | -0.916% | joint |
+| others | `xsa` | 23 | 6,144 | 1,355,810,568 | 4.675545 | +0.067% | joint |
 
 Blocks count physical layers; looped methods reuse them across loops, so their unfolded depth is larger (see the
 [source notes](../sources/)). Multi-stage methods weight each stage by its updates: DSA, QSA, Seer and the QSA hybrid run

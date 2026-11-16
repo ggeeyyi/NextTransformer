@@ -183,12 +183,22 @@ class MegatronFFN(nn.Module):
 
 
 def build_model(recipe, *, pg_collection, cpu_math=False):
+    """The family's native backbone with Megatron FFNs everywhere but the dense first layer.
+
+    Looped stores its shared core once, so replacing that block's FFN gives one set of
+    experts executed on every pass, which is what the family's weight sharing means.
+    """
     from nexttransformer.models.config import debug_config
     from nexttransformer.models.lm import build_model as native_model
+    if recipe.family not in ("moe", "looped"):
+        raise ValueError(f"{recipe.family} has no native backbone here; see scaling.reference_blocks")
+    method = "fixed_recursive" if recipe.family == "looped" else "mha_no_ve"
     device = "cpu" if cpu_math else f"cuda:{torch.cuda.current_device()}"
-    config = replace(debug_config("mha_no_ve", width=recipe.width, sequence_len=recipe.sequence_len),
-                     layers=recipe.layers, heads=recipe.heads, mlp_width=4 * recipe.width,
+    config = replace(debug_config(method, width=recipe.width, sequence_len=recipe.sequence_len),
+                     layers=recipe.unique_layers, heads=recipe.heads, mlp_width=4 * recipe.width,
                      vocab_size=recipe.vocab_size, window_pattern="L")
+    if config.n_layer != recipe.unique_layers or config.maximum_depth != recipe.layers:
+        raise ValueError("the backbone's stored and executed depths must match the recipe")
     model = native_model(config, device=device, seed=recipe.seed)
     for index, block in enumerate(model.transformer.h):
         if index > 0:

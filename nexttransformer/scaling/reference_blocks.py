@@ -45,16 +45,34 @@ class RoutedFFN(nn.Module):
         return output.reshape_as(hidden)
 
 
-class KdaDsaGroup(nn.Module):
-    """A four-layer, dense-FFN reference group reusing the project's KDA and DSA."""
+def shared_expert_rule(config, num_experts, top_k, expert_width):
+    """The feed-forward rule the three expert families share: layer zero dense, the rest routed.
 
-    def __init__(self, config):
+    Returns a factory keyed on the layer's position in the whole stack, so a family only has
+    to say where its layers sit rather than reimplement the rule.
+    """
+    def build(layer):
+        if layer == 0:
+            return FlexibleMLP(config)
+        return RoutedFFN(config, num_experts, top_k, expert_width)
+    return build
+
+
+class KdaDsaGroup(nn.Module):
+    """A four-layer reference group reusing the project's KDA and DSA over a given FFN rule.
+
+    `ffn` is a factory taking a whole-stack layer index; `first_layer` is where this group
+    starts, so repeating the group to depth keeps one dense layer at the bottom.
+    """
+
+    def __init__(self, config, ffn=None, first_layer=0):
         super().__init__()
         self.mixers = nn.ModuleList(LinearMixer(config, i, kind="kda") for i in range(3))
         self.mixers.append(SparseMixer(config, 3, kind="dsa"))
         for mixer in self.mixers:
             mixer.ve_gate = None
-        self.ffns = nn.ModuleList(FlexibleMLP(config) for _ in self.mixers)
+        build = ffn or (lambda layer: FlexibleMLP(config))
+        self.ffns = nn.ModuleList(build(first_layer + i) for i in range(len(self.mixers)))
         self.burnin_steps = config.burnin_steps
 
     def forward(self, hidden, cos_sin, step):
@@ -82,10 +100,20 @@ def main():
     config = debug_config("dsa")
     hidden = torch.randn(2, config.sequence_len, config.width)
     # Reduced expert counts keep the CPU example small. T3 uses 256 / 8 / 1.
+    rule = shared_expert_rule(config, num_experts=8, top_k=2, expert_width=config.width // 4)
     moe = RoutedFFN(config, num_experts=8, top_k=2, expert_width=config.width // 4)
     moe(hidden).square().mean().backward()
     print("MoE: shared and selected experts completed forward and backward")
-    hybrid = KdaDsaGroup(config)
+
+    looped = build_model(debug_config("fixed_recursive"))
+    for layer, block in enumerate(looped.transformer.h):
+        block.mlp = rule(layer)
+    core = looped.transformer.h[looped.config.pre_layers]
+    tokens = torch.randint(looped.config.vocab_size, (2, looped.config.sequence_len + 1))
+    looped(tokens[:, :-1], targets=tokens[:, 1:]).backward()
+    print(f"Looped: {type(core.mlp).__name__} core executed {looped.config.loops}× from one set of weights")
+
+    hybrid = KdaDsaGroup(config, rule)
     frequency = 10000 ** (-torch.arange(0, config.head_dim, 2) / config.head_dim)
     angle = torch.arange(config.sequence_len)[:, None] * frequency
     rotary = (angle.cos()[None, :, None], angle.sin()[None, :, None])

@@ -13,8 +13,8 @@ description: 选择计划点、核对实现与成本，并提交可复核的记�
 | --- | --- | --- |
 | Vanilla Dense | [全注意力骨干](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/backbone.py)和[关闭 VE 的基准配置](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/configs/others/mha_no_ve.json) | 按所选宽度和深度接入全因果注意力，验证 FLOPs、断点恢复和评测计划。 |
 | Vanilla MoE | [`RoutedFFN`](../../../../#contribute?cell=moe-T3-L20) 实现归一化 top-k 路由和一个共享的 ReLU² 专家。分布式实现可对照 [Megatron-Core](https://github.com/NVIDIA/Megatron-LM/blob/main/megatron/core/transformer/moe/moe_layer.py)。 | 首层保留 Dense FFN，后续层接入 256 个路由专家，每 token 选 8 个，另加 1 个共享专家；用预实验验证负载均衡策略和开销。 |
-| Dense KDA–DSA | [`KdaDsaGroup`](../../../../#contribute?cell=kda-dsa-T3-L20) 将三个 [KDA 层](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/linear.py)与一个 [DSA 层](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/sparse.py)组合，每层各接一个 Dense FFN。 | 按目标深度重复该组并接入索引器损失。分别核算前 512 次更新的预热成本和后续稀疏阶段成本。 |
-| Fixed Recursive | [共享核心层的执行代码](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/lm.py)和[现有基准配置](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/configs/looped/fixed_recursive.json) | 核心层用同一份权重执行两次；将旧配置改为全注意力并关闭 VE，计入两次执行的前向与反向成本。 |
+| Hybrid（以 KDA–DSA 为例） | [`KdaDsaGroup`](../../../../#contribute?cell=kda-dsa-T3-L20) 将三个 [KDA 层](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/linear.py)与一个 [DSA 层](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/sparse.py)组合，每层各接一个前馈模块。 | 按目标深度重复该组，前馈沿用与 Vanilla MoE 相同的 `RoutedFFN` 配方并保留稠密首层，同时接入索引器损失。分别核算前 512 次更新的预热成本和后续稀疏阶段成本。 |
+| Looped（以固定递归为例） | [共享核心层的执行代码](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/models/lm.py)和[现有基准配置](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/configs/looped/fixed_recursive.json) | 核心层用同一份权重执行两次，专家也在两遍之间共享；前馈沿用与 Vanilla MoE 相同的 `RoutedFFN` 配方并保留稠密首层。将旧配置改为全注意力并关闭 VE，计入两次执行的前向与反向成本。 |
 
 ### 在 CPU 上运行示例
 
@@ -24,7 +24,7 @@ description: 选择计划点、核对实现与成本，并提交可复核的记�
 NANOCHAT_DTYPE=float32 OMP_NUM_THREADS=1 python -m nexttransformer.scaling.reference_blocks
 ```
 
-示例用合成输入对已有的 Dense、Fixed Recursive 基准模型以及新增的两个模块执行前向和反向。MoE 的小例子从 8 个专家中选 2 个，KDA–DSA 会分别运行预热和稀疏阶段。正式 T3 实验还需要完成训练器接入、成本核算和吞吐实测。
+示例用合成输入对已有的 Dense、固定递归基准模型以及三个专家家族执行前向和反向。MoE 的小例子从 8 个专家中选 2 个；Looped 与 Hybrid 在各自结构之上放同一个路由模块，并在整个栈的最底层保留一个稠密层。KDA–DSA 会分别运行预热和稀疏阶段。正式 T3 实验还需要完成训练器接入、成本核算和吞吐实测。
 
 ## 认领与提交
 

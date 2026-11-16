@@ -1,0 +1,11 @@
+{
+ "status": "passed",
+ "scope": "targeted final64 shape groups per rank with staged synchronization; not full CORE",
+ "full_core": false,
+ "method": "qsa_hybrid",
+ "checkpoint": "checkpoint_00007500",
+ "optimizer_updates": 0,
+ "seconds": 124.30738854408264,
+ "task": "bigbench_language_identification",
+ "shapes_per_rank": 64
+}

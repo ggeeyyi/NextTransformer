@@ -9,7 +9,7 @@ import stat
 import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 
 from .common import GymError, require
@@ -33,6 +33,7 @@ def configuration(value=None):
                 "schema_version",
                 "gpu_ids",
                 "gpu_memory_limit_bytes",
+                "research_microbatch_size",
                 "max_concurrent_jobs",
                 "allow_idle_graphics",
                 "isolation",
@@ -77,6 +78,12 @@ def configuration(value=None):
         "invalid_request",
         "allow_idle_graphics must be an operator-supplied boolean.",
     )
+    microbatch = value.get("research_microbatch_size", 1)
+    require(
+        type(microbatch) is int and microbatch > 0,
+        "invalid_request",
+        "research_microbatch_size must be a positive integer.",
+    )
     isolation = value.get("isolation", "bwrap")
     require(
         isolation in BACKENDS,
@@ -87,6 +94,7 @@ def configuration(value=None):
         "schema_version": "gym.execution.v1",
         "gpu_ids": ids,
         "gpu_memory_limit_bytes": memory,
+        "research_microbatch_size": microbatch,
         "max_concurrent_jobs": 1,
         "allow_idle_graphics": allow_graphics,
         "isolation": isolation,
@@ -306,3 +314,22 @@ def reserve(config, requested=None):
         "resource_unavailable",
         "Configured GPU is busy, leased, has insufficient free memory, or cannot be observed.",
     )
+
+
+@contextmanager
+def reserve_group(config):
+    """Acquire the entire operator-selected machine-local group or release all."""
+    observed = discover()
+    cards = allocated(config, observed)
+    require(
+        len(cards) == len(config["gpu_ids"]) and bool(cards),
+        "resource_unavailable",
+        "Every configured GPU must resolve to a distinct local device.",
+    )
+    # A common lock order avoids competing groups retaining partial allocations.
+    with ExitStack() as leases:
+        group = [
+            leases.enter_context(reserve(config, card["id"]))
+            for card in sorted(cards, key=lambda card: card["id"])
+        ]
+        yield {**group[0], "devices": group}

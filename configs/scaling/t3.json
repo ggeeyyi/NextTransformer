@@ -91,8 +91,8 @@
     },
     {
       "id": "kda-dsa",
-      "name": "Dense KDA–DSA",
-      "description": "Three KDA layers followed by one sparse retrieval layer. Every layer retains a dense FFN.",
+      "name": "Hybrid",
+      "description": "Linear and sparse-retrieval attention interleaved in one stack over the shared mixture-of-experts FFN. T3 studies the family through one instance, KDA–DSA: three KDA layers followed by one sparse retrieval layer.",
       "recipe": {
         "pattern": [
           "KDA",
@@ -100,7 +100,6 @@
           "KDA",
           "DSA"
         ],
-        "ffn": "dense ReLU²",
         "sparseTopK": 256,
         "indexHeads": 4,
         "indexDim": 128,
@@ -108,7 +107,13 @@
         "burnInUpdates": 512,
         "kdaGateRank": 16,
         "kdaConvWidth": 4,
-        "kdaChunk": 64
+        "kdaChunk": 64,
+        "firstLayerDense": true,
+        "ffn": "ReLU²",
+        "routedExperts": 256,
+        "selectedExperts": 8,
+        "sharedExperts": 1,
+        "expertWidthDivisor": 4
       },
       "effectiveTflops": [
         [
@@ -125,24 +130,30 @@
     },
     {
       "id": "looped",
-      "name": "Fixed Recursive",
-      "description": "A shared core runs twice between independent input and output blocks, with full backpropagation through both passes.",
+      "name": "Looped",
+      "description": "Weights reused across depth over the shared mixture-of-experts FFN. T3 studies the family through one instance, the fixed recursive shell: a shared core runs twice between independent input and output blocks, with full backpropagation through both passes. The core's experts are shared across both passes.",
       "recipe": {
         "attention": "full causal MHA",
         "loops": 2,
         "backpropagation": "full",
-        "ffn": "dense ReLU²"
+        "firstLayerDense": true,
+        "ffn": "ReLU²",
+        "routedExperts": 256,
+        "selectedExperts": 8,
+        "sharedExperts": 1,
+        "expertWidthDivisor": 4,
+        "expertsSharedAcrossLoops": true
       },
       "effectiveTflops": [
         [
-          80,
-          110,
-          135
+          35,
+          65,
+          95
         ],
         [
-          190,
-          295,
-          400
+          70,
+          145,
+          245
         ]
       ]
     }
@@ -250,6 +261,7 @@
       "ffnWidth": 4096,
       "kdaLayers": 12,
       "dsaLayers": 4,
+      "expertWidth": 256,
       "estimatedUpdates": null,
       "estimatedTokens": null
     },
@@ -263,6 +275,7 @@
       "ffnWidth": 5120,
       "kdaLayers": 15,
       "dsaLayers": 5,
+      "expertWidth": 320,
       "estimatedUpdates": null,
       "estimatedTokens": null
     },
@@ -276,6 +289,7 @@
       "ffnWidth": 7168,
       "kdaLayers": 21,
       "dsaLayers": 7,
+      "expertWidth": 448,
       "estimatedUpdates": null,
       "estimatedTokens": null
     },
@@ -289,6 +303,7 @@
       "ffnWidth": 8192,
       "kdaLayers": 24,
       "dsaLayers": 8,
+      "expertWidth": 512,
       "estimatedUpdates": null,
       "estimatedTokens": null
     },
@@ -304,8 +319,9 @@
       "coreLayers": 6,
       "postLayers": 2,
       "uniqueLayers": 10,
-      "estimatedUpdates": 52633,
-      "estimatedTokens": 55189700608
+      "expertWidth": 256,
+      "estimatedUpdates": 63357,
+      "estimatedTokens": 66434629632
     },
     {
       "id": "looped-T3-L20",
@@ -319,8 +335,9 @@
       "coreLayers": 7,
       "postLayers": 3,
       "uniqueLayers": 13,
-      "estimatedUpdates": 29433,
-      "estimatedTokens": 30862737408
+      "expertWidth": 320,
+      "estimatedUpdates": 36348,
+      "estimatedTokens": 38113640448
     },
     {
       "id": "looped-T3-L28",
@@ -334,8 +351,9 @@
       "coreLayers": 10,
       "postLayers": 4,
       "uniqueLayers": 18,
-      "estimatedUpdates": 11833,
-      "estimatedTokens": 12407799808
+      "expertWidth": 448,
+      "estimatedUpdates": 15107,
+      "estimatedTokens": 15840837632
     },
     {
       "id": "looped-T3-L32",
@@ -349,8 +367,9 @@
       "coreLayers": 12,
       "postLayers": 4,
       "uniqueLayers": 20,
-      "estimatedUpdates": 8167,
-      "estimatedTokens": 8563720192
+      "expertWidth": 512,
+      "estimatedUpdates": 10545,
+      "estimatedTokens": 11057233920
     }
   ]
 }

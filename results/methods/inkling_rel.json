@@ -1,0 +1,36 @@
+{
+ "id": "inkling_rel",
+ "name": "Inkling REL",
+ "family": "others",
+ "tagline": "Full-context, content-dependent relative position bias in the shared Dense shell.",
+ "description": "An independent adaptation of Inkling relative logits: a per-query 16-dimensional projection and a layer-local distance table shared across heads produce a content-dependent bias for every causal distance 0 through 2047. Replaces RoPE while retaining shared parameter-free QK normalization, gain, attention scaling, value embeddings and optimizer. A differentiable CPU reference and original Triton forward/backward implement the same function.",
+ "paperTitle": "Inkling: content-dependent relative position logits",
+ "paperUrl": "https://huggingface.co/thinkingmachines/Inkling",
+ "mechanism": [
+  "Query/head-specific relative vector, d_rel = 16; a trainable distance table is shared across heads within each layer",
+  "Covers all backward distances 0–2047, including self; no RoPE or clipped distance region",
+  "Original Triton forward/backward, FP32 softmax accumulators, full-sequence MHA"
+ ],
+ "limitations": "Single seed 42; fixed-compute mechanism adaptation, not the source model's complete training recipe. CORE left truncation removes BOS and affects SQuAD interpretation; only original protocol scores are published. The 64-rank execution layout is registered in the run audit. REL supports full-sequence training/evaluation, not incremental KV-cache decoding.",
+ "diagram": "custom",
+ "architecture": {
+  "kind": "custom",
+  "nodes": [
+   "Embedding",
+   "Query REL bias",
+   "Full causal MHA",
+   "LM head"
+  ],
+  "loop": false
+ },
+ "blocks": 22,
+ "ffn": 6272,
+ "params": 1293026934,
+ "flops": 4.6295927298744415,
+ "error": -0.9161375506080427,
+ "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/inkling_rel/__init__.py",
+ "cohort": "reference-v1",
+ "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#xsa-and-inkling-rel",
+ "costModel": "reference-aten-math-v2",
+ "order": 50
+}

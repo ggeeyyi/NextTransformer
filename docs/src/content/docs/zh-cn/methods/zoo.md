@@ -3,7 +3,7 @@ title: 模型库
 description: 按模型族浏览已注册的架构、论文和结果状态。
 ---
 
-当前共有 42 张模型卡。各方法在同一骨干上校准至相同训练算力。在[观测站](https://interactive-active-ai.github.io/NextTransformer/#atlas)选择模型可查看结构图、曲线和模型卡。“已注册”表示已有配置与模型卡，尚无公开运行结果。
+当前共有 44 张模型卡。各方法在同一骨干上校准至相同训练算力。在[观测站](https://interactive-active-ai.github.io/NextTransformer/#atlas)选择模型可查看结构图、曲线和模型卡。“已注册”表示已有配置与模型卡，尚无公开运行结果。
 
 | 模型族 | 方法 | 论文 | 结果 |
 |---|---|---|---|
@@ -40,7 +40,7 @@ description: 按模型族浏览已注册的架构、论文和结果状态。
 | 混合 | Hybrid GDN + SWA (`gdn_hybrid_swa512`) | [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) | 已发布 |
 | 混合 | Hybrid DeltaNet + MHA (`deltanet_hybrid`) | [Parallelizing Linear Transformers with the Delta Rule over Sequence Length](https://arxiv.org/abs/2406.06484) | 已发布 |
 | 混合 | Hybrid KDA + MLA-NoPE (`kda_hybrid`) | [Kimi Linear: An Expressive, Efficient Attention Architecture](https://arxiv.org/abs/2510.26692) | 已发布 |
-| 混合 | Hybrid GDN + QSA (`qsa_hybrid`) | [Qwen3.8-Next technical report · §2.1.2 QSA](https://arxiv.org/html/2608.30320v1#S2.SS1.SSS2) | 待发布 |
+| 混合 | Hybrid GDN + QSA (`qsa_hybrid`) | [Qwen3.8-Next technical report · §2.1.2 QSA](https://arxiv.org/html/2608.30320v1#S2.SS1.SSS2) | 已发布 |
 | 混合 | Hybrid MoBA + MHA (`moba_hybrid`) | [MoBA: Mixture of Block Attention for Long-Context LLMs](https://arxiv.org/abs/2502.13189) | 已发布 |
 | 其他 | SSSL (`sssl`) | [nanochat · GPT d24 implementation](https://github.com/karpathy/nanochat/tree/92d63d4e8bb4df75c3b71618f31ddde2378b2bcd) | 已发布 |
 | 其他 | Multi-Query Attention · MQA (`mqa`) | [Fast Transformer Decoding: One Write-Head is All You Need](https://arxiv.org/abs/1911.02150) | 已发布 |
@@ -49,5 +49,7 @@ description: 按模型族浏览已注册的架构、论文和结果状态。
 | 其他 | MLA-NoPE + QK-norm (`mla_nope_qknorm`) | [DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model](https://arxiv.org/abs/2405.04434) | 已发布 |
 | 其他 | Gated Attention · elementwise (`gated_attention`) | [Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free](https://arxiv.org/abs/2505.06708) | 已发布 |
 | 其他 | Gated Attention · headwise (`gated_attention_headwise`) | [Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free](https://arxiv.org/abs/2505.06708) | 已发布 |
+| 其他 | XSA · Exclusive Self Attention (`xsa`) | [Exclusive Self Attention](https://arxiv.org/abs/2603.09078v1) | 已发布 |
+| 其他 | Inkling REL (`inkling_rel`) | [Inkling: content-dependent relative position logits](https://huggingface.co/thinkingmachines/Inkling) | 已发布 |
 
 训练配置见[模型配置](../configurations/)。新增架构请参见[编写插件](../../guides/plugins/)。

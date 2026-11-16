@@ -100,21 +100,25 @@ It combines Landlock path rules with user, network, IPC and UTS namespaces. CPU 
 The `none` backend disables isolation for trusted candidates. Gym prints a warning when it starts with this backend.
 Isolated workers can read only runtime libraries, platform code, approved data and the current job's checkpoint/output.
 Isolated workers cannot read controller state or credentials and have no host networking. CPU inspection receives no GPU devices.
-Under `bwrap`, CUDA workers receive the selected NVIDIA device, required control/UVM devices and read-only driver metadata with a private PID procfs.
+Under `bwrap`, CUDA workers receive the selected NVIDIA devices, required control/UVM devices and read-only driver metadata with a private PID procfs.
 Under `landlock`, workers can detect path existence, list directories under the import roots and change file metadata.
 CUDA workers keep the host PID namespace, can create Unix sockets and can open every NVIDIA device node.
 
 ## Resources and concurrency
 
 The supported scope is one local machine and one concurrent numerical job per service state.
+That job may use any explicitly configured group of local GPUs; one job does not mean one GPU.
+The operator selects the GPU group and per-device microbatch size before starting the service.
+Research training uses data parallelism and gradient accumulation with a fixed global update batch.
 All sessions in that state share the worker slot, including jobs with uncertain outcomes.
 Separate states do not share a machine-wide scheduler lock.
 Operators run one research trial at a time to enforce the agreed scope.
-Remote dispatch and parallel numerical workers are outside this scope.
+Remote dispatch and concurrent independent numerical jobs are outside this scope.
 
 The operator controls GPU allocation, memory limits and the CUDA Python environment.
 The launcher converts GPU indices to stable UUIDs and saves the execution policy.
-The Agent can inspect resources and choose an authorized local GPU and an absolute target update within profile limits.
+The Agent can inspect resources and choose an absolute target update within profile limits.
+A single-GPU allocation also accepts explicit `gpu_id` placement; multi-GPU jobs use the entire operator-selected group.
 The Agent cannot change the trainer or submit shell commands, environment overrides, data paths or SSH jobs to Gym.
 Resource reports distinguish discovered, allocated and available devices, with reasons for unavailable capacity.
 
@@ -126,7 +130,9 @@ Operator-only `allow_idle_graphics` permits graphics processes only with zero ob
 Lease checks still apply, and unknown process observations block dispatch.
 Memory admission bounds and the PyTorch allocator cap do not create a hardware partition.
 These controls do not guarantee a limit on arbitrary direct CUDA allocations.
-Results record actual parameter devices, runtime versions and peak GPU memory.
+Results record the primary model device, all allocated GPU IDs, runtime versions and per-device peak GPU memory.
+Training cost bounds trace the actual microbatch shapes and include gradient reduction/accumulation arithmetic;
+optimizer cost is charged once per global update. Diagnostics retain their full-batch cost and memory bounds.
 
 ## Budget, checkpoints and failures
 

@@ -55,24 +55,27 @@ def execute(request):
     )
     device = torch.device(profile.get("device", "cpu"))
     gpu = request.get("gpu")
+    devices = gpu.get("devices", [gpu]) if gpu else []
+    device_count = len(devices) or 1
     if device.type == "cuda":
         require(
             gpu is not None
             and torch.cuda.is_available()
-            and torch.cuda.device_count() == 1,
+            and torch.cuda.device_count() == device_count,
             "resource_unavailable",
             "Selected CUDA allocation is unavailable inside worker isolation.",
         )
-        properties = torch.cuda.get_device_properties(0)
-        require(
-            gpu["memory_limit_bytes"] <= properties.total_memory,
-            "resource_unavailable",
-            "GPU memory budget exceeds device capacity.",
-        )
-        torch.cuda.set_per_process_memory_fraction(
-            gpu["memory_limit_bytes"] / properties.total_memory, 0
-        )
-        torch.cuda.reset_peak_memory_stats(0)
+        for index, card in enumerate(devices):
+            properties = torch.cuda.get_device_properties(index)
+            require(
+                card["memory_limit_bytes"] <= properties.total_memory,
+                "resource_unavailable",
+                "GPU memory budget exceeds device capacity.",
+            )
+            torch.cuda.set_per_process_memory_fraction(
+                card["memory_limit_bytes"] / properties.total_memory, index
+            )
+            torch.cuda.reset_peak_memory_stats(index)
     report = quote["cost_report"]
     init, forward, backward, optimizer_cost = (
         int(report[k]) for k in ("initialization", "forward", "backward", "optimizer")
@@ -97,6 +100,16 @@ def execute(request):
             torch.cuda.synchronize(0)
             result.update(
                 gpu_id=gpu["id"],
+                gpu_ids=[card["id"] for card in devices],
+                device_count=device_count,
+                devices=[
+                    dict(
+                        gpu_id=card["id"],
+                        peak_memory_allocated_bytes=torch.cuda.max_memory_allocated(i),
+                        peak_memory_reserved_bytes=torch.cuda.max_memory_reserved(i),
+                    )
+                    for i, card in enumerate(devices)
+                ],
                 gpu_name=torch.cuda.get_device_name(0),
                 peak_memory_allocated_bytes=torch.cuda.max_memory_allocated(0),
                 peak_memory_reserved_bytes=torch.cuda.max_memory_reserved(0),
@@ -314,6 +327,11 @@ def execute(request):
             }
         )
         return
+    from .research import ResearchParallel
+
+    parallel = ResearchParallel(model, device_count)
+    if request.get("checkpoint") and "replica_routing_rng" in saved:
+        parallel.restore_routing_states(saved["replica_routing_rng"])
     for update in range(step, quote["target_update"]):
 
         def train_step():
@@ -328,8 +346,13 @@ def execute(request):
                     "resource_unavailable",
                     "Research horizon exhausted the approved training prefix",
                 )
-            loss = model(x, y)
-            loss.backward()
+            loss = parallel.backward(
+                x,
+                y,
+                update * batch,
+                profile.get("microbatch_size", batch),
+                step=update,
+            )
             if not all(
                 p.grad is not None and bool(torch.isfinite(p.grad).all())
                 for p in model.parameters()
@@ -337,9 +360,15 @@ def execute(request):
             ):
                 raise GymError("numerical_failure", "Missing or non-finite gradient")
             optimizer.step()
-            return float(loss.detach())
+            parallel.synchronize()
+            return loss
 
-        cost = forward + backward + optimizer_cost
+        cost = (
+            int(report.get("research_forward", forward))
+            + int(report.get("research_backward", backward))
+            + int(report.get("research_reduction", 0))
+            + optimizer_cost
+        )
         loss = operation(f"update-{update + 1}", cost, train_step)
         cumulative += cost
         curves.append({"update": update + 1, "training_loss": loss})
@@ -350,18 +379,25 @@ def execute(request):
         nats, byte_count, tokens = 0.0, 0, 0
         sizes = torch.tensor(token_bytes, device=device)
         with torch.no_grad():
-            for _ in range(profile["dev_batches"]):
+            for dev_batch in range(profile["dev_batches"]):
                 x, labels = dev.batch(batch, device)
-                logits = model(x)
-                losses = torch.nn.functional.cross_entropy(
-                    logits.float().reshape(-1, logits.size(-1)),
-                    labels.reshape(-1),
-                    reduction="none",
-                )
-                valid = sizes[labels.reshape(-1)] > 0
-                nats += float((losses * valid).sum())
-                byte_count += int(sizes[labels.reshape(-1)][valid].sum())
-                tokens += labels.numel()
+                from .research import microbatches
+
+                for start, end in microbatches(
+                    batch, profile.get("microbatch_size", batch), 1
+                ):
+                    model.set_row_offset(dev_batch * batch + start)
+                    logits = model(x[start:end])
+                    targets = labels[start:end].reshape(-1)
+                    losses = torch.nn.functional.cross_entropy(
+                        logits.float().reshape(-1, logits.size(-1)),
+                        targets,
+                        reduction="none",
+                    )
+                    valid = sizes[targets] > 0
+                    nats += float((losses * valid).sum())
+                    byte_count += int(sizes[targets][valid].sum())
+                    tokens += targets.numel()
         if byte_count <= 0 or not math.isfinite(nats):
             raise GymError(
                 "numerical_failure",
@@ -373,7 +409,10 @@ def execute(request):
         }
 
     metrics = operation(
-        "dev-evaluation", int(report["evaluation"]) * profile["dev_batches"], evaluate
+        "dev-evaluation",
+        int(report.get("research_evaluation", report["evaluation"]))
+        * profile["dev_batches"],
+        evaluate,
     )
     output = Path(request["output"])
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -382,6 +421,7 @@ def execute(request):
         "optimizer": optimizer.state_dict(),
         "rng": rng_state(),
         "routing_rng": model.routing_rng_state(),
+        "replica_routing_rng": parallel.routing_states(),
         "data": train.state_dict(),
         "candidate_hash": candidate["hash"],
         "profile_hash": quote["profile_hash"],

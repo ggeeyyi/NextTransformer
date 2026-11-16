@@ -56,6 +56,8 @@ def config(ids=None):
         {"gpu_ids": [GPU_A, GPU_A]},
         {"gpu_memory_limit_bytes": 0},
         {"gpu_memory_limit_bytes": True},
+        {"research_microbatch_size": 0},
+        {"research_microbatch_size": True},
         {"max_concurrent_jobs": 2},
         {"allow_idle_graphics": "true"},
         {"isolation": "chroot"},
@@ -257,3 +259,48 @@ def test_missing_total_process_observation_is_not_idle():
     observed = card(GPU_A, 0)
     observed.pop("process_count")
     assert not gpu.idle(observed, config())
+
+
+def test_group_lease_is_all_or_nothing(observed):
+    policy = gpu.configuration(config([GPU_A, GPU_B]))
+    with pytest.raises(GymError):
+        with gpu.reserve_group(policy):
+            pytest.fail("Busy second GPU must block the whole group")
+    assert not gpu.leased(GPU_A)
+    observed[1].update(compute_process_count=0, process_count=0)
+    with gpu.reserve_group(policy) as group:
+        assert [card["id"] for card in group["devices"]] == [GPU_A, GPU_B]
+        assert gpu.leased(GPU_A) and gpu.leased(GPU_B)
+    assert not gpu.leased(GPU_A) and not gpu.leased(GPU_B)
+
+
+def test_group_rejects_missing_or_aliased_devices(observed):
+    for selectors in ([GPU_A, "0"], [GPU_A, "9"]):
+        with pytest.raises(GymError):
+            with gpu.reserve_group(gpu.configuration(config(selectors))):
+                pytest.fail("Every selector must resolve to a distinct local GPU")
+
+
+def test_group_environment_and_public_profile(observed, tmp_path):
+    profiles = json.loads((ROOT / "gym/examples/profiles.fixture.json").read_text())
+    backend = NativeBackend(
+        profiles,
+        tmp_path,
+        ROOT,
+        execution_config={**config([GPU_A, GPU_B]), "research_microbatch_size": 2},
+    )
+    backend.worker_runtime["cuda_version"] = "fixture-cuda"
+    profile = backend.profiles["research-fixture"]
+    public = next(backend.public_profiles())
+    assert public["supported_device_counts"] == [2]
+    assert public["microbatch_size"] == 2
+    assert backend.resources()["allocatable_slots"] == 0
+    observed[1].update(compute_process_count=0, process_count=0)
+    assert backend.resources()["allocatable_slots"] == 1
+    with gpu.reserve_group(backend.execution_config) as group:
+        assert (
+            backend.environment(profile, gpu=group)["CUDA_VISIBLE_DEVICES"]
+            == f"{GPU_A},{GPU_B}"
+        )
+    with pytest.raises(GymError, match="omit gpu_id"):
+        backend.validate_placement(profile, GPU_A)

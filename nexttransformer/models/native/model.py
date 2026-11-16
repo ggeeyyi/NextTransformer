@@ -17,6 +17,11 @@ from nexttransformer.models.native.circle import SparseCircleMixin
 from nexttransformer.models.native.depth import depth_reference
 
 
+def uses_value_embeddings(config):
+    """The 2K scaling shell can switch them off; the 4K native comparison always ran with them."""
+    return getattr(config, 'value_embeddings', True)
+
+
 def window(config, virtual_layer):
     short = -(-config.sequence_len//4//128)*128
     full = (virtual_layer == config.max_depth-1 or
@@ -63,7 +68,7 @@ def theoretical_training_flops(config):
         elif j < c.pre_layers: physical = j
         elif j >= len(rates)-c.post_layers: physical = c.pre_layers+c.core_layers+j-(len(rates)-c.post_layers)
         else: physical = c.pre_layers+(j-c.pre_layers)%c.core_layers
-        if physical % 2 == (c.n_layer-1) % 2: forward += 24*c.heads*n
+        if uses_value_embeddings(c) and physical % 2 == (c.n_layer-1) % 2: forward += 24*c.heads*n
     if c.architecture == 'mor': forward += 2*(c.recursions-1)*t*d
     if c.architecture == 'circle': forward += 2*t*d*sum(ring_rates[c.core_layers-1:-1])
     if c.architecture == 'loopformer':
@@ -81,6 +86,9 @@ class NativeExperiment(SparseCircleMixin, GPT):
         self.config = config
         self.max_seq_len = config.sequence_len
         self.last_stats = {}
+        if not uses_value_embeddings(config):
+            self.value_embeds = nn.ModuleDict()
+            for block in self.transformer.h: block.attn.ve_gate = None
         if config.architecture == 'mor':
             self.routers = nn.ModuleList(nn.Linear(config.width, 1) for _ in range(config.recursions-1))
             self.survival_budget = SurvivalBudget(config)
