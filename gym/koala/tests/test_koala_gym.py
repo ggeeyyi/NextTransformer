@@ -860,3 +860,122 @@ def test_jobs_totals_gpu_hours_and_stops_only_orphans(tmp_path, monkeypatch, cap
     )
     assert koala_gym.main(["--koala", str(config), "jobs", "--state", str(state)]) == 0
     assert "5 Koala jobs, 1 open" in capsys.readouterr().out
+
+
+def write_config(gym, **values):
+    path = gym["base"] / f"koala-{uuid.uuid4().hex[:6]}.json"
+    path.write_text(json.dumps({**gym["config"], **values}))
+    return path
+
+
+def test_research_gpus_and_microbatch_reach_the_gym_execution_configuration(gym):
+    from nexttransformer_gym.gpu import configuration
+
+    config = koala_gym.load_config(
+        write_config(gym, research_gpus=2, research_microbatch_size=4)
+    )
+    settings = configuration(koala_gym.execution_settings(config))
+    assert len(set(settings["gpu_ids"])) == 2
+    assert settings["research_microbatch_size"] == 4
+    assert settings["isolation"] == config["pod_isolation"]
+    with pytest.raises(SystemExit, match="research_gpus"):
+        koala_gym.load_config(write_config(gym, virtual_gpus=2))
+    with pytest.raises(SystemExit, match="positive integer"):
+        koala_gym.load_config(write_config(gym, research_microbatch_size=0))
+
+
+def test_the_pod_maps_a_gpu_group_onto_its_own_gpus_in_order():
+    virtual = [
+        {"id": f"GPU-virtual-{i}", "uuid": f"GPU-virtual-{i}", "memory_limit_bytes": 7}
+        for i in range(2)
+    ]
+    cards = [
+        {"id": "GPU-a", "uuid": "GPU-a", "index": 0, "device_minor": 3},
+        {"id": "GPU-b", "uuid": "GPU-b", "index": 1, "device_minor": 5},
+    ]
+    record, visible = koala_gym.assign_gpus({**virtual[0], "devices": virtual}, cards)
+    assert visible == "GPU-a,GPU-b" and record["id"] == "GPU-a"
+    assert [
+        (d["uuid"], d["device_minor"], d["memory_limit_bytes"])
+        for d in record["devices"]
+    ] == [
+        ("GPU-a", 3, 7),
+        ("GPU-b", 5, 7),
+    ]
+    single, visible = koala_gym.assign_gpus(virtual[0], cards[:1])
+    assert visible == "GPU-a" and "devices" not in single
+    assert single["memory_limit_bytes"] == 7
+    with pytest.raises(koala_gym.PodError, match="1 GPUs for an allocation of 2"):
+        koala_gym.assign_gpus({**virtual[0], "devices": virtual}, cards[:1])
+
+
+def test_a_research_job_asks_koala_for_the_gym_allocations_gpus(gym, tmp_path):
+    group = [{"id": f"GPU-v{i}", "memory_limit_bytes": 1} for i in range(4)]
+    request = {
+        "quote": {"id": "q", "operation": "train", "bound": "1"},
+        "profile": {"device": "cuda:0"},
+    }
+    sizes = []
+    for allocation in ({**group[0], "devices": group}, group[0], None):
+        payload, _ = koala_gym.build_job(
+            koala_gym.load_config(gym["path"]),
+            {**request, "gpu": allocation},
+            str(tmp_path),
+        )
+        sizes.append((payload["nodes"], payload["gpus_per_node"]))
+    assert sizes == [(1, 4), (1, 1), (1, 1)]
+
+
+def test_a_two_gpu_research_job_reaches_koala_as_one_two_gpu_job(gym):
+    """CPU only: the Gym dispatches GPU work only for a CUDA runtime, so the configuration records one; the
+    CPU pod then fails its runtime check before work, and nothing is charged."""
+    path = write_config(
+        gym,
+        runtime=dict(gym["config"]["runtime"], cuda_version="12.8"),
+        research_gpus=2,
+        research_microbatch_size=1,
+        virtual_gpu_offset=4000 + int(uuid.uuid4().hex[:4], 16),
+    )
+    config = koala_gym.load_config(path)
+    koala_gym.install_controller(config, path)
+    profiles = json.loads((ROOT / "gym/examples/profiles.fixture.json").read_text())
+    for profile in profiles.values():
+        profile["timeout_sec"] = 600
+    backend = NativeBackend(
+        profiles,
+        gym["base"] / "state-2gpu",
+        ROOT,
+        execution_config=koala_gym.execution_settings(config),
+    )
+    service = Service(gym["base"] / "state-2gpu" / "gym.sqlite3", backend)
+    credentials = service.create_session(10**12, "koala-test-2gpu")
+
+    def call(operation, **params):
+        return service.call(credentials["agent_token"], operation, params)
+
+    research = call("get_resources")["profiles"]
+    assert {p["id"]: p["supported_device_counts"] for p in research}[
+        "research-fixture"
+    ] == [2]
+    candidate = call(
+        "submit_candidate",
+        package_base64=base64.b64encode(candidate_bytes()).decode(),
+        idempotency_key="first",
+    )
+    quote = call(
+        "quote_experiment",
+        candidate_id=candidate["id"],
+        profile_id="research-fixture",
+        target_update=1,
+    )
+    before = call("get_budget")
+    job = call("run_experiment", quote_id=quote["id"], idempotency_key=quote["id"])
+    Scheduler(service).work_once()
+    job = call("get_job", job_id=job["id"])
+    specs = [
+        json.loads((path / "spec.json").read_text())
+        for path in (gym["home"] / ".fake-koala" / "jobs").glob("*")
+    ]
+    assert [(spec["nodes"], spec["gpus"]) for spec in specs] == [(1, 2)]
+    assert job["state"] == "failed" and job["error_code"] == "resource_unavailable"
+    assert call("get_budget")["available"] == before["available"]

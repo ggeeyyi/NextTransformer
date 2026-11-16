@@ -31,6 +31,11 @@ Clusters. One file serves both Koala GPU clusters; a configuration names one (`c
   has one node. Bundles go to S3. `relay_env` passes the credentials either store needs.
 `probe` confirms a configuration's backend and runtime on its cluster before use.
 
+Research GPUs. A research job runs on one node with `research_gpus` GPUs: the Gym's execution configuration lists
+that many virtual cards, the Gym leases them as one group and splits each update across them, and the pod maps them
+onto its own GPUs in order. `research_microbatch_size` is the Gym's rows per GPU per pass; an update accumulates
+gradients over its passes. A check with a final profile uses one GPU.
+
 Commands (controller, with the Gym environment's Python):
   koala_gym.py --koala koala.json probe                    record the pod runtime once
   koala_gym.py --koala koala.json trial <run_trial.py arguments>
@@ -111,11 +116,14 @@ DEFAULTS = {
     "local_isolation": "bwrap",
     # Research workers in a pod without a sandbox ("none"): "deny" refuses new network sockets with seccomp.
     "pod_network": "deny",
+    # GPUs of one research job, on one node: the Gym's execution configuration lists this many (virtual) cards, and
+    # the Gym splits each update across all of them. Checks with a final profile still use one GPU.
     "research_gpus": 1,
+    # Rows per GPU per forward/backward pass (the Gym's research_microbatch_size); updates accumulate gradients.
+    "research_microbatch_size": 1,
     "final": {"nodes": 1, "gpus_per_node": 8},
     "official_smoke": None,
     "site_config": None,
-    "virtual_gpus": 1,
     "virtual_gpu_offset": 0,
     "gpu_name": "Koala GPU",
     "gpu_memory_total_bytes": None,
@@ -177,6 +185,10 @@ class PodError(RuntimeError):
 def load_config(path):
     path = Path(path).resolve()
     value = json.loads(path.read_text())
+    if "virtual_gpus" in value:
+        raise SystemExit(
+            f"koala_gym: virtual_gpus in {path} is now research_gpus (GPUs per research job)"
+        )
     unknown = set(value) - set(DEFAULTS) - set(REQUIRED)
     if unknown:
         raise SystemExit(f"koala_gym: unknown settings {sorted(unknown)} in {path}")
@@ -198,6 +210,9 @@ def load_config(path):
         raise SystemExit("koala_gym: local_isolation must be 'bwrap' or 'none'")
     if config["pod_network"] not in ("deny", "allow"):
         raise SystemExit("koala_gym: pod_network must be 'deny' or 'allow'")
+    for key in ("research_gpus", "research_microbatch_size"):
+        if not (type(config[key]) is int and config[key] > 0):
+            raise SystemExit(f"koala_gym: {key} must be a positive integer")
     total, limit = config["gpu_memory_total_bytes"], config["gpu_memory_limit_bytes"]
     if not (type(total) is int and type(limit) is int and 0 < limit <= total):
         raise SystemExit(
@@ -570,13 +585,13 @@ def virtual_ids(config):
     """Gym GPU leases coordinate processes per card identity; give each configuration its own cards."""
     return [
         VIRTUAL_UUID.format(int(config["virtual_gpu_offset"]) + i)
-        for i in range(int(config["virtual_gpus"]))
+        for i in range(int(config["research_gpus"]))
     ]
 
 
 def virtual_inventory(config):
     cards = []
-    for index in range(int(config["virtual_gpus"])):
+    for index in range(int(config["research_gpus"])):
         uuid = VIRTUAL_UUID.format(int(config["virtual_gpu_offset"]) + index)
         cards.append(
             {
@@ -688,17 +703,23 @@ def install_controller(config, config_path):
     backend.NativeBackend.koala_gym = True
 
 
+def execution_settings(config):
+    """The Gym's execution configuration for this Koala configuration (it reports the pods' backend)."""
+    return {
+        "schema_version": "gym.execution.v1",
+        "gpu_ids": virtual_ids(config),
+        "gpu_memory_limit_bytes": config["gpu_memory_limit_bytes"],
+        "research_microbatch_size": config["research_microbatch_size"],
+        "max_concurrent_jobs": 1,
+        "isolation": config["pod_isolation"],
+    }
+
+
 def execution_config(config, config_path):
     # One file per Koala configuration: sessions with other offsets or backends may start concurrently.
     config_path = Path(config_path).resolve()
     path = config_path.with_name(f"execution.{config_path.stem}.json")
-    value = {
-        "schema_version": "gym.execution.v1",
-        "gpu_ids": virtual_ids(config),
-        "gpu_memory_limit_bytes": config["gpu_memory_limit_bytes"],
-        "max_concurrent_jobs": 1,
-        "isolation": config["pod_isolation"],
-    }
+    value = execution_settings(config)
     if not path.exists() or json.loads(path.read_text()) != value:
         path.write_text(json.dumps(value, indent=2) + "\n")
     return path
@@ -846,6 +867,13 @@ def final_topology(config, profile):
     return nodes, gpus
 
 
+def allocated_devices(allocation):
+    """The cards of a Gym GPU allocation: one card, or a group (`devices`); a CPU job still gets one GPU pod."""
+    if not allocation:
+        return [{}]
+    return list(allocation.get("devices") or [allocation])
+
+
 def build_job(config, request, remote):
     """The pod's job description: the Gym request with pod paths, and the snapshot to ship (final runs)."""
     quote, profile = request["quote"], request["profile"]
@@ -883,7 +911,7 @@ def build_job(config, request, remote):
         plan["snapshot"] = f"{code}/snapshot"
         nodes, gpus = final_topology(config, profile)
     else:
-        nodes, gpus = 1, int(config["research_gpus"])
+        nodes, gpus = 1, len(allocated_devices(request.get("gpu")))
     payload = {
         "schema": "koala_gym.job.v1",
         "quote_id": quote["id"],
@@ -1674,39 +1702,66 @@ def worker_env(payload, code, work, official=False):
     return env
 
 
-def local_gpu():
-    """The pod's one allocated GPU, in the Gym's device record format."""
+def local_gpus(count):
+    """The pod's allocated GPUs in index order, in the Gym's device record format."""
     from nexttransformer_gym import gpu
 
     seen = gpu.discover()
-    if seen.get("status") == "ok" and len(seen["gpus"]) == 1:
-        return seen["gpus"][0]
+    if seen.get("status") == "ok" and len(seen["gpus"]) == count:
+        return sorted(seen["gpus"], key=lambda card: card["index"])
     import xml.etree.ElementTree as ET
 
     root = ET.fromstring(
         subprocess.check_output(["nvidia-smi", "-q", "-x"], text=True, timeout=30)
     )
     cards = root.findall("gpu")
-    if len(cards) != 1:
+    if len(cards) != count:
         raise PodError(
-            "resource_unavailable", f"the pod sees {len(cards)} GPUs, expected 1"
+            "resource_unavailable",
+            f"the pod sees {len(cards)} GPUs, expected {count}",
         )
-    card = cards[0]
-    mib = lambda path: int(card.findtext(path).split()[0]) * 1024**2
-    uuid = card.findtext("uuid").strip()
-    return {
-        "id": uuid,
-        "uuid": uuid,
-        "index": 0,
-        "device_minor": int(card.findtext("minor_number")),
-        "name": card.findtext("product_name").strip(),
-        "memory_total_bytes": mib("fb_memory_usage/total"),
-        "memory_free_bytes": mib("fb_memory_usage/free"),
-        "utilization_percent": 0,
-        "process_count": 0,
-        "compute_process_count": 0,
-        "graphics_process_count": 0,
-    }
+
+    def record(index, card):
+        mib = lambda path: int(card.findtext(path).split()[0]) * 1024**2
+        uuid = card.findtext("uuid").strip()
+        return {
+            "id": uuid,
+            "uuid": uuid,
+            "index": index,
+            "device_minor": int(card.findtext("minor_number")),
+            "name": card.findtext("product_name").strip(),
+            "memory_total_bytes": mib("fb_memory_usage/total"),
+            "memory_free_bytes": mib("fb_memory_usage/free"),
+            "utilization_percent": 0,
+            "process_count": 0,
+            "compute_process_count": 0,
+            "graphics_process_count": 0,
+        }
+
+    return [record(index, card) for index, card in enumerate(cards)]
+
+
+def assign_gpus(allocation, cards):
+    """Replace an allocation's virtual cards with the pod's cards, in order, keeping each memory limit.
+
+    Returns the Gym's `gpu` record (one card, or the first card with `devices` for a group) and the
+    CUDA_VISIBLE_DEVICES value; the worker's cuda:i is the group's i-th card."""
+    wanted = allocated_devices(allocation)
+    if len(cards) != len(wanted):
+        raise PodError(
+            "resource_unavailable",
+            f"the pod has {len(cards)} GPUs for an allocation of {len(wanted)}",
+        )
+    devices = [
+        dict(card, memory_limit_bytes=virtual.get("memory_limit_bytes"))
+        for card, virtual in zip(cards, wanted)
+    ]
+    record = (
+        dict(devices[0], devices=devices)
+        if (allocation or {}).get("devices")
+        else devices[0]
+    )
+    return record, ",".join(card["uuid"] for card in devices)
 
 
 def bubblewrap_available(backend_name):
@@ -2145,14 +2200,11 @@ def pod_run(job_path, node, master, seq):
         # The Gym's own rule: a root controller (the pod) runs every non-official worker as nobody.
         identity = NativeBackend.worker_identity(request)
         if str(request["profile"].get("device", "cpu")).startswith("cuda"):
-            card = local_gpu()
-            request["gpu"] = dict(
-                card,
-                memory_limit_bytes=(request.get("gpu") or {}).get("memory_limit_bytes"),
+            wanted = allocated_devices(request.get("gpu"))
+            request["gpu"], visible = assign_gpus(
+                request.get("gpu"), local_gpus(len(wanted))
             )
-            env.update(
-                CUDA_VISIBLE_DEVICES=card["uuid"], CUDA_DEVICE_ORDER="PCI_BUS_ID"
-            )
+            env.update(CUDA_VISIBLE_DEVICES=visible, CUDA_DEVICE_ORDER="PCI_BUS_ID")
         workspace = Path(request["output"]).parent
         workspace.mkdir(parents=True, exist_ok=True)
         if identity:
@@ -2559,7 +2611,7 @@ def confinement(payload, python, code, work, backend_name, device):
         "CUDA_VISIBLE_DEVICES": "",
     }
     if device == "cuda":
-        card = local_gpu()
+        card = local_gpus(1)[0]
         request["gpu"] = card
         env.update(CUDA_VISIBLE_DEVICES=card["uuid"], CUDA_DEVICE_ORDER="PCI_BUS_ID")
     beat, stop = workspace / "daemon.beat", workspace / "daemon.stop"

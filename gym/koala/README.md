@@ -42,6 +42,18 @@ outcome.
 
 Keep `staging_dir` outside any git work tree: `koala code publish` packs tracked files only.
 
+## Research GPUs
+
+| Setting | Meaning |
+|---|---|
+| `research_gpus` | GPUs of one research job, on one node (default 1). The Gym's execution configuration lists that many virtual cards; the Gym leases them as one group and splits each update across them, and the pod maps them onto its own GPUs in order. |
+| `research_microbatch_size` | The Gym's `research_microbatch_size`: rows per GPU per forward/backward pass (default 1, as in the Gym). An update of the profile's `batch_size` rows accumulates gradients over its passes. |
+
+A profile's `batch_size` is the global rows per update, whatever the GPU count; `512` with `sequence_len` `2048` is
+the protocol's 1,048,576 tokens. The Gym's quote-time memory bound decides the largest microbatch it accepts: for the
+dense anchor shape on a 128 GiB limit that is 10 rows, and 8 divides the protocol's 512 rows evenly. A check with a final profile uses one GPU, and the Gym runs one
+numerical job at a time per state.
+
 ## Commands
 
 ```sh
@@ -103,8 +115,8 @@ paths from `KOALA_E2E_DATA` and `KOALA_E2E_RESOURCES`.
 ## Limits
 
 - Remote dispatch is outside the Gym's agreed scope (one local machine, one concurrent numerical job). This adapter
-  keeps that scope: one Koala job at a time per Gym state.
-- Research jobs use one GPU and the profile's batch, without gradient accumulation.
-- The Gym's final runs start with `--resume never`, and a Koala job has a maximum duration. A full formal run must
-  finish inside one job: on one H200 node it does not. `official_smoke` bounds the final path for tests; its results
-  are never official.
+  keeps that scope: one Koala job at a time per Gym state, and a research job's GPUs on one node.
+- Research workers run in float32 without compilation, as in the Gym.
+- The Gym's final runs start with `--resume never`, and a Koala job has a maximum duration (`koala quota` shows it).
+  A full formal run must finish inside one job. `official_smoke` bounds the final path for tests; its results are
+  never official.

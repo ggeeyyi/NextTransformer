@@ -13,6 +13,8 @@
  "gpu_memory_total_bytes": 150754820096,
  "gpu_memory_limit_bytes": 137438953472,
  "site_config": null,
+ "research_gpus": 1,
+ "research_microbatch_size": 8,
  "final": {"nodes": 1, "gpus_per_node": 8},
  "pod_isolation": "landlock",
  "worker_python": "/home/<user>/.local/share/koala-gym/worker-venv/bin/python",

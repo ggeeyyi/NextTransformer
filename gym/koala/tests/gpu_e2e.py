@@ -62,11 +62,7 @@ class Session:
         self.config = koala_gym.load_config(config_path)
         koala_gym.install_controller(self.config, config_path)
         self.state = state
-        self.execution = {
-            "gpu_ids": koala_gym.virtual_ids(self.config),
-            "gpu_memory_limit_bytes": self.config["gpu_memory_limit_bytes"],
-            "max_concurrent_jobs": 1,
-        }
+        self.execution = koala_gym.execution_settings(self.config)
         self.open(profiles)
         self.credentials = self.service.create_session(10**21, "koala-gpu-e2e")
 
