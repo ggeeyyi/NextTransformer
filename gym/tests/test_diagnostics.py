@@ -388,6 +388,58 @@ def test_landlock_launcher_fails_closed_and_returns_worker_status(
     assert not any(scratch.iterdir())
 
 
+def test_landlock_policy_for_a_long_training_prefix_fits_one_argument(
+    tmp_path, monkeypatch
+):
+    # Linux refuses a single argument over 128 KiB (E2BIG); a formal research
+    # profile names about a thousand shards, resolved to long host paths.
+    monkeypatch.setattr(isolation.shutil, "which", lambda _name: "/usr/bin/unshare")
+    deep = tmp_path / ("d" * 100)
+    data = {
+        "kind": "climbmix",
+        "train_paths": [str(deep / f"shard_{i:05d}.parquet") for i in range(1200)],
+        "dev_path": str(deep / "shard_06541.parquet"),
+        "tokenizer": str(deep / "tokenizer"),
+        "token_bytes": str(deep / "tokenizer" / "token_bytes.pt"),
+    }
+    request = {
+        "mode": "execute",
+        "profile": {"device": "cpu", "data": data},
+        "output": str(tmp_path / "worker-job" / "checkpoint.pt"),
+    }
+    command = isolation.command(sys.executable, ROOT, request, "landlock")
+    argument = command[command.index("nexttransformer_gym.landlock") + 1]
+    policy = landlock.decode_policy(argument)
+    assert len(json.dumps(policy)) > 128 * 1024
+    assert len(argument.encode()) < 32 * 1024
+    assert {str(Path(p).resolve()) for p in data["train_paths"]} <= set(policy["read"])
+
+
+def test_landlock_launcher_reads_a_compressed_policy(tmp_path):
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    policy = {
+        "read": [f"/{'x' * 120}/shard_{i:05d}.parquet" for i in range(2000)],
+        "list": [],
+        "write": [],
+        "tmp": str(scratch),
+        "unix_sockets": True,
+    }
+    argument = landlock.encode_policy(policy)
+    assert argument.startswith(landlock.COMPRESSED_PREFIX)
+    assert landlock.decode_policy(argument) == policy
+    small = {**policy, "read": []}
+    assert landlock.decode_policy(landlock.encode_policy(small)) == small
+    result = subprocess.run(
+        [sys.executable, "-c", LAUNCH, "allow", argument, "--"]
+        + [sys.executable, "-c", "import sys; sys.exit(3)"],
+        env={**os.environ, "PYTHONPATH": str(ROOT / "gym/src")},
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 3, result.stderr.decode()[-2000:]
+
+
 @pytest.mark.parametrize("abi, euid", [(0, 0), (1, 1000)])
 def test_landlock_backend_refuses_missing_landlock_or_root(
     tmp_path, monkeypatch, abi, euid

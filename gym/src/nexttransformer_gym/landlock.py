@@ -6,8 +6,13 @@ restricts itself with Landlock and, unless the policy allows Unix sockets, a
 seccomp filter, then executes COMMAND, which inherits the restrictions; any
 failure stops before COMMAND runs. The parent removes the directory after the
 child exits and returns the child's exit status.
+
+POLICY is canonical JSON. A policy longer than ``PLAIN_POLICY_LIMIT`` (a profile
+with a long training prefix names every shard) is passed compressed, because
+Linux limits one command-line argument to 128 KiB.
 """
 
+import base64
 import ctypes
 import errno
 import json
@@ -17,8 +22,12 @@ import signal
 import sys
 import tempfile
 import traceback
+import zlib
 
-from .common import require
+from .common import canonical, require
+
+PLAIN_POLICY_LIMIT = 32 * 1024
+COMPRESSED_PREFIX = "zlib:"
 
 # Landlock system call numbers on x86_64 and asm-generic architectures (arm64).
 CREATE_RULESET, ADD_RULE, RESTRICT_SELF = 444, 445, 446
@@ -169,12 +178,29 @@ def run_confined(policy, command, home, parent):
         os._exit(127)
 
 
+def encode_policy(policy):
+    """The POLICY argument: canonical JSON, compressed when it is long."""
+    text = canonical(policy)
+    if len(text) <= PLAIN_POLICY_LIMIT:
+        return text
+    packed = base64.b64encode(zlib.compress(text.encode(), 9)).decode()
+    return COMPRESSED_PREFIX + packed
+
+
+def decode_policy(argument):
+    if argument.startswith(COMPRESSED_PREFIX):
+        argument = zlib.decompress(
+            base64.b64decode(argument[len(COMPRESSED_PREFIX) :], validate=True)
+        ).decode()
+    return json.loads(argument)
+
+
 def main(argv):
     if len(argv) < 3 or argv[1] != "--":
         raise SystemExit(
             "usage: python -m nexttransformer_gym.landlock POLICY -- COMMAND..."
         )
-    policy, command = json.loads(argv[0]), argv[2:]
+    policy, command = decode_policy(argv[0]), argv[2:]
     with tempfile.TemporaryDirectory(prefix="ntgym-worker-", dir=policy["tmp"]) as home:
         parent = os.getpid()
         child = os.fork()
