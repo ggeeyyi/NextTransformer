@@ -11,7 +11,8 @@ import shutil
 import os
 import sys
 from pathlib import Path
-from .common import canonical, require
+from .common import require
+from .landlock import encode_policy
 
 BACKENDS = ("bwrap", "landlock", "none")
 UNISOLATED_WARNING = (
@@ -241,7 +242,7 @@ def landlock_command(python, platform, request, worker):
         python,
         "-m",
         "nexttransformer_gym.landlock",
-        canonical(policy),
+        encode_policy(policy),
         "--",
         *worker,
     ]
