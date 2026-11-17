@@ -1004,3 +1004,53 @@ def test_a_two_gpu_research_job_reaches_koala_as_one_two_gpu_job(gym):
     assert [(spec["nodes"], spec["gpus"]) for spec in specs] == [(1, 2)]
     assert job["state"] == "failed" and job["error_code"] == "resource_unavailable"
     assert call("get_budget")["available"] == before["available"]
+
+
+def test_cancelling_a_started_long_training_job_refunds_unexecuted_steps(gym):
+    import io
+    import zipfile
+
+    gym["service"].backend.profiles["research-fixture"]["max_updates"] = 60
+    with zipfile.ZipFile(io.BytesIO(candidate_bytes())) as original:
+        files = {name: original.read(name) for name in original.namelist()}
+    files["plugin/research_model/model.py"] = (
+        b"import time\nfrom nexttransformer.models.lm import ReferenceLM\n"
+        b"class ResearchModel(ReferenceLM):\n"
+        b"    def _readout(self, x, backout):\n"
+        b"        if self.training:\n"
+        b"            time.sleep(0.2)\n"
+        b"        return super()._readout(x, backout) * self.config.option('output_scale')\n"
+    )
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as archive:
+        for name, value in files.items():
+            archive.writestr(name, value)
+
+    call = gym["call"]
+    slow = call(
+        "submit_candidate",
+        package_base64=base64.b64encode(buf.getvalue()).decode(),
+        idempotency_key="slow-cand",
+    )
+    before = call("get_budget")
+    quote = call(
+        "quote_experiment",
+        candidate_id=slow["id"],
+        profile_id="research-fixture",
+        target_update=60,
+    )
+    job = call("run_experiment", quote_id=quote["id"], idempotency_key="long-run")
+    worker = threading.Thread(target=Scheduler(gym["service"]).work_once)
+    worker.start()
+    deadline = time.time() + 60
+    while not any(e["event"] == "running" for e in journal(gym)):
+        assert time.time() < deadline
+        time.sleep(0.1)
+    call("cancel_job", job_id=job["id"], idempotency_key="cancel-midway")
+    worker.join(60)
+    assert call("get_job", job_id=job["id"])["state"] == "cancelled"
+    after = call("get_budget")
+    assert after["reserved"] == "0"
+    spent_delta = int(after["spent"]) - int(before["spent"])
+    assert 0 < spent_delta < int(quote["bound"]) // 2
+    assert int(before["available"]) - int(after["available"]) == spent_delta

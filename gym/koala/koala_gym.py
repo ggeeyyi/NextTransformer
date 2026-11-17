@@ -794,18 +794,18 @@ class Protocol:
             raise RuntimeError("the Gym scheduler closed the worker protocol")
         return json.loads(line)
 
-    def intent(self, amount):
-        self.emit({"kind": "intent", "label": LABEL, "amount": str(amount)})
+    def intent(self, amount, label=LABEL):
+        self.emit({"kind": "intent", "label": label, "amount": str(amount)})
         reply = self.reply()
         if reply.get("cancel"):
             return False
-        if reply != {"ack": LABEL}:
+        if reply != {"ack": label}:
             raise RuntimeError("accounting acknowledgement mismatch")
         return True
 
-    def charge(self, amount):
-        self.emit({"kind": "charge", "label": LABEL, "amount": str(amount)})
-        if self.reply() != {"ack": LABEL}:
+    def charge(self, amount, label=LABEL):
+        self.emit({"kind": "charge", "label": label, "amount": str(amount)})
+        if self.reply() != {"ack": label}:
             raise RuntimeError("charge acknowledgement mismatch")
 
     def failed(self, code, detail=None):
@@ -818,6 +818,82 @@ class Protocol:
         )
         if detail:
             note(f"{code}: {detail}")
+
+
+TRAIN_WINDOW_STEPS = 16
+
+
+class WindowAccountant:
+    """Progressive ahead-of-work billing so mid-run cancellations refund unstarted steps."""
+
+    def __init__(self, protocol, quote, profile, bound):
+        self.protocol = protocol
+        self.bound = int(bound)
+        self.settled = 0
+        self.inflight = None
+        self.seq = 0
+        self.start_step = int(quote.get("start_update") or 0)
+        target = int(quote.get("target_update") or 1)
+        self.total_steps = max(1, target - self.start_step)
+        report = quote.get("cost_report") or {}
+        self.windowed = (
+            quote.get("operation") == "train"
+            and bool(report)
+            and self.total_steps > TRAIN_WINDOW_STEPS
+        )
+        if self.windowed:
+            self.init_cost = int(report["initialization"])
+            self.step_cost = (
+                int(report.get("research_forward", report["forward"]))
+                + int(report.get("research_backward", report["backward"]))
+                + int(report.get("research_reduction", 0))
+                + int(report["optimizer"])
+            )
+
+    def _target_amount(self, completed_steps):
+        if not self.windowed or completed_steps >= self.total_steps:
+            return self.bound
+        horizon = min(self.total_steps, max(0, completed_steps) + TRAIN_WINDOW_STEPS)
+        if horizon >= self.total_steps:
+            return self.bound
+        return min(self.bound, self.init_cost + horizon * self.step_cost)
+
+    def advance(self, completed_steps=0):
+        target = self._target_amount(completed_steps)
+        covered = self.settled + (self.inflight[1] if self.inflight else 0)
+        if target <= covered:
+            return True
+        if self.inflight is not None:
+            label, amount = self.inflight
+            self.protocol.charge(amount, label=label)
+            self.settled += amount
+            self.inflight = None
+        delta = target - self.settled
+        self.seq += 1
+        label = LABEL if not self.windowed and self.seq == 1 else f"{LABEL}-{self.seq}"
+        if not self.protocol.intent(delta, label=label):
+            return False
+        self.inflight = (label, delta)
+        return True
+
+    def settle_current(self):
+        if self.inflight is not None:
+            label, amount = self.inflight
+            self.protocol.charge(amount, label=label)
+            self.settled += amount
+            self.inflight = None
+
+    def settle_full(self):
+        self.settle_current()
+        if self.settled < self.bound:
+            delta = self.bound - self.settled
+            self.seq += 1
+            label = f"{LABEL}-{self.seq}"
+            if not self.protocol.intent(delta, label=label):
+                return False
+            self.protocol.charge(delta, label=label)
+            self.settled += delta
+        return True
 
 
 def note(message):
@@ -1038,6 +1114,7 @@ def relay(config_path):
         raise Terminated()
 
     signal.signal(signal.SIGTERM, terminate)
+    accountant = WindowAccountant(protocol, quote, profile, bound)
     started, seen, chunks = False, 0, {}
     # Pod clock: the first event seen (boot) and the latest. The relay polls the log tail from the start, so it
     # sees the boot event before a long run scrolls it away.
@@ -1097,11 +1174,13 @@ def relay(config_path):
                     "profile_hash": quote.get("profile_hash"),
                 }
                 Path(request["output"]).write_text(json.dumps(pointer, indent=1))
-            protocol.charge(bound)
+            if not accountant.settle_full():
+                protocol.emit({"kind": "cancelled"})
+                return 0
             protocol.emit({"kind": "result", "value": result})
             return 0
         if outcome == "failed":
-            protocol.charge(bound)
+            accountant.settle_current()
             protocol.failed(
                 done.get("error_code", "infrastructure_failure"), done.get("detail")
             )
@@ -1129,7 +1208,7 @@ def relay(config_path):
                     else max(span["last"], event["t"])
                 )
             if kind == "ready" and not started:
-                if not protocol.intent(bound):
+                if not accountant.advance(0):
                     koala.stop(job)
                     journal(
                         state,
@@ -1159,7 +1238,20 @@ def relay(config_path):
             elif kind == "runtime":
                 protocol.emit({"kind": "runtime", "value": event["value"]})
             elif kind == "progress":
-                protocol.emit({"kind": "progress", "step": event["step"]})
+                step = int(event["step"])
+                protocol.emit({"kind": "progress", "step": step})
+                if started and not accountant.advance(step - accountant.start_step):
+                    koala.stop(job)
+                    journal(
+                        state,
+                        quote_id=quote["id"],
+                        job=job,
+                        event="stopped",
+                        reason="cancel_job",
+                        **held(time.time()),
+                    )
+                    protocol.emit({"kind": "cancelled"})
+                    return 0
             elif kind == "chunk":
                 chunks.setdefault(event["name"], {})[event["i"]] = event["data"]
             elif kind == "restarted":
@@ -1185,7 +1277,7 @@ def relay(config_path):
                     **held(time.time() if started else None),
                 )
                 if started:
-                    protocol.charge(bound)
+                    accountant.settle_current()
                 protocol.emit({"kind": "cancelled"})
                 return 0
             status = koala.status(job)
@@ -1220,7 +1312,7 @@ def relay(config_path):
                     **held(time.time() if started else None),
                 )
                 if started:
-                    protocol.charge(bound)
+                    accountant.settle_current()
                 protocol.failed(
                     "infrastructure_failure",
                     f"Koala job {job} exceeded the profile timeout",
@@ -2268,6 +2360,7 @@ def pod_run(job_path, node, master, seq):
         emit,
         work / "tmp",
         work / "worker.stderr",
+        progress_every=15.0,
         identity=identity,
     )
     stop_identity(identity)
