@@ -111,9 +111,7 @@ def inspect(candidate, profile):
         rounds += 1
         for first, last in replica_slices(start, end, devices):
             shapes[last - first] += 1
-    evaluation_shapes = Counter(
-        end - start for start, end in microbatches(batch, micro, 1)
-    )
+    evaluation_shapes = Counter(shapes)
     traces = {batch: report}
     for size in shapes.keys() | evaluation_shapes.keys():
         if size not in traces:

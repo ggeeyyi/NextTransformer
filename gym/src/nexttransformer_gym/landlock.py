@@ -165,7 +165,11 @@ def run_confined(policy, command, home, parent):
         if os.getppid() != parent:
             raise OSError("The launcher exited before the worker started.")
         os.environ.update(
-            HOME=home, TMPDIR=home, XDG_CACHE_HOME=os.path.join(home, "cache")
+            HOME=home,
+            TMPDIR=home,
+            XDG_CACHE_HOME=os.path.join(home, "cache"),
+            TORCHINDUCTOR_CACHE_DIR=os.path.join(home, "inductor"),
+            TRITON_CACHE_DIR=os.path.join(home, "triton"),
         )
         os.chdir(home)
         restrict(policy["read"], policy["list"], [*policy["write"], home])

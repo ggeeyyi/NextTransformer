@@ -121,6 +121,9 @@ DEFAULTS = {
     "research_gpus": 1,
     # Rows per GPU per forward/backward pass (the Gym's research_microbatch_size); updates accumulate gradients.
     "research_microbatch_size": 1,
+    # Precision and compiler settings for CUDA research/validation workers (static audits stay float32 on CPU).
+    "research_dtype": "float32",
+    "research_compile": False,
     "final": {"nodes": 1, "gpus_per_node": 8},
     "official_smoke": None,
     "site_config": None,
@@ -213,6 +216,10 @@ def load_config(path):
     for key in ("research_gpus", "research_microbatch_size"):
         if not (type(config[key]) is int and config[key] > 0):
             raise SystemExit(f"koala_gym: {key} must be a positive integer")
+    if config["research_dtype"] not in ("float32", "bfloat16"):
+        raise SystemExit("koala_gym: research_dtype must be 'float32' or 'bfloat16'")
+    if type(config["research_compile"]) is not bool:
+        raise SystemExit("koala_gym: research_compile must be a boolean")
     total, limit = config["gpu_memory_total_bytes"], config["gpu_memory_limit_bytes"]
     if not (type(total) is int and type(limit) is int and 0 < limit <= total):
         raise SystemExit(
@@ -710,6 +717,8 @@ def execution_settings(config):
         "gpu_ids": virtual_ids(config),
         "gpu_memory_limit_bytes": config["gpu_memory_limit_bytes"],
         "research_microbatch_size": config["research_microbatch_size"],
+        "research_dtype": config["research_dtype"],
+        "research_compile": config["research_compile"],
         "max_concurrent_jobs": 1,
         "isolation": config["pod_isolation"],
     }
@@ -923,6 +932,8 @@ def build_job(config, request, remote):
         "credit": str(int(quote["bound"])),
         "nodes": nodes,
         "gpus_per_node": gpus,
+        "research_dtype": config["research_dtype"],
+        "research_compile": config["research_compile"],
         "isolation": config["pod_isolation"],
         "network": config["pod_network"],
         "remote_root": config["pod_remote_dir"] if uri else config["remote_root"],
@@ -1693,12 +1704,21 @@ def worker_env(payload, code, work, official=False):
         env.update(
             NANOCHAT_DTYPE="bfloat16",
             TORCHDYNAMO_DISABLE="0",
+            FLA_DISABLE_BACKEND_DISPATCH="1",
             OMP_NUM_THREADS="8",
             HOME=str(work / "home"),
             PYTHONUNBUFFERED="1",
         )
         if payload.get("site_config"):
             env["NEXTTRANSFORMER_SITE_CONFIG"] = payload["site_config"]
+    elif str(
+        payload.get("request", {}).get("profile", {}).get("device", "cpu")
+    ).startswith("cuda"):
+        env.update(
+            NANOCHAT_DTYPE=payload.get("research_dtype", "float32"),
+            TORCHDYNAMO_DISABLE="0" if payload.get("research_compile", False) else "1",
+            FLA_DISABLE_BACKEND_DISPATCH="1",
+        )
     return env
 
 

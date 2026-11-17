@@ -34,6 +34,8 @@ def configuration(value=None):
                 "gpu_ids",
                 "gpu_memory_limit_bytes",
                 "research_microbatch_size",
+                "research_dtype",
+                "research_compile",
                 "max_concurrent_jobs",
                 "allow_idle_graphics",
                 "isolation",
@@ -84,6 +86,18 @@ def configuration(value=None):
         "invalid_request",
         "research_microbatch_size must be a positive integer.",
     )
+    research_dtype = value.get("research_dtype", "float32")
+    require(
+        research_dtype in ("float32", "bfloat16"),
+        "invalid_request",
+        "research_dtype must be 'float32' or 'bfloat16'.",
+    )
+    research_compile = value.get("research_compile", False)
+    require(
+        type(research_compile) is bool,
+        "invalid_request",
+        "research_compile must be a boolean.",
+    )
     isolation = value.get("isolation", "bwrap")
     require(
         isolation in BACKENDS,
@@ -95,6 +109,8 @@ def configuration(value=None):
         "gpu_ids": ids,
         "gpu_memory_limit_bytes": memory,
         "research_microbatch_size": microbatch,
+        "research_dtype": research_dtype,
+        "research_compile": research_compile,
         "max_concurrent_jobs": 1,
         "allow_idle_graphics": allow_graphics,
         "isolation": isolation,

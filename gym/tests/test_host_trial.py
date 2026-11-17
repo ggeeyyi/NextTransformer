@@ -234,6 +234,8 @@ def test_host_run_passes_operator_config_and_worker_python_to_real_backend(
         "allow_idle_graphics": False,
         "isolation": "bwrap",
         "research_microbatch_size": 1,
+        "research_dtype": "float32",
+        "research_compile": False,
     }
     assert backend.python == str(Path(sys.executable).absolute())
     assert backend.worker_runtime["python"] == list(sys.version_info[:3])

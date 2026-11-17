@@ -58,6 +58,10 @@ def config(ids=None):
         {"gpu_memory_limit_bytes": True},
         {"research_microbatch_size": 0},
         {"research_microbatch_size": True},
+        {"research_dtype": "float16"},
+        {"research_dtype": 16},
+        {"research_compile": "true"},
+        {"research_compile": 1},
         {"max_concurrent_jobs": 2},
         {"allow_idle_graphics": "true"},
         {"isolation": "chroot"},
@@ -304,3 +308,100 @@ def test_group_environment_and_public_profile(observed, tmp_path):
         )
     with pytest.raises(GymError, match="omit gpu_id"):
         backend.validate_placement(profile, GPU_A)
+
+
+def test_validation_and_debug_lease_single_gpu_under_multi_gpu_policy(
+    observed, monkeypatch, tmp_path
+):
+    service, _, call, candidate = make_context.__wrapped__(tmp_path)
+    backend = service.backend
+    backend.execution_config = gpu.configuration(
+        {**config([GPU_A, GPU_B]), "research_microbatch_size": 2}
+    )
+    backend.worker_runtime["cuda_version"] = "fixture-cuda"
+    for profile in backend.profiles.values():
+        profile["device"] = "cuda:0"
+    backend.__init__(
+        backend.profiles,
+        backend.state_dir,
+        backend.platform_root,
+        python=backend.python,
+        server_id=backend.server_id,
+        execution_config=backend.execution_config,
+    )
+    backend.worker_runtime["cuda_version"] = "fixture-cuda"
+    public = {p["id"]: p for p in backend.public_profiles()}
+    assert public["research-fixture"]["supported_device_counts"] == [2]
+    assert public["final-fixture"]["supported_device_counts"] == [1]
+
+    leased_allocations = []
+
+    def fake_execute(self, sid, job, quote, cand):
+        leased_allocations.append(job.get("assigned_gpu"))
+        with self.store.transaction() as db:
+            current = self.store.get(db, sid, "job", job["id"])
+            current.update(state="succeeded", lease=None)
+            self.store.release(db, sid, job["id"])
+            self.store.update(db, sid, "job", current)
+
+    monkeypatch.setattr(Scheduler, "execute", fake_execute)
+    # GPU_B is busy in the fixture (`processes=1`), so a 2-GPU group lease would
+    # block; single-GPU validation and diagnostics must still dispatch on GPU_A.
+    val_final = call(
+        "validate_candidate",
+        candidate_id=candidate["id"],
+        profile_id="final-fixture",
+        idempotency_key="val-final-1gpu",
+    )
+    val_research = call(
+        "validate_candidate",
+        candidate_id=candidate["id"],
+        profile_id="research-fixture",
+        idempotency_key="val-research-1gpu",
+    )
+    dbg = call(
+        "debug_candidate",
+        candidate_id=candidate["id"],
+        profile_id="research-fixture",
+        check="construction",
+        idempotency_key="dbg-research-1gpu",
+    )
+    scheduler = Scheduler(service)
+    assert scheduler.work_once() is True
+    assert scheduler.work_once() is True
+    assert scheduler.work_once() is True
+    assert len(leased_allocations) == 3
+    for alloc in leased_allocations:
+        assert alloc["id"] == GPU_A
+        assert "devices" not in alloc
+    for jid in (val_final["id"], val_research["id"], dbg["id"]):
+        assert call("get_job", job_id=jid)["state"] == "succeeded"
+
+
+def test_research_dtype_and_compile_apply_to_cuda_workers_only(observed, tmp_path):
+    profiles = json.loads((ROOT / "gym/examples/profiles.fixture.json").read_text())
+    backend = NativeBackend(
+        profiles,
+        tmp_path,
+        ROOT,
+        execution_config={
+            **config([GPU_A]),
+            "research_dtype": "bfloat16",
+            "research_compile": True,
+        },
+    )
+    backend.worker_runtime["cuda_version"] = "fixture-cuda"
+    public = {p["id"]: p for p in backend.public_profiles()}
+    assert public["research-fixture"]["supported_precisions"] == ["bfloat16"]
+    assert public["final-fixture"]["supported_precisions"] == ["bfloat16"]
+
+    # Static CPU inspection environment stays float32 and uncompiled.
+    inspect_env = backend.environment()
+    assert inspect_env["NANOCHAT_DTYPE"] == "float32"
+    assert inspect_env["TORCHDYNAMO_DISABLE"] == "1"
+
+    with gpu.reserve(backend.execution_config, GPU_A) as lease:
+        cuda_env = backend.environment(backend.profiles["research-fixture"], gpu=lease)
+    assert cuda_env["NANOCHAT_DTYPE"] == "bfloat16"
+    assert cuda_env["TORCHDYNAMO_DISABLE"] == "0"
+    assert cuda_env["FLA_DISABLE_BACKEND_DISPATCH"] == "1"

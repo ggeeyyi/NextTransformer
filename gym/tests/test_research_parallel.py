@@ -81,3 +81,55 @@ def test_accumulated_checkpoint_continuation_and_token_count(tmp_path):
     assert a["data"] == b["data"]
     assert resumed["training_tokens"] == full["training_tokens"] == 112
     assert context[2]("get_budget")["reserved"] == "0"
+
+
+class EvalRowModel(nn.Module):
+    def __init__(self, vocab=16):
+        super().__init__()
+        self.embed = nn.Embedding(vocab, 6)
+        self.head = nn.Linear(6, vocab)
+        self.offset = 0
+
+    def set_row_offset(self, offset):
+        self.offset = offset
+
+    def forward(self, x):
+        rows = torch.arange(self.offset, self.offset + len(x), device=x.device)
+        hidden = self.embed(x) + rows[:, None, None] * 0.01
+        return self.head(hidden)
+
+
+@pytest.mark.parametrize("replicas,microbatch", [(1, 2), (2, 1), (2, 2), (3, 2)])
+def test_parallel_evaluation_matches_full_batch_with_row_offsets(replicas, microbatch):
+    from nexttransformer_gym.research import ResearchParallel
+
+    torch.manual_seed(42)
+    vocab = 16
+    model = EvalRowModel(vocab)
+    parallel = ResearchParallel(model, 1)
+    for _ in range(1, replicas):
+        parallel.models.append(copy.deepcopy(model))
+
+    x = torch.randint(0, vocab, (7, 5))
+    labels = torch.randint(0, vocab, (7, 5))
+    sizes = torch.tensor([0 if i == 0 else (i % 3) + 1 for i in range(vocab)])
+
+    reference = copy.deepcopy(model)
+    reference.eval()
+    with torch.no_grad():
+        reference.set_row_offset(14)
+        logits = reference(x)
+        targets = labels.reshape(-1)
+        losses = torch.nn.functional.cross_entropy(
+            logits.float().reshape(-1, vocab), targets, reduction="none"
+        )
+        valid = sizes[targets] > 0
+        expected_nats = float((losses * valid).sum())
+        expected_bytes = int(sizes[targets][valid].sum())
+        expected_tokens = int(targets.numel())
+
+    nats, byte_count, tokens = parallel.evaluate_batch(x, labels, sizes, 14, microbatch)
+    assert nats == pytest.approx(expected_nats, rel=1e-6)
+    assert byte_count == expected_bytes
+    assert tokens == expected_tokens
+    assert all(m.offset == 14 and not m.training for m in parallel.models)

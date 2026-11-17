@@ -89,6 +89,56 @@ class ResearchParallel:
         for replica in self.models[1:]:
             replica.load_state_dict(state)
 
+    def evaluate_batch(self, x, labels, sizes, row_offset, microbatch_size):
+        """Evaluate one global dev batch across local replicas in parallel."""
+        batch, count = x.shape[0], len(self.models)
+        for model in self.models:
+            model.eval()
+
+        def score(index, start, end):
+            model = self.models[index]
+            device = next(model.parameters()).device
+            context = (
+                torch.cuda.device(device) if device.type == "cuda" else nullcontext()
+            )
+            with context, torch.no_grad():
+                model.set_row_offset(row_offset + start)
+                logits = model(x[start:end].to(device))
+                targets = labels[start:end].to(device).reshape(-1)
+                local_sizes = sizes.to(device)
+                losses = torch.nn.functional.cross_entropy(
+                    logits.float().reshape(-1, logits.size(-1)),
+                    targets,
+                    reduction="none",
+                )
+                valid = local_sizes[targets] > 0
+                return (
+                    float((losses * valid).sum()),
+                    int(local_sizes[targets][valid].sum()),
+                    int(targets.numel()),
+                )
+
+        if count == 1 and microbatch_size >= batch:
+            result = score(0, 0, batch)
+            self.models[0].set_row_offset(row_offset)
+            return result
+
+        nats, byte_count, tokens = 0.0, 0, 0
+        with ThreadPoolExecutor(max_workers=count) as pool:
+            for start, end in microbatches(batch, microbatch_size, count):
+                slices = list(replica_slices(start, end, count))
+                futures = [
+                    pool.submit(score, i, a, b) for i, (a, b) in enumerate(slices)
+                ]
+                for future in futures:
+                    part_nats, part_bytes, part_tokens = future.result()
+                    nats += part_nats
+                    byte_count += part_bytes
+                    tokens += part_tokens
+        for model in self.models:
+            model.set_row_offset(row_offset)
+        return nats, byte_count, tokens
+
     def routing_states(self):
         return [model.routing_rng_state() for model in self.models]
 

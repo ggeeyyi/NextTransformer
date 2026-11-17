@@ -461,3 +461,84 @@ def test_unisolated_backend_warns_and_runs_worker_directly(tmp_path, capsys):
         "-m",
         "nexttransformer_gym.worker",
     ]
+
+
+def test_validation_and_debug_report_explicit_admission_reasons(context):
+    from nexttransformer_gym import worker
+
+    service, _, call, candidate = context
+    dbg = complete(
+        service,
+        call,
+        call(
+            "debug_candidate",
+            candidate_id=candidate["id"],
+            profile_id="final-fixture",
+            check="construction",
+            idempotency_key="dbg-reason",
+        ),
+    )
+    assert dbg["admitted"] is False
+    assert "partial diagnostic" in dbg["admission_reason"]
+
+    research_val = complete(
+        service,
+        call,
+        call(
+            "validate_candidate",
+            candidate_id=candidate["id"],
+            profile_id="research-fixture",
+            idempotency_key="val-research-reason",
+        ),
+    )
+    assert research_val["admitted"] is False
+    assert "final profile" in research_val["admission_reason"]
+
+    final_val = complete(
+        service,
+        call,
+        call(
+            "validate_candidate",
+            candidate_id=candidate["id"],
+            profile_id="final-fixture",
+            idempotency_key="val-final-reason",
+        ),
+    )
+    assert final_val["admitted"] is True
+    assert final_val["admission_reason"] is None
+
+    all_ok = {
+        "construction": True,
+        "numerical": True,
+        "causal": True,
+        "checkpoint": True,
+        "cost_coverage": True,
+    }
+    climbmix_final = {
+        "kind": "final",
+        "official_compatibility_verified": True,
+        "data": {"kind": "climbmix"},
+    }
+    admitted, reason = worker.admission_status(
+        {**all_ok, "numerical": False}, {"anchor_ratio": 1.0}, climbmix_final
+    )
+    assert admitted is False and reason == "failed checks: numerical"
+
+    admitted, reason = worker.admission_status(
+        all_ok,
+        {"anchor_ratio": 1.0},
+        {**climbmix_final, "official_compatibility_verified": False},
+    )
+    assert admitted is False and "final profile" in reason
+
+    admitted, reason = worker.admission_status(
+        all_ok, {"anchor_ratio": 0.2415}, climbmix_final
+    )
+    assert (
+        admitted is False and "anchor_ratio 0.241500" in reason and "0.990000" in reason
+    )
+
+    admitted, reason = worker.admission_status(
+        all_ok, {"anchor_ratio": 1.0003}, climbmix_final
+    )
+    assert admitted is True and reason is None

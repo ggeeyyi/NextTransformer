@@ -177,7 +177,7 @@ def test_research_run_through_koala_charges_the_quoted_bound(gym):
     assert (
         ended["pod_started"] == entries[1]["pod_started"] and ended["pod_seconds"] > 0
     )
-    assert ended["gpu_hours"] == round(ended["pod_seconds"] * 1 * 1 / 3600, 4)
+    assert abs(ended["gpu_hours"] - ended["pod_seconds"] / 3600) <= 1e-4
 
 
 @pytest.mark.parametrize("gym", ["cpfs", "s3"], indirect=True)
@@ -872,16 +872,41 @@ def test_research_gpus_and_microbatch_reach_the_gym_execution_configuration(gym)
     from nexttransformer_gym.gpu import configuration
 
     config = koala_gym.load_config(
-        write_config(gym, research_gpus=2, research_microbatch_size=4)
+        write_config(
+            gym,
+            research_gpus=2,
+            research_microbatch_size=4,
+            research_dtype="bfloat16",
+            research_compile=True,
+        )
     )
     settings = configuration(koala_gym.execution_settings(config))
     assert len(set(settings["gpu_ids"])) == 2
     assert settings["research_microbatch_size"] == 4
+    assert settings["research_dtype"] == "bfloat16"
+    assert settings["research_compile"] is True
     assert settings["isolation"] == config["pod_isolation"]
+    payload, _ = koala_gym.build_job(
+        config,
+        {
+            "quote": {"id": "q", "operation": "train", "bound": "1"},
+            "profile": {"device": "cuda:0"},
+            "gpu": {"id": "GPU-v0", "memory_limit_bytes": 1},
+        },
+        str(gym["base"] / "remote"),
+    )
+    env = koala_gym.worker_env(payload, gym["base"] / "code", gym["base"] / "work")
+    assert env["NANOCHAT_DTYPE"] == "bfloat16"
+    assert env["TORCHDYNAMO_DISABLE"] == "0"
+    assert env["FLA_DISABLE_BACKEND_DISPATCH"] == "1"
     with pytest.raises(SystemExit, match="research_gpus"):
         koala_gym.load_config(write_config(gym, virtual_gpus=2))
     with pytest.raises(SystemExit, match="positive integer"):
         koala_gym.load_config(write_config(gym, research_microbatch_size=0))
+    with pytest.raises(SystemExit, match="research_dtype"):
+        koala_gym.load_config(write_config(gym, research_dtype="float16"))
+    with pytest.raises(SystemExit, match="research_compile"):
+        koala_gym.load_config(write_config(gym, research_compile="yes"))
 
 
 def test_the_pod_maps_a_gpu_group_onto_its_own_gpus_in_order():

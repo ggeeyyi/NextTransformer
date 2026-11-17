@@ -39,10 +39,13 @@ class NativeBackend:
         for profile in self.profiles.values():
             if self.execution_config["gpu_ids"] and not profile.get("official_plan"):
                 profile["device"] = "cuda:0"
-                profile["research_device_count"] = len(self.execution_config["gpu_ids"])
-                profile["microbatch_size"] = self.execution_config[
-                    "research_microbatch_size"
-                ]
+                if profile["kind"] == "research":
+                    profile["research_device_count"] = len(
+                        self.execution_config["gpu_ids"]
+                    )
+                    profile["microbatch_size"] = self.execution_config[
+                        "research_microbatch_size"
+                    ]
                 profile.pop("cuda_visible_devices", None)
                 profile["accelerator_class"] = "cuda"
                 profile["memory_limit_bytes"] = self.execution_config[
@@ -133,7 +136,9 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
                 "source": self.revision,
                 "worker_runtime": self.worker_runtime,
                 "execution_config": self.execution_config,
-                "compute_dtype": "float32",
+                "compute_dtype": self.execution_config["research_dtype"]
+                if self.execution_config["gpu_ids"]
+                else "float32",
             }
         )
         self.cache = {}
@@ -292,7 +297,11 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
                 supported_device_counts=[bounded.get("research_device_count", 1)],
                 global_batch_size=profile["batch_size"],
                 microbatch_size=bounded.get("microbatch_size", profile["batch_size"]),
-                supported_precisions=["float32"],
+                supported_precisions=[
+                    self.execution_config["research_dtype"]
+                    if bounded.get("accelerator_class") == "cuda"
+                    else "float32"
+                ],
                 runtime_manifest_id=self.revision,
                 checkpoint_quota_bytes=profile.get("checkpoint_quota_bytes"),
             )
@@ -334,6 +343,11 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
                 card["id"] for card in gpu.get("devices", [gpu])
             )
             env["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+            env["NANOCHAT_DTYPE"] = self.execution_config["research_dtype"]
+            env["TORCHDYNAMO_DISABLE"] = (
+                "0" if self.execution_config["research_compile"] else "1"
+            )
+            env["FLA_DISABLE_BACKEND_DISPATCH"] = "1"
         if official:
             require(
                 profile is not None and profile.get("cuda_visible_devices"),
@@ -508,7 +522,8 @@ class Scheduler:
                         }
                         allocation = leases.enter_context(
                             reserve_group(policy)
-                            if profile.get("research_device_count", 1) > 1
+                            if quote["operation"] == "train"
+                            and profile.get("research_device_count", 1) > 1
                             else reserve(policy, quote.get("gpu_id"))
                         )
                     except GymError as error:

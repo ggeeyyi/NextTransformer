@@ -37,6 +37,34 @@ def operation(label, amount, function):
     return result
 
 
+def admission_status(checks, report, profile):
+    from nexttransformer.protocol.spec import Protocol
+
+    failed = sorted(name for name, passed in checks.items() if not passed)
+    if failed:
+        return False, f"failed checks: {', '.join(failed)}"
+    if profile["data"]["kind"] == "synthetic_fixture":
+        if profile["kind"] == "final":
+            return True, None
+        return (
+            False,
+            "research profile cannot grant final admission; validate on a final profile",
+        )
+    if not profile.get("official_compatibility_verified", False):
+        return (
+            False,
+            "profile is not verified for official final compatibility; validate on a final profile",
+        )
+    tol = Protocol().preflight_tolerance
+    ratio = float(report["anchor_ratio"])
+    if abs(ratio - 1.0) > tol:
+        return (
+            False,
+            f"anchor_ratio {ratio:.6f} outside [{1.0 - tol:.6f}, {1.0 + tol:.6f}]",
+        )
+    return True, None
+
+
 def execute(request):
     import torch
     from .numerics import build
@@ -44,7 +72,6 @@ def execute(request):
     from nexttransformer.models.native.config import NativeTrainConfig
     from nexttransformer.training.optimizer import build_optimizer
     from nexttransformer.native.optimizer import set_schedule
-    from nexttransformer.protocol.spec import Protocol
     from nexttransformer.runtime.process import rng_state, restore_rng
 
     torch.set_num_threads(1)
@@ -208,6 +235,7 @@ def execute(request):
                     "check": check,
                     "checks": {check: passed},
                     "admitted": False,
+                    "admission_reason": "partial diagnostic cannot grant final admission",
                     "execution": execution(),
                     "candidate_hash": candidate["hash"],
                     "profile_hash": quote["profile_hash"],
@@ -302,16 +330,7 @@ def execute(request):
         result = operation("validation", check_cost, checks)
         # Numerical and initialization bounds include trusted diagnostic operations
         # separately from the model-arithmetic convention; report this explicitly.
-        admitted = (
-            all(result.values())
-            and abs(report["anchor_ratio"] - 1) <= Protocol().preflight_tolerance
-            and profile.get("official_compatibility_verified", False)
-        )
-        if (
-            profile["data"]["kind"] == "synthetic_fixture"
-            and profile["kind"] == "final"
-        ):
-            admitted = all(result.values())
+        admitted, admission_reason = admission_status(result, report, profile)
         emit(
             {
                 "kind": "result",
@@ -319,6 +338,7 @@ def execute(request):
                     "checks": result,
                     "execution": execution(),
                     "admitted": admitted,
+                    "admission_reason": admission_reason,
                     "candidate_hash": candidate["hash"],
                     "profile_hash": quote["profile_hash"],
                     "runtime_revision": quote["runtime_revision"],
@@ -378,26 +398,15 @@ def execute(request):
     def evaluate():
         nats, byte_count, tokens = 0.0, 0, 0
         sizes = torch.tensor(token_bytes, device=device)
-        with torch.no_grad():
-            for dev_batch in range(profile["dev_batches"]):
-                x, labels = dev.batch(batch, device)
-                from .research import microbatches
-
-                for start, end in microbatches(
-                    batch, profile.get("microbatch_size", batch), 1
-                ):
-                    model.set_row_offset(dev_batch * batch + start)
-                    logits = model(x[start:end])
-                    targets = labels[start:end].reshape(-1)
-                    losses = torch.nn.functional.cross_entropy(
-                        logits.float().reshape(-1, logits.size(-1)),
-                        targets,
-                        reduction="none",
-                    )
-                    valid = sizes[targets] > 0
-                    nats += float((losses * valid).sum())
-                    byte_count += int(sizes[targets][valid].sum())
-                    tokens += targets.numel()
+        micro = profile.get("microbatch_size", batch)
+        for dev_batch in range(profile["dev_batches"]):
+            x, labels = dev.batch(batch, device)
+            part_nats, part_bytes, part_tokens = parallel.evaluate_batch(
+                x, labels, sizes, dev_batch * batch, micro
+            )
+            nats += part_nats
+            byte_count += part_bytes
+            tokens += part_tokens
         if byte_count <= 0 or not math.isfinite(nats):
             raise GymError(
                 "numerical_failure",
