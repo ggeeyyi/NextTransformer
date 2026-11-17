@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import shutil
 import signal
+import sqlite3
 import subprocess
 import sys
 import threading
@@ -94,8 +95,16 @@ class HostGym:
         def schedule():
             try:
                 while not self.stop.is_set():
-                    if not self.scheduler.work_once():
-                        self.stop.wait(0.2)
+                    try:
+                        if not self.scheduler.work_once():
+                            self.stop.wait(0.2)
+                    except sqlite3.OperationalError as exc:
+                        print(
+                            f"HostGym scheduler transient SQLite contention ({exc}); retrying.",
+                            file=sys.stderr,
+                            flush=True,
+                        )
+                        self.stop.wait(0.5)
             except BaseException as error:
                 self.failure = error
                 self.stop.set()

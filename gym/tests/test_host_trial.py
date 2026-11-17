@@ -239,3 +239,87 @@ def test_host_run_passes_operator_config_and_worker_python_to_real_backend(
     assert backend.worker_runtime["python"] == list(sys.version_info[:3])
     assert backend.server_id == "fixture-node"
     assert backend.profiles["research-fixture"]["device"] == "cuda:0"
+
+
+def test_concurrent_slow_inspections_do_not_starve_host_scheduler(
+    tmp_path, monkeypatch
+):
+    import base64
+    from concurrent.futures import ThreadPoolExecutor
+    import sqlite3
+    import time
+
+    host = make_host(tmp_path)
+    service = host.service
+    token = host.agent_credential["token"]
+    # Force a tight SQLite busy timeout so holding a write transaction across
+    # slow inspections would immediately trigger `database is locked`.
+    service.store.timeout = 0.25
+
+    from nexttransformer_gym import backend as backend_mod
+
+    real_run = backend_mod.subprocess.run
+
+    def slow_subprocess_run(*args, **kwargs):
+        time.sleep(0.35)
+        return real_run(*args, **kwargs)
+
+    monkeypatch.setattr(backend_mod.subprocess, "run", slow_subprocess_run)
+    host.start()
+    try:
+        client = client_for(host)
+        import io
+        import runpy
+
+        pack = runpy.run_path(str(ROOT / "gym/examples/make_candidate.py"))["package"]
+        candidates = []
+        for idx in range(4):
+            buf = io.BytesIO()
+            pack(buf, layers=2, mlp_width=128 + idx * 16)
+            cand = client.call(
+                "submit_candidate",
+                package_base64=base64.b64encode(buf.getvalue()).decode(),
+                idempotency_key=f"cand-{idx}",
+            )
+            candidates.append(cand)
+
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            futures = [
+                pool.submit(
+                    service.call,
+                    token,
+                    "inspect_cost",
+                    {"candidate_id": c["id"], "profile_id": "research-fixture"},
+                )
+                for c in candidates
+            ]
+            reports = [f.result() for f in futures]
+        assert len(reports) == 4
+        assert host.failure is None
+        assert host.worker_thread.is_alive()
+
+        # Also ensure a transient sqlite3.OperationalError inside work_once
+        # does not kill the background scheduler thread.
+        real_work_once = host.scheduler.work_once
+        calls = {"n": 0}
+
+        def flaky_work_once():
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise sqlite3.OperationalError("database is locked")
+            return real_work_once()
+
+        monkeypatch.setattr(host.scheduler, "work_once", flaky_work_once)
+        job = client.call(
+            "debug_candidate",
+            candidate_id=candidates[0]["id"],
+            profile_id="final-fixture",
+            check="construction",
+            idempotency_key="after-lock",
+        )
+        result = client.wait_result(job["id"], timeout=20)
+        assert result["checks"] == {"construction": True}
+        assert host.failure is None
+        assert host.worker_thread.is_alive()
+    finally:
+        host.close()
