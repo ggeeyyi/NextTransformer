@@ -1,7 +1,17 @@
 # Architecture research
 
-Design and compare native model plugins through the Gym API. This task's shipped
-profile is a bounded synthetic integration fixture, not an official benchmark run.
+## Goal
+
+Discover and submit a novel native language model architecture that achieves the strongest
+generalization performance (lowest validation bits-per-byte and highest downstream quality)
+under the platform's fixed formal training protocol, outperforming the strongest published
+methods in the repository, within your allocated research compute budget.
+
+During this session, you only have access to research training runs and development-split
+(`dev_bpb`) feedback through the Gym API; the formal validation split and CORE-22 benchmark
+remain sealed, and full formal training of your single frozen submission will be executed
+independently from scratch after the session ends. How you explore the architecture space
+and allocate your compute budget is entirely up to you.
 
 Your deliverable is a native ModelConfig and its plugin source. Gym owns the training profiles.
 Do not submit machine settings or training commands.
