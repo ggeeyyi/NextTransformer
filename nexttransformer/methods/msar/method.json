@@ -1,0 +1,9 @@
+{
+  "name": "msar",
+  "family": "residual",
+  "title": "Multi-Stream Attention Residuals (MSAR)",
+  "paper": {"title": "Multi-Stream Attention Residuals", "url": "https://arxiv.org/abs/2610.13630"},
+  "options": {"block_size_layers": 3},
+  "shell": {"layers": 24, "mlp_width": 6144, "window_pattern": "L"},
+  "layer_multiple": 1
+}

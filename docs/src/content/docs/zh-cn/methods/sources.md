@@ -22,7 +22,7 @@ description: 对照原论文及锁定的参考代码，说明各方法在统一�
 | [Attention Residuals](https://arxiv.org/abs/2603.15031v1) | arXiv v1，第 3 节、图 2； [官方仓库](https://github.com/MoonshotAI/Attention-Residuals/tree/85e22310fe5ee860b4a023de312d791de8a5a5e6) |
 | [lucidrains/hyper-connections](https://github.com/lucidrains/hyper-connections/blob/e89e30357d1f79945b0d3558e6721451ff68789a/hyper_connections/manifold_constrained_hyper_connections.py) | 仅用于核对 mHC 的静态偏置初始化 |
 
-数学参考实现独立编写。CUDA 线性注意力训练调用 MIT 许可的 `fla-core==0.5.2`，版本及哈希锁定在 `requirements/linear.txt`；仓库不包含上游 CUDA 或 Triton 内核源码。
+除下文注明来源的 MSAR 内核依赖外，数学参考实现独立编写。CUDA 线性注意力训练调用 MIT 许可的 `fla-core==0.5.2`，版本及哈希锁定在 `requirements/linear.txt`。
 
 ## 统一骨干
 
@@ -83,6 +83,7 @@ DSA、QSA 和 Seer 均从随机初始化开始，在总计 46,875 次更新中�
 | `attnres_canon_abcd` | 在 `attnres` 的四个位置（A–D）加入 [Canon 层](https://arxiv.org/abs/2512.17351)；由 NextT-Gym 在 arena v1 中找到 | `attnres` 的主干及其 8 组不变。Canon 层是对最近四个位置的因果逐通道卷积，加回到输入上；权重从零开始，所以模型初始时就是 `attnres`。Canon-A/C 作用于每个子层经深度读取后的输入，在子层的 RMSNorm 之前；Canon-B 作用于 q、k、v，在旋转位置编码和 QK-norm 之前；Canon-D 作用于 MLP 的隐藏激活，在平方 ReLU 之前。卷积权重用 AdamW 训练（骨干中非矩阵参数所在的组）。插件 `nexttransformer/methods/attnres_canon_abcd`。 |
 | `attnres_full_canon_abcd` | Full AttnRes（[Attention Residuals](https://arxiv.org/abs/2603.15031v1)，每块一组），并在四个位置（A–D）加入 [Canon 层](https://arxiv.org/abs/2512.17351)；由 NextT-Gym 在 arena v1 中找到 | 每个块自成一组，所以每个子层分别读取嵌入和此前每个块的输出，而不是组之和。Canon 层是对最近四个位置的因果逐通道卷积，加回到输入上；权重从零开始，所以模型初始时就是 Full AttnRes。Canon-A/C 作用于每个子层经深度读取后的输入，在子层的 RMSNorm 之前；Canon-B 作用于 q、k、v，在旋转位置编码和 QK-norm 之前；Canon-D 作用于 MLP 的隐藏激活，在平方 ReLU 之前。卷积权重用 AdamW 训练（骨干中非矩阵参数所在的组）。插件 `nexttransformer/methods/attnres_full_canon_abcd`；Canon AttnRes 的代码在辅助模块 `nexttransformer/methods/attnres_canon_abcd` 中。 |
 | `simplehc` | [SimpleHC](https://arxiv.org/abs/2611.05984) 第 3.1–3.2 节、式 3–6：恒等残差传递（`H_res = I`）、mHC 全状态读写门、每 `K = 4` 个子层共享门控输入 | 四路 1536 宽残差流（`n = 4`）；46 个注意力和 FFN 子层划分为 11 个 4 子层组与最后 1 个 2 子层组。每组对展平的 `4 × 1536` 入口状态做一次无参数 RMSNorm，投影生成 `H_pre = σ` 与 `H_post = 2σ`（权重 `N(0, 0.006)`、门尺度 `0.01`、零偏置，初始读门 `0.5`、写门 `1`，见附录 A.1）。组内前序子层输出通过标量修正 `d_{j,k} = h_pre_j · h_post_k`（式 4）传入后续子层输入，并在组尾一次性写回四路状态（式 5）。采用等价 PyTorch 代数实现，不包含论文融合的 DeepGEMM/Triton 内核；门控参数归入无权重衰减的辅助 AdamW 参数组。插件 `nexttransformer/methods/simplehc`。 |
+| `msar` | [Multi-Stream Attention Residuals](https://arxiv.org/abs/2610.13630v1)：多流深度注意力、时间源增强与自适应流混合 | 原始状态与宽度 4/8/12 的零初始化因果逐通道卷积构成四流。每三个 Transformer 层组成一个 block，子层输出先累加为单流状态，再做时间展开。每流独立 softmax depth read，通过 two-phase read 合并已完成源与当前部分和；HPre 用每流一个 sigmoid 标量混合四流。首层 attention 直接读取 embedding，最后 MLP 返回输入加输出，保留子层 pre-normalization。Query 和 HPre 使用辅助 AdamW，时间卷积参数使用非矩阵 AdamW。插件 `nexttransformer/methods/msar`；时间卷积内核的来源及许可位于 `_temporal_kernels.py` 文件头。 |
 
 残差家族的各方法与 `dense_full` 共用完整 MHA 骨干。对 Standard Residual 的配对差值应与相对 Dense 的总体差值分开报告。原论文在其他规模和 MoE 骨干上的增益不能直接推算本基准结果。
 

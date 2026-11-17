@@ -3,7 +3,7 @@ title: 模型库
 description: 按模型族浏览已注册的架构、论文和结果状态。
 ---
 
-当前共有 44 张模型卡。各方法在同一骨干上校准至相同训练算力。在[观测站](https://interactive-active-ai.github.io/NextTransformer/#atlas)选择模型可查看结构图、曲线和模型卡。“已注册”表示已有配置与模型卡，尚无公开运行结果。
+当前共有 45 张模型卡。各方法在同一骨干上校准至相同训练算力。在[观测站](https://interactive-active-ai.github.io/NextTransformer/#atlas)选择模型可查看结构图、曲线和模型卡。“已注册”表示已有配置与模型卡，尚无公开运行结果。
 
 | 模型族 | 方法 | 论文 | 结果 |
 |---|---|---|---|
@@ -32,6 +32,7 @@ description: 按模型族浏览已注册的架构、论文和结果状态。
 | 残差 | Block Attention Residuals · AttnRes (`attnres`) | [Attention Residuals](https://arxiv.org/abs/2603.15031) | 已发布 |
 | 残差 | Hyper-Connections · HC (`hc`) | [Hyper-Connections](https://arxiv.org/abs/2409.19606) | 已发布 |
 | 残差 | Manifold-Constrained Hyper-Connections · mHC (`mhc`) | [mHC: Manifold-Constrained Hyper-Connections](https://arxiv.org/abs/2512.24880) | 已发布 |
+| 残差 | MSAR (`msar`) | [Multi-Stream Attention Residuals](https://arxiv.org/abs/2610.13630) | 已发布 |
 | 残差 | Block AttnRes with Canon layers A–D (`attnres_canon_abcd`) | [Physics of Language Models: Part 4.1, Architecture Design and the Magic of Canon Layers](https://arxiv.org/abs/2512.17351) | 已注册 |
 | 残差 | AttnRes-Canon (`attnres_full_canon_abcd`) | [Physics of Language Models: Part 4.1, Architecture Design and the Magic of Canon Layers](https://arxiv.org/abs/2512.17351) | 已发布 |
 | 残差 | SimpleHC (`simplehc`) | [On the Design of Hyper-Connections: Simplification, Stability, and Scalability](https://arxiv.org/abs/2611.05984) | 已发布 |

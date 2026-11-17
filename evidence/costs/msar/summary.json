@@ -1,0 +1,19 @@
+{
+  "created_at": "2026-11-16T08:44:24.947907+00:00",
+  "source_hash": "8b6f899af5af45f0399a52fd9f3d32ccecf0dab38e04828a250c9c4ce9b8e4be",
+  "formula_version": "reference-aten-math-v2",
+  "torch": "2.9.1+cu128",
+  "rows": [
+    {
+      "method": "msar",
+      "status": "theoretical_preflight_passed",
+      "parameters": 1358888937,
+      "ffn": 6144,
+      "physical_layers": 23,
+      "core_layers": 9,
+      "flops_per_token": 4716253377.789318,
+      "relative_error": 0.009385983233196171,
+      "elapsed_seconds": 882.0473066590494
+    }
+  ]
+}

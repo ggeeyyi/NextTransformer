@@ -1,0 +1,82 @@
+{
+  "schema": "msar-release-correspondence-v1",
+  "status": "local_checks_passed",
+  "scope": "Bounded numerical comparison and final model payload compatibility; not a replay of full training or maintainer acceptance.",
+  "training": {
+    "model_hash": "3ad0ae230171333afd96f441b130c8e11a05169a7c7894faa2c9dc8ce58c1209",
+    "method_source_hash": "b7a4255813a3b7b4cbaf040407e6ea620a6eda1671741268139cb17880e51c14",
+    "science_hash": "f5e46218d8e8065f51107b0c4dab3d0a91468be78b6bf5a40f05140144059df7"
+  },
+  "release": {
+    "model_hash": "33d0663beae34730f20f0afc5ad5f07a4ad1692660c059d292f1467315236464",
+    "method_source_hash": "436aa85f830277ee69786e09c5d70bcc9060e5830075cc73c2fb34a4384e97b4",
+    "cost_record": "evidence/costs/msar/msar.json",
+    "parameters": 1358888937,
+    "flops_per_token": 4716253377.789318,
+    "total_training_flops": 231813286025100562500,
+    "relative_error": 0.009385983233196171
+  },
+  "configuration": "Identical scientific fields; release options contain only block_size_layers.",
+  "cpu_float32": [
+    {
+      "layers": 1,
+      "width": 48,
+      "batch": 2,
+      "sequence_len": 7,
+      "initialization": "bitwise_equal",
+      "logits": "bitwise_equal",
+      "gradients": "bitwise_equal",
+      "optimizer_groups": "identical"
+    },
+    {
+      "layers": 3,
+      "width": 48,
+      "batch": 2,
+      "sequence_len": 7,
+      "initialization": "bitwise_equal",
+      "logits": "bitwise_equal",
+      "gradients": "bitwise_equal",
+      "optimizer_groups": "identical"
+    },
+    {
+      "layers": 4,
+      "width": 48,
+      "batch": 2,
+      "sequence_len": 7,
+      "initialization": "bitwise_equal",
+      "logits": "bitwise_equal",
+      "gradients": "bitwise_equal",
+      "optimizer_groups": "identical"
+    },
+    {
+      "layers": 7,
+      "width": 48,
+      "batch": 2,
+      "sequence_len": 7,
+      "initialization": "bitwise_equal",
+      "logits": "bitwise_equal",
+      "gradients": "bitwise_equal",
+      "optimizer_groups": "identical"
+    },
+    {
+      "layers": 23,
+      "width": 48,
+      "batch": 2,
+      "sequence_len": 7,
+      "initialization": "bitwise_equal",
+      "logits": "bitwise_equal",
+      "gradients": "bitwise_equal",
+      "optimizer_groups": "identical"
+    }
+  ],
+  "checkpoint": {
+    "step": 46875,
+    "model_sha256": "d3495d9ee1f209bc04deff5c11f84382820158613b6417241c1de71f86e37bff",
+    "bytes": 4127108958,
+    "checksum_verified": true,
+    "strict_load": true,
+    "tensor_count": 487,
+    "schema_sha256": "e39ae1a5b344c80abc7a76b5816b541ea38ff19b833f96732dc2be091c6eefc5"
+  },
+  "shared_source_note": "The common attention loader changed upstream; the original run used SDPA. This check uses the current CPU shell, not a full replay of the historical runtime."
+}

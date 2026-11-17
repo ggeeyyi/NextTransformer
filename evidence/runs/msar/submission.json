@@ -1,0 +1,20 @@
+{
+  "method": "msar",
+  "paper": "https://arxiv.org/abs/2610.13630",
+  "status": "fork_review",
+  "training_base_commit": "538653bbc67c63396ac27a87b023769be54d2d90",
+  "training_snapshot_manifest_sha256": "fcbbfed45847b546766a193bbdabd44f4a72c6d0daf74b1464d4bdcbd0209faa",
+  "training_model_hash": "3ad0ae230171333afd96f441b130c8e11a05169a7c7894faa2c9dc8ce58c1209",
+  "training_science_hash": "f5e46218d8e8065f51107b0c4dab3d0a91468be78b6bf5a40f05140144059df7",
+  "metrics_sha256": "9d96145e9780f6aa605dac2015cb875be1ba2ea306b698b32914cd8d60410ad8",
+  "publication_transformations": [
+    "The standard result exporter was used; its private code_snapshot location was replaced by the SHA256 of that exact manifest.",
+    "No scientific result or historical fingerprint was replaced with a release fingerprint.",
+    "The original run, checkpoint and provenance were not edited."
+  ],
+  "review_items": [
+    "Maintainer acceptance of source correspondence and proposal.",
+    "Author review of complete launch history and final-setting selection.",
+    "Public source/artifact access and source attribution review before upstream submission."
+  ]
+}

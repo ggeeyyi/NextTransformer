@@ -3,7 +3,7 @@ title: Model zoo
 description: Every method in NextTransformer, by family.
 ---
 
-NextTransformer has 44 model cards in seven families. Every method runs in the same shell and is calibrated to
+NextTransformer has 45 model cards in seven families. Every method runs in the same shell and is calibrated to
 the same training compute. Open a method in the [observatory](https://interactive-active-ai.github.io/NextTransformer/#atlas) for its architecture diagram, curves and
 model card; "registered" methods have a card and a configuration but no published run.
 
@@ -34,6 +34,7 @@ model card; "registered" methods have a card and a configuration but no publishe
 | Residual | Block Attention Residuals · AttnRes (`attnres`) | [Attention Residuals](https://arxiv.org/abs/2603.15031) | published |
 | Residual | Hyper-Connections · HC (`hc`) | [Hyper-Connections](https://arxiv.org/abs/2409.19606) | published |
 | Residual | Manifold-Constrained Hyper-Connections · mHC (`mhc`) | [mHC: Manifold-Constrained Hyper-Connections](https://arxiv.org/abs/2512.24880) | published |
+| Residual | MSAR (`msar`) | [Multi-Stream Attention Residuals](https://arxiv.org/abs/2610.13630) | published |
 | Residual | Block AttnRes with Canon layers A–D (`attnres_canon_abcd`) | [Physics of Language Models: Part 4.1, Architecture Design and the Magic of Canon Layers](https://arxiv.org/abs/2512.17351) | registered |
 | Residual | AttnRes-Canon (`attnres_full_canon_abcd`) | [Physics of Language Models: Part 4.1, Architecture Design and the Magic of Canon Layers](https://arxiv.org/abs/2512.17351) | published |
 | Residual | SimpleHC (`simplehc`) | [On the Design of Hyper-Connections: Simplification, Stability, and Scalability](https://arxiv.org/abs/2611.05984) | published |

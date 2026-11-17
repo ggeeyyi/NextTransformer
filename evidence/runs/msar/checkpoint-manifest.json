@@ -1,0 +1,139 @@
+{
+  "scope": "Original completion manifest. The release check separately verifies the model payload checksum; rank payloads were not rehashed in that check.",
+  "step": 46875,
+  "world_size": 32,
+  "files": {
+    "model.pt": {
+      "bytes": 4127108958,
+      "sha256": "d3495d9ee1f209bc04deff5c11f84382820158613b6417241c1de71f86e37bff"
+    },
+    "rank_0000.pt": {
+      "bytes": 438709720,
+      "sha256": "2ddb80d78593cc5e114cbccbf4da399d15c2e1c441744071fec5031c52d8a32a"
+    },
+    "rank_0001.pt": {
+      "bytes": 438709720,
+      "sha256": "0bd084c9d9696f3b09b6a46c6f6d9d95e0502971413a859f47020f5c93224e90"
+    },
+    "rank_0002.pt": {
+      "bytes": 438709720,
+      "sha256": "6b615ea430a81f1bffd22ec4bbf485ea438e50ffedd5e3016a59584767f4d754"
+    },
+    "rank_0003.pt": {
+      "bytes": 438709720,
+      "sha256": "4f40b6698262f88844bc74b39ff2ff27b41eaaf81c3cf4df4ddb72e330c294e7"
+    },
+    "rank_0004.pt": {
+      "bytes": 444549528,
+      "sha256": "f9d7e4a158682dfd86ec9f752d785c2a13e9db03f04d04d94ef9d19c52f61e59"
+    },
+    "rank_0005.pt": {
+      "bytes": 444549528,
+      "sha256": "3a9becd49fb7ba2761ceb36650daaf3eac974bff1600c04ceab31cf3fa39346c"
+    },
+    "rank_0006.pt": {
+      "bytes": 444549528,
+      "sha256": "faa9956f02e560706dacf073d4a6f0ab3463471270d031340a6a13726f52e848"
+    },
+    "rank_0007.pt": {
+      "bytes": 444549528,
+      "sha256": "9add1cc3e678796ad7dff0757c46dc77032b55774cefdd7291178347ba429d52"
+    },
+    "rank_0008.pt": {
+      "bytes": 440039512,
+      "sha256": "9f9e7dae4ee2b94500eb4d528d5fe792982aee2f59a64e36ca64bc33a717b106"
+    },
+    "rank_0009.pt": {
+      "bytes": 440039512,
+      "sha256": "767126d45880fdff56c31b00f49e59a71ecc3e345adf398c7013a7d363f64345"
+    },
+    "rank_0010.pt": {
+      "bytes": 440039512,
+      "sha256": "df4a6e1efd7812ead3fee96cd67930a932dfd8bc124c4e97639ce9a0d6280501"
+    },
+    "rank_0011.pt": {
+      "bytes": 440039512,
+      "sha256": "3dab4a9d3fab9c2c182ff59262922ea4370869ce277c59cdab64a7f594f824ec"
+    },
+    "rank_0012.pt": {
+      "bytes": 435516248,
+      "sha256": "d0a67430105353cb63bb5091fbcc19964ad4491e09d586a5b7fffe6cf2938883"
+    },
+    "rank_0013.pt": {
+      "bytes": 435516248,
+      "sha256": "743868dc603c4a2529f3cfc8e0a150084f68e69005309209488e1301926c0253"
+    },
+    "rank_0014.pt": {
+      "bytes": 435516248,
+      "sha256": "2fd87af50a2449adbea2848aa97bb82f2deaf1eb89d7704d8877c7ee74156fff"
+    },
+    "rank_0015.pt": {
+      "bytes": 435516248,
+      "sha256": "8181e80e91169686d67f90a13b5acb5c44fd72bf8d02620fa55128c53ebfaf09"
+    },
+    "rank_0016.pt": {
+      "bytes": 440893080,
+      "sha256": "88247341ee9c3cb9f02415de3b852e1e3190c8f65786815cf8eeb4fcea17e65e"
+    },
+    "rank_0017.pt": {
+      "bytes": 440893080,
+      "sha256": "be38c14c87e472d54de1879b0cd9b84b4332fdedffea4db30284b5548dbd290c"
+    },
+    "rank_0018.pt": {
+      "bytes": 440893080,
+      "sha256": "a7a01f42afd787340bf43f93fa5f57c7b3ddd9de3c7c7e1125ebb8832747f911"
+    },
+    "rank_0019.pt": {
+      "bytes": 440893080,
+      "sha256": "8fa7d6220f48595182fc1b8f58fbf6bc4feb887eb59e33831f778e1f6c0942ab"
+    },
+    "rank_0020.pt": {
+      "bytes": 447552088,
+      "sha256": "7b63659c3f98786659f6a193f94f11b82013ab4e4eccdd35b5b18ab9cb529704"
+    },
+    "rank_0021.pt": {
+      "bytes": 447552088,
+      "sha256": "0008b64b0c09282d7153bee9557a760d9b0f248a1a37cb53c1c1bf4cfdb5c255"
+    },
+    "rank_0022.pt": {
+      "bytes": 447552088,
+      "sha256": "8530de536742f7c75aaa2e5724301c2480cbc52da405e36dde137e06958cdd25"
+    },
+    "rank_0023.pt": {
+      "bytes": 447552088,
+      "sha256": "0147611600f1cd5a973ff7627ff74159bb79c2a5e10fcd49ffe736edaed5d273"
+    },
+    "rank_0024.pt": {
+      "bytes": 454822616,
+      "sha256": "2590efad5d4a124088398733ca568005a80cd08723deca6ec9e2d0c4a0aced5f"
+    },
+    "rank_0025.pt": {
+      "bytes": 454822616,
+      "sha256": "0e010066c072072f1b282fc8656781001fd79198209af19a60ba6414813b9352"
+    },
+    "rank_0026.pt": {
+      "bytes": 454822616,
+      "sha256": "ec06b473c21af1a2a7db8f4e2c5de658868bbf52ac722be5d6fe65fdb848e165"
+    },
+    "rank_0027.pt": {
+      "bytes": 454822616,
+      "sha256": "6563ece6c7fedc593d39e56cb92e5fcc9de74033584dcd450f9771d2375e9d47"
+    },
+    "rank_0028.pt": {
+      "bytes": 445802520,
+      "sha256": "df568f59d092314fa91ee2e4084e634aec20eef519cc523b01a3c411f75c6ab5"
+    },
+    "rank_0029.pt": {
+      "bytes": 445802520,
+      "sha256": "85cb93ac36f259ec32ce69d542a4e4079ca0843bef6fffd4925ad188fc477b67"
+    },
+    "rank_0030.pt": {
+      "bytes": 445802520,
+      "sha256": "e9521761cfbfcfd3fa40acd07571e19d2def2534962440d50c40bcd372efabc0"
+    },
+    "rank_0031.pt": {
+      "bytes": 445802520,
+      "sha256": "c77e05520bbfd2119fbd598fbc9311bf541712b31b4942d6b25880e9e46f73b0"
+    }
+  }
+}
