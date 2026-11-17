@@ -3,6 +3,8 @@
 import fcntl
 import json
 import os
+import sqlite3
+import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -118,8 +120,16 @@ def serve(service, state_dir, host="127.0.0.1"):
 
     def schedule():
         while not stop.is_set():
-            if not scheduler.work_once():
-                stop.wait(0.2)
+            try:
+                if not scheduler.work_once():
+                    stop.wait(0.2)
+            except sqlite3.OperationalError as exc:
+                print(
+                    f"Gym scheduler transient SQLite contention ({exc}); retrying.",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                stop.wait(0.5)
 
     worker = threading.Thread(target=schedule, daemon=True)
     worker.start()
