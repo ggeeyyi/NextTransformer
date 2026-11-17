@@ -70,12 +70,68 @@ class Service:
         except GymError:
             raise GymError("denied_access", "Invalid session credential.") from None
 
+    def _prewarm_inspection(self, token, operation, params):
+        """Run slow subprocess cost tracing outside the SQLite write lock."""
+        if operation not in {
+            "inspect_cost",
+            "quote_experiment",
+            "validate_candidate",
+            "debug_candidate",
+            "calibrate_candidate",
+        }:
+            return
+        if not isinstance(token, str) or not isinstance(params, dict):
+            return
+        cid, pid = params.get("candidate_id"), params.get("profile_id")
+        if (
+            not isinstance(cid, str)
+            or not isinstance(pid, str)
+            or pid not in self.backend.profiles
+        ):
+            return
+        try:
+            with self.store.read() as db:
+                principal = self.authenticate(db, token)
+                if principal["role"] != "agent":
+                    return
+                sid = principal["session_id"]
+                candidate = self.store.get(db, sid, "candidate", cid)
+                files = self.store.get(db, sid, "package", cid)["files"]
+        except Exception:
+            return
+        profile = self.backend.profiles[pid]
+        if operation != "calibrate_candidate":
+            candidate = {**candidate, "files": files}
+            self.backend.inspect(candidate, profile)
+            return
+        grid = params.get("grid")
+        if not isinstance(grid, list) or not (0 < len(grid) <= 32):
+            return
+        for architecture in grid:
+            if not isinstance(architecture, dict):
+                return
+            try:
+                package = files.copy()
+                proposal = json.loads(package["proposal.json"])
+                proposal["parent_ids"] = [candidate["id"]]
+                package["proposal.json"] = canonical(proposal)
+                package["architecture.json"] = canonical(architecture)
+                out = io.BytesIO()
+                with zipfile.ZipFile(out, "w") as archive:
+                    for name, content in package.items():
+                        archive.writestr(name, content)
+                derived = ingest(out.getvalue())
+            except Exception:
+                return
+            self.backend.inspect(derived, profile)
+
     def call(self, token, operation, params):
         require(
             isinstance(operation, str) and isinstance(params, dict),
             "invalid_request",
             "Invalid operation envelope.",
         )
+        self._prewarm_inspection(token, operation, params)
         with self.store.transaction() as db:
             principal = self.authenticate(db, token)
             sid, role = principal["session_id"], principal["role"]

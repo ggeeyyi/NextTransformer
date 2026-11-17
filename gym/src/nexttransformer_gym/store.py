@@ -3,15 +3,18 @@
 import contextlib
 import json
 import sqlite3
+import threading
 import time
 from pathlib import Path
 from .common import canonical, new_id, require
 
 
 class Store:
-    def __init__(self, path):
+    def __init__(self, path, timeout=300):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.path = str(path)
+        self.timeout = timeout
+        self._lock = threading.Lock()
         with self.transaction() as db:
             db.executescript("""
               PRAGMA journal_mode=WAL;
@@ -22,17 +25,26 @@ class Store:
             """)
 
     @contextlib.contextmanager
-    def transaction(self):
-        db = sqlite3.connect(self.path, timeout=30)
+    def read(self):
+        db = sqlite3.connect(self.path, timeout=self.timeout)
         try:
-            db.execute("BEGIN IMMEDIATE")
             yield db
-            db.commit()
-        except BaseException:
-            db.rollback()
-            raise
         finally:
             db.close()
+
+    @contextlib.contextmanager
+    def transaction(self):
+        with self._lock:
+            db = sqlite3.connect(self.path, timeout=self.timeout)
+            try:
+                db.execute("BEGIN IMMEDIATE")
+                yield db
+                db.commit()
+            except BaseException:
+                db.rollback()
+                raise
+            finally:
+                db.close()
 
     def put(self, db, owner, kind, value):
         value = dict(value)
