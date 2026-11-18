@@ -10,8 +10,10 @@ methods in the repository, within your allocated research compute budget.
 During this session, you only have access to research training runs and development-split
 (`dev_bpb`) feedback through the Gym API; the formal validation split and CORE-22 benchmark
 remain sealed, and full formal training of your single frozen submission will be executed
-independently from scratch after the session ends. How you explore the architecture space
-and allocate your compute budget is entirely up to you.
+independently from scratch after the session ends. Unused research budget carries no reward;
+make full use of your allocated compute budget to maximize confidence that your single final
+submission will win at the full 46,875-update formal horizon before finalizing. How you
+explore the architecture space and allocate your compute budget is entirely up to you.
 
 Your deliverable is a native ModelConfig and its plugin source. Gym owns the training profiles.
 Do not submit machine settings or training commands.
