@@ -31,10 +31,21 @@ Clusters. One file serves both Koala GPU clusters; a configuration names one (`c
   has one node. Bundles go to S3. `relay_env` passes the credentials either store needs.
 `probe` confirms a configuration's backend and runtime on its cluster before use.
 
-Research GPUs. A research job runs on one node with `research_gpus` GPUs: the Gym's execution configuration lists
-that many virtual cards, the Gym leases them as one group and splits each update across them, and the pod maps them
-onto its own GPUs in order. `research_microbatch_size` is the Gym's rows per GPU per pass; an update accumulates
-gradients over its passes. A check with a final profile uses one GPU.
+Research GPUs. A research job uses `research_gpus` GPUs: the Gym's execution configuration lists that many virtual
+cards, the Gym leases them as one group and splits each update across them, and the pods map them onto their own
+GPUs in order. Up to `research_gpus_per_node` GPUs fit one node; a larger group spans research_gpus /
+research_gpus_per_node nodes, and the Gym's split of each update is the same as on one machine with that many GPUs.
+`research_microbatch_size` is the Gym's rows per GPU per pass; an update accumulates gradients over its passes. A check
+with a final profile uses one GPU.
+
+Multi-node research. Every node runs the Gym worker on its share of the group (cards node*k .. node*k+k-1). Before
+the worker starts, the pod checks that the nodes reach each other over NCCL (`pod-mesh-check`, before the job is
+reported ready, so a broken mesh charges nothing). Each worker process then joins a one-process-per-node NCCL group,
+warms it up and only then refuses new network sockets (`pod_network` `deny`), before any candidate code loads: the
+workers keep the connections to their own job's nodes and open no others. Node 0 reports to the relay and alone writes
+the checkpoint; the other nodes write markers under `<remote>/research/` and stop their worker when a peer fails or
+node 0 is done. It needs a shared `remote_root` (the rendezvous) and `pod_isolation` `none`: the Landlock backend
+unshares the network namespace.
 
 Commands (controller, with the Gym environment's Python):
   koala_gym.py --koala koala.json probe                    record the pod runtime once
@@ -116,9 +127,13 @@ DEFAULTS = {
     "local_isolation": "bwrap",
     # Research workers in a pod without a sandbox ("none"): "deny" refuses new network sockets with seccomp.
     "pod_network": "deny",
-    # GPUs of one research job, on one node: the Gym's execution configuration lists this many (virtual) cards, and
-    # the Gym splits each update across all of them. Checks with a final profile still use one GPU.
+    # GPUs of one research job: the Gym's execution configuration lists this many (virtual) cards, and the Gym splits
+    # each update across all of them. Checks with a final profile still use one GPU.
     "research_gpus": 1,
+    # GPUs per node: a research group larger than this spans research_gpus / research_gpus_per_node nodes.
+    "research_gpus_per_node": 8,
+    # How long a multi-node research worker waits for the other nodes at a collective (compilation, checkpoints).
+    "research_mesh_timeout_seconds": 3600,
     # Rows per GPU per forward/backward pass (the Gym's research_microbatch_size); updates accumulate gradients.
     "research_microbatch_size": 1,
     # Precision and compiler settings for CUDA research/validation workers (static audits stay float32 on CPU).
@@ -213,9 +228,27 @@ def load_config(path):
         raise SystemExit("koala_gym: local_isolation must be 'bwrap' or 'none'")
     if config["pod_network"] not in ("deny", "allow"):
         raise SystemExit("koala_gym: pod_network must be 'deny' or 'allow'")
-    for key in ("research_gpus", "research_microbatch_size"):
+    for key in (
+        "research_gpus",
+        "research_microbatch_size",
+        "research_gpus_per_node",
+        "research_mesh_timeout_seconds",
+    ):
         if not (type(config[key]) is int and config[key] > 0):
             raise SystemExit(f"koala_gym: {key} must be a positive integer")
+    if config["research_gpus"] > config["research_gpus_per_node"]:
+        if config["research_gpus"] % config["research_gpus_per_node"]:
+            raise SystemExit(
+                "koala_gym: research_gpus must be a multiple of research_gpus_per_node to span nodes"
+            )
+        if object_store(config["remote_root"]):
+            raise SystemExit(
+                "koala_gym: multi-node research needs a shared remote_root for the nodes' rendezvous"
+            )
+        if config["pod_isolation"] != "none":
+            raise SystemExit(
+                "koala_gym: multi-node research needs pod_isolation 'none' (Landlock unshares the network)"
+            )
     if config["research_dtype"] not in ("float32", "bfloat16"):
         raise SystemExit("koala_gym: research_dtype must be 'float32' or 'bfloat16'")
     if type(config["research_compile"]) is not bool:
@@ -996,7 +1029,7 @@ def build_job(config, request, remote):
         plan["snapshot"] = f"{code}/snapshot"
         nodes, gpus = final_topology(config, profile)
     else:
-        nodes, gpus = 1, len(allocated_devices(request.get("gpu")))
+        nodes, gpus = research_topology(config, request.get("gpu"))
     payload = {
         "schema": "koala_gym.job.v1",
         "quote_id": quote["id"],
@@ -1024,8 +1057,22 @@ def build_job(config, request, remote):
         "rendezvous_seconds": config["rendezvous_seconds"],
         "spawn_wait_seconds": config["spawn_wait_seconds"],
         "master_port": config["master_port"],
+        "mesh_timeout_seconds": config["research_mesh_timeout_seconds"],
     }
     return payload, snapshot
+
+
+def research_topology(config, allocation):
+    """(nodes, GPUs per node) of a non-official job: a group larger than one node spans whole nodes."""
+    count, per = (
+        len(allocated_devices(allocation)),
+        int(config["research_gpus_per_node"]),
+    )
+    if count <= per:
+        return 1, count
+    if count % per:
+        raise KoalaError(f"a group of {count} GPUs does not fill nodes of {per}")
+    return count // per, per
 
 
 def relay(config_path):
@@ -1960,13 +2007,15 @@ def stop_identity(identity):
 
 
 SOCKET_SYSCALL = {"x86_64": (0xC000003E, 41), "aarch64": (0xC00000B7, 198)}
+SECCOMP_SYSCALL = {"x86_64": 317, "aarch64": 277}
 
 
-def deny_sockets(domains):
+def deny_sockets(domains, all_threads=False):
     """Refuse socket(2) for the given address families with EACCES, for this process and its children.
 
     An unprivileged seccomp filter (no_new_privs): it works where the pod has neither user namespaces nor
-    Landlock. Sockets opened before the filter, and pipes, keep working."""
+    Landlock. Sockets opened before the filter, and pipes, keep working. With `all_threads` the filter binds
+    every thread of the process (SECCOMP_FILTER_FLAG_TSYNC), including threads started before it."""
     import ctypes
     import errno
     import platform
@@ -1998,11 +2047,19 @@ def deny_sockets(domains):
         (ret, 0, 0, 0x00050000 | errno.EACCES),
     ]
     filters = (Filter * len(program))(*(Filter(*f) for f in program))
+    prog = Program(len(program), filters)
     libc = ctypes.CDLL(None, use_errno=True)
-    for call in (
-        lambda: libc.prctl(38, 1, 0, 0, 0),  # PR_SET_NO_NEW_PRIVS
-        lambda: libc.prctl(22, 2, ctypes.byref(Program(len(program), filters)), 0, 0),
-    ):  # SECCOMP_MODE_FILTER
+
+    def install():
+        if all_threads:
+            # seccomp(SECCOMP_SET_MODE_FILTER, SECCOMP_FILTER_FLAG_TSYNC, prog); a thread id means one refused.
+            return libc.syscall(
+                SECCOMP_SYSCALL[platform.machine()], 1, 1, ctypes.byref(prog)
+            )
+        # prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, prog): this thread and its descendants.
+        return libc.prctl(22, 2, ctypes.byref(prog), 0, 0)
+
+    for call in (lambda: libc.prctl(38, 1, 0, 0, 0), install):  # PR_SET_NO_NEW_PRIVS
         if call() != 0:
             raise OSError(ctypes.get_errno(), "seccomp filter refused")
 
@@ -2040,6 +2097,7 @@ def drive(
     stderr_path,
     progress_every=60.0,
     identity=None,
+    started=None,
 ):
     """Run one Gym worker and acknowledge its operations within the job's reservation."""
     with open(stderr_path, "a") as stderr:
@@ -2054,6 +2112,8 @@ def drive(
             cwd=cwd,
             **(identity or {}),
         )
+        if started is not None:
+            started(process)
 
         def send(value):
             process.stdin.write(json.dumps(value) + "\n")
@@ -2303,6 +2363,8 @@ def pod_run(job_path, node, master, seq):
     (work / "tmp").mkdir(exist_ok=True)
     if request["quote"]["operation"] == "official":
         return official_node(payload, node, master, emit, code, work, remote)
+    if int(payload["nodes"]) > 1:
+        return research_node(payload, node, master, emit, code, work, remote)
     if node != 0:
         return 0
     env = worker_env(payload, code, work)
@@ -2367,6 +2429,330 @@ def pod_run(job_path, node, master, seq):
     explain(outcome, work / "worker.stderr")
     keep_log(work / "worker.stderr", remote)
     return report(emit, payload, outcome, remote)
+
+
+# ---------------------------------------------------------------------------------- multi-node research
+
+# Connect every NCCL algorithm when the group forms, so nothing connects after the socket filter; NCCL's RAS service
+# keeps sockets of its own, and torch's heartbeat monitor and timeout dumps are not needed.
+MESH_ENV = {
+    "NCCL_RUNTIME_CONNECT": "0",
+    "NCCL_RAS_ENABLE": "0",
+    "TORCH_NCCL_ENABLE_MONITORING": "0",
+    "TORCH_NCCL_DUMP_ON_TIMEOUT": "0",
+}
+PEER_GRACE_SECONDS = 60
+
+
+def mesh_spec(payload, node, master, port):
+    """The trusted description of a node's place in the job, for its research processes (never candidate input)."""
+    return json.dumps(
+        {
+            "node": node,
+            "nodes": int(payload["nodes"]),
+            "master": master,
+            "port": port,
+            "timeout": int(payload.get("mesh_timeout_seconds", 3600)),
+            "network": payload.get("network", "deny"),
+        }
+    )
+
+
+def research_node(payload, node, master, emit, code, work, remote):
+    """One node of a multi-node research job: its share of the GPU group, a worker in the nodes' NCCL group."""
+    import threading
+
+    request = payload["request"]
+    nodes, per = int(payload["nodes"]), int(payload["gpus_per_node"])
+    lead = node == 0
+    handoff = remote / "research"
+    handoff.mkdir(parents=True, exist_ok=True)
+
+    def mark(name, text=""):
+        tmp = handoff / f".{name}-{os.getpid()}"
+        tmp.write_text(text)
+        tmp.replace(handoff / name)
+
+    def peers_failed():
+        return sorted(
+            p.name for p in handoff.glob("failed-*") if p.name != f"failed-{node}"
+        )
+
+    def await_lead(seconds):
+        """Another node stays up until node 0 has logged the outcome: a Koala job ends when any of its pods does,
+        and node 0 must still report (a pre-failure, a failure, or the result)."""
+        deadline = time.time() + seconds
+        while not (handoff / "done").exists() and time.time() < deadline:
+            time.sleep(5)
+
+    # Only node 0's log reaches the relay; the others record their events for people reading the pods' logs.
+    report_to = (
+        emit
+        if lead
+        else lambda kind, **fields: emit("satellite", node=node, event=kind, **fields)
+    )
+    env = worker_env(payload, code, work)
+    env.update(
+        {k: v for k, v in os.environ.items() if k.startswith("NCCL_")}, **MESH_ENV
+    )
+    identity = {}
+    try:
+        if payload["isolation"] != "none":
+            raise PodError(
+                "resource_unavailable", "multi-node research needs pod_isolation none"
+            )
+        from nexttransformer_gym.backend import NativeBackend
+
+        identity = NativeBackend.worker_identity(request)
+        wanted = allocated_devices(request.get("gpu"))
+        if len(wanted) != nodes * per:
+            raise PodError(
+                "resource_unavailable",
+                f"a group of {len(wanted)} GPUs for {nodes} nodes of {per}",
+            )
+        share = wanted[node * per : (node + 1) * per]
+        request["gpu"], visible = assign_gpus(
+            dict(request["gpu"], devices=share), local_gpus(per)
+        )
+        env.update(CUDA_VISIBLE_DEVICES=visible, CUDA_DEVICE_ORDER="PCI_BUS_ID")
+        if not lead:  # node 0 alone writes the job's checkpoint
+            request["output"] = str(work / "tmp" / "follower" / "checkpoint.pt")
+        workspace = Path(request["output"]).parent
+        workspace.mkdir(parents=True, exist_ok=True)
+        if identity:
+            for path in (work / "tmp", work / "home", workspace):
+                grant(path, identity)
+            reach(workspace, payload.get("remote_root") or remote.parent.parent)
+            reach(work / "tmp", work)
+        port = int(payload["master_port"])
+        # Before node 0 reports ready (a broken mesh charges nothing): the nodes meet as the worker identity. A
+        # node that failed before the check leaves a marker, and the others stop waiting for it.
+        check = subprocess.Popen(
+            [sys.executable, str(code / "koala_gym.py"), "pod-mesh-check"],
+            env=dict(
+                env, KOALA_GYM_RESEARCH_MESH=mesh_spec(payload, node, master, port + 1)
+            ),
+            cwd=work / "tmp",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            **identity,
+        )
+        output = []
+        reader = threading.Thread(
+            target=lambda: output.append(check.stdout.read()), daemon=True
+        )
+        reader.start()
+        deadline = time.time() + float(payload["rendezvous_seconds"]) + 600
+        while check.poll() is None:
+            failed = peers_failed()
+            if failed or time.time() > deadline:
+                check.kill()
+                check.wait()
+                raise PodError(
+                    "resource_unavailable",
+                    "the NCCL mesh check stopped: "
+                    + (", ".join(failed) or "the nodes did not meet in time"),
+                )
+            time.sleep(2)
+        reader.join(60)
+        text = "".join(output)
+        (work / "mesh.log").write_text(text)
+        keep_log(work / "mesh.log", remote)
+        if check.returncode:
+            raise PodError(
+                "resource_unavailable",
+                "the nodes did not form an NCCL group: " + text[-1200:],
+            )
+        report_to("mesh", value=mesh_result(text))
+        env["KOALA_GYM_RESEARCH_MESH"] = mesh_spec(payload, node, master, port)
+        worker = [sys.executable, str(code / "koala_gym.py"), "pod-research-rank"]
+    except Exception as error:
+        mark(f"failed-{node}", repr(error)[-1500:])
+        if not lead:
+            report_to("pre_failure", detail=repr(error)[-1500:])
+            await_lead(float(payload["rendezvous_seconds"]) + 900)
+            return 1
+        emit(
+            "done",
+            outcome="pre_failure",
+            error_code=getattr(error, "code", "resource_unavailable"),
+            detail=repr(error)[-1500:],
+        )
+        mark("done", "pre_failure")
+        return 1
+    if lead:
+        emit(
+            "ready",
+            isolation=payload["isolation"],
+            uid=identity.get("user", os.geteuid()),
+            network="allowed" if payload.get("network") == "allow" else "denied",
+            nodes=nodes,
+            gpus_per_node=per,
+        )
+    stop, stopped_by = threading.Event(), {}
+
+    def watch(process):
+        """Stop this node's worker when a peer failed (after a grace period) or, on another node, node 0 ended."""
+
+        def loop():
+            first = None
+            while not stop.wait(5):
+                failed = peers_failed()
+                ended = not lead and (handoff / "done").exists()
+                if failed and first is None:
+                    first = time.time()
+                if ended or (failed and time.time() - first >= PEER_GRACE_SECONDS):
+                    stopped_by["reason"] = ", ".join(failed) or "node 0 ended"
+                    process.kill()
+                    stop_identity(identity)
+                    return
+
+        threading.Thread(target=loop, daemon=True).start()
+
+    outcome = drive(
+        worker,
+        env,
+        request,
+        int(payload["credit"]),
+        report_to,
+        work / "tmp",
+        work / "worker.stderr",
+        progress_every=15.0 if lead else 300.0,
+        identity=identity,
+        started=watch,
+    )
+    stop.set()
+    stop_identity(identity)
+    if outcome["outcome"] != "succeeded":
+        mark(f"failed-{node}", outcome.get("detail") or outcome["outcome"])
+    if lead and outcome["outcome"] == "unknown":
+        # A peer's failure ends this worker at its next collective; that is a known failure, not a lost job.
+        deadline = time.time() + PEER_GRACE_SECONDS
+        while not peers_failed() and not stopped_by and time.time() < deadline:
+            time.sleep(5)
+        failed = peers_failed()
+        if failed or stopped_by:
+            outcome = {
+                "outcome": "failed",
+                "error_code": "infrastructure_failure",
+                "spent": outcome["spent"],
+                "detail": "another node failed: "
+                + (", ".join(failed) or stopped_by.get("reason", "")),
+            }
+    explain(outcome, work / "worker.stderr")
+    keep_log(work / "worker.stderr", remote)
+    if not lead:
+        report_to("worker", outcome=outcome["outcome"], detail=outcome.get("detail"))
+        # Node 0 stops its own worker PEER_GRACE_SECONDS after this node's failure marker, or its worker fails at
+        # the next collective (within the mesh timeout); either way it then reports and leaves the done marker.
+        await_lead(int(payload.get("mesh_timeout_seconds", 3600)) + 900)
+        return 0 if outcome["outcome"] == "succeeded" else 1
+    code_ = report(emit, payload, outcome, remote)
+    mark("done", outcome["outcome"])
+    return code_
+
+
+def mesh_result(stdout):
+    """The mesh check's JSON line; NCCL may log around it (NCCL_DEBUG)."""
+    for line in reversed(stdout.splitlines()):
+        if line.startswith("{"):
+            try:
+                return json.loads(line)
+            except ValueError:
+                continue
+    return None
+
+
+def mesh_group(mesh):
+    """Join the job's one-process-per-node NCCL group on this node's first GPU, connected eagerly."""
+    import datetime
+
+    import torch
+    import torch.distributed as dist
+
+    torch.cuda.set_device(0)
+    dist.init_process_group(
+        "nccl",
+        init_method=f"tcp://{mesh['master']}:{int(mesh['port'])}",
+        rank=int(mesh["node"]),
+        world_size=int(mesh["nodes"]),
+        timeout=datetime.timedelta(seconds=int(mesh["timeout"])),
+        device_id=torch.device("cuda", 0),
+    )
+    return torch, dist
+
+
+def warm_mesh(torch, dist):
+    """Run each collective the research worker uses, small and large, so NCCL has connected all of them."""
+    world = dist.get_world_size()
+    for numel in (1, 1 << 10, 1 << 20, 1 << 26):
+        for dtype in (torch.float32, torch.float64, torch.int32, torch.bfloat16):
+            value = torch.ones(numel, dtype=dtype, device="cuda")
+            dist.all_reduce(value)
+            dist.all_reduce(value, op=dist.ReduceOp.MAX)
+            dist.broadcast(value, src=0)
+            dist.all_gather([torch.empty_like(value) for _ in range(world)], value)
+            del value
+    gathered = [None] * world
+    dist.all_gather_object(gathered, {"node": dist.get_rank()})
+    dist.barrier()
+    torch.cuda.synchronize()
+    torch.cuda.empty_cache()
+
+
+def pod_mesh_check():
+    """Trusted check that a multi-node research job's nodes form an NCCL group; prints the measured bandwidth."""
+    mesh = json.loads(os.environ["KOALA_GYM_RESEARCH_MESH"])
+    torch, dist = mesh_group(mesh)
+    warm_mesh(torch, dist)
+    value = torch.ones(1 << 28, dtype=torch.float32, device="cuda")  # 1 GiB
+    seconds = []
+    for _ in range(3):
+        torch.cuda.synchronize()
+        start = time.perf_counter()
+        dist.all_reduce(value)
+        torch.cuda.synchronize()
+        seconds.append(time.perf_counter() - start)
+    best, world = min(seconds), dist.get_world_size()
+    print(
+        json.dumps(
+            {
+                "node": dist.get_rank(),
+                "nodes": world,
+                "all_reduce_gib": 1,
+                "seconds": round(best, 4),
+                "bus_gbit_per_s": round(2 * (world - 1) / world * 8 / best, 1),
+            }
+        ),
+        flush=True,
+    )
+    dist.destroy_process_group()
+    return 0
+
+
+def pod_research_rank():
+    """A multi-node research worker, as the worker identity: join the nodes' NCCL group, refuse new network
+    sockets in every thread (`pod_network` deny), and only then run the Gym worker and its candidate code."""
+    import traceback
+
+    mesh = json.loads(os.environ.pop("KOALA_GYM_RESEARCH_MESH"))
+    torch, dist = mesh_group(mesh)
+    warm_mesh(torch, dist)
+    if mesh.get("network", "deny") == "deny":
+        deny_sockets([2, 10], all_threads=True)  # AF_INET, AF_INET6
+    from nexttransformer_gym.worker import main
+
+    code_ = 0
+    try:
+        main()
+    except BaseException:
+        traceback.print_exc()
+        code_ = 1
+    # Leave without tearing the NCCL group down: a peer that already left would make that wait.
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(code_)
 
 
 # --------------------------------------------------------------------------------- multi-node final run
@@ -2916,10 +3302,16 @@ def main(argv=None):
         "pod-probe",
         "pod-probe-checks",
         "pod-netdeny",
+        "pod-mesh-check",
+        "pod-research-rank",
     ):
         command, rest = argv[0], argv[1:]
         if command == "pod-netdeny":
             return pod_netdeny(rest)
+        if command == "pod-mesh-check":
+            return pod_mesh_check()
+        if command == "pod-research-rank":
+            return pod_research_rank()
         if command == "pod-probe-checks":
             return pod_probe_checks(rest[0])
         if command == "relay":

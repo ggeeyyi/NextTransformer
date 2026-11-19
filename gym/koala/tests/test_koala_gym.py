@@ -1054,3 +1054,344 @@ def test_cancelling_a_started_long_training_job_refunds_unexecuted_steps(gym):
     spent_delta = int(after["spent"]) - int(before["spent"])
     assert 0 < spent_delta < int(quote["bound"]) // 2
     assert int(before["available"]) - int(after["available"]) == spent_delta
+
+
+# ------------------------------------------------------------------------------------- multi-node research
+
+
+def test_a_research_group_larger_than_a_node_spans_whole_nodes(gym, tmp_path):
+    config = koala_gym.load_config(
+        write_config(
+            gym, research_gpus=4, research_gpus_per_node=2, pod_isolation="none"
+        )
+    )
+    group = [{"id": f"GPU-v{i}", "memory_limit_bytes": 1} for i in range(4)]
+    request = {
+        "quote": {"id": "q", "operation": "train", "bound": "1"},
+        "profile": {"device": "cuda:0"},
+    }
+    shapes = []
+    for allocation in (
+        {**group[0], "devices": group},
+        {**group[0], "devices": group[:2]},
+        group[0],
+    ):
+        payload, _ = koala_gym.build_job(
+            config, {**request, "gpu": allocation}, str(tmp_path)
+        )
+        shapes.append((payload["nodes"], payload["gpus_per_node"]))
+    assert shapes == [(2, 2), (1, 2), (1, 1)]
+    assert payload["mesh_timeout_seconds"] == 3600
+    with pytest.raises(koala_gym.KoalaError, match="does not fill"):
+        koala_gym.research_topology(config, {**group[0], "devices": group[:3]})
+
+
+@pytest.mark.parametrize(
+    "values, message",
+    [
+        ({"research_gpus": 3}, "multiple"),
+        ({"pod_isolation": "landlock"}, "pod_isolation 'none'"),
+        (
+            {"remote_root": "s3://bucket/x", "final": {"nodes": 1, "gpus_per_node": 8}},
+            "shared remote_root",
+        ),
+    ],
+)
+def test_multi_node_research_needs_whole_nodes_shared_storage_and_no_netns_sandbox(
+    gym, values, message
+):
+    base = {"research_gpus": 4, "research_gpus_per_node": 2, "pod_isolation": "none"}
+    with pytest.raises(SystemExit, match=message):
+        koala_gym.load_config(write_config(gym, **{**base, **values}))
+
+
+PROBE_THREAD_SOCKETS = """
+import socket, sys, threading
+sys.path.insert(0, sys.argv[1])
+import koala_gym
+ready, go, result = threading.Event(), threading.Event(), {}
+def early():
+    ready.set()
+    go.wait()
+    try:
+        socket.socket(socket.AF_INET).close()
+        result["early"] = "ok"
+    except OSError as error:
+        result["early"] = error.errno
+thread = threading.Thread(target=early)
+thread.start()
+ready.wait()
+listener = socket.socket()
+listener.bind(("127.0.0.1", 0))
+listener.listen()
+client = socket.create_connection(listener.getsockname())
+server, _ = listener.accept()
+koala_gym.deny_sockets([socket.AF_INET, socket.AF_INET6], all_threads=sys.argv[2] == "all")
+go.set()
+thread.join()
+client.sendall(b"x")
+print(result["early"], server.recv(1) == b"x")
+"""
+
+
+@pytest.mark.parametrize("scope, expected", [("all", "13 True"), ("thread", "ok True")])
+def test_the_all_thread_socket_filter_binds_threads_started_before_it(scope, expected):
+    """NCCL and the store start threads before the filter; only the all-thread filter binds them, and the
+    connections opened before it keep working."""
+    run = subprocess.run(
+        [sys.executable, "-c", PROBE_THREAD_SOCKETS, str(HERE.parent), scope],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert run.returncode == 0, run.stderr
+    assert run.stdout.split() == expected.split()
+
+
+def research_payload(base, nodes=2, per=1):
+    remote = base / "cpfs" / "tag" / "q"
+    remote.mkdir(parents=True)
+    group = [
+        {"id": f"GPU-v{i}", "uuid": f"GPU-v{i}", "memory_limit_bytes": 7}
+        for i in range(nodes * per)
+    ]
+    return {
+        "request": {
+            "quote": {"id": "q", "operation": "train", "bound": "100"},
+            "profile": {"device": "cuda:0"},
+            "gpu": {**group[0], "devices": group},
+            "output": str(remote / "checkpoint.pt"),
+        },
+        "remote": str(remote),
+        "remote_root": str(base / "cpfs"),
+        "nodes": nodes,
+        "gpus_per_node": per,
+        "credit": "100",
+        "isolation": "none",
+        "network": "deny",
+        "master_port": 29531,
+        "mesh_timeout_seconds": 60,
+        "rendezvous_seconds": 60,
+    }
+
+
+class FakeCheck:
+    """A mesh check process: finishes with `code`, or (code None) runs until killed."""
+
+    def __init__(self, code):
+        self.code, self.killed = code, False
+        self.stdout = io.StringIO(
+            'NCCL INFO ring\n{"node": 0, "bus_gbit_per_s": 1.0}\n'
+        )
+
+    @property
+    def returncode(self):
+        return -9 if self.killed else self.code
+
+    def poll(self):
+        return self.returncode
+
+    def kill(self):
+        self.killed = True
+
+    def wait(self):
+        return self.returncode
+
+
+def fake_node(monkeypatch, outcome, mesh_code=0):
+    """Stand-ins for the pod's GPUs, worker identity, mesh check and worker."""
+    seen = {}
+    monkeypatch.setattr(
+        koala_gym,
+        "local_gpus",
+        lambda n: [
+            {"id": f"GPU-p{i}", "uuid": f"GPU-p{i}", "index": i, "device_minor": i}
+            for i in range(n)
+        ],
+    )
+    monkeypatch.setattr(
+        NativeBackend, "worker_identity", staticmethod(lambda request: {})
+    )
+    monkeypatch.setattr(koala_gym, "PEER_GRACE_SECONDS", 0)
+    real_popen = subprocess.Popen
+
+    def popen(command, *args, **options):
+        if "pod-mesh-check" in command:
+            seen["mesh"] = json.loads(options["env"]["KOALA_GYM_RESEARCH_MESH"])
+            seen["check"] = FakeCheck(mesh_code)
+            return seen["check"]
+        return real_popen(command, *args, **options)
+
+    monkeypatch.setattr(koala_gym.subprocess, "Popen", popen)
+
+    def drive(command, env, request, credit, emit, cwd, stderr_path, **options):
+        seen.update(command=command, env=env, request=request)
+        return outcome(request)
+
+    monkeypatch.setattr(koala_gym, "drive", drive)
+    return seen
+
+
+def pod_events(capsys):
+    return [
+        json.loads(line[len(koala_gym.MARK) :])
+        for line in capsys.readouterr().out.splitlines()
+        if line.startswith(koala_gym.MARK)
+    ]
+
+
+def test_each_node_trains_its_share_and_only_node_0_reports_and_writes(
+    tmp_path, monkeypatch, capsys
+):
+    payload = research_payload(tmp_path)
+    remote = Path(payload["remote"])
+
+    def succeeded(request):
+        Path(request["output"]).parent.mkdir(parents=True, exist_ok=True)
+        Path(request["output"]).write_bytes(b"weights")
+        return {"outcome": "succeeded", "result": {"step": 1}, "spent": 100}
+
+    seen = fake_node(monkeypatch, succeeded)
+    (remote / "research").mkdir()
+    (remote / "research" / "done").write_text("succeeded")  # lets node 1 leave at once
+    work = tmp_path / "node1"
+    (work / "tmp").mkdir(parents=True)
+    copy = json.loads(json.dumps(payload))
+    assert (
+        koala_gym.research_node(
+            copy, 1, "10.0.0.1", koala_gym.Emitter(), work / "code", work, remote
+        )
+        == 0
+    )
+    assert seen["mesh"] == {
+        "node": 1,
+        "nodes": 2,
+        "master": "10.0.0.1",
+        "port": 29532,
+        "timeout": 60,
+        "network": "deny",
+    }
+    assert json.loads(seen["env"]["KOALA_GYM_RESEARCH_MESH"])["port"] == 29531
+    assert seen["env"]["NCCL_RUNTIME_CONNECT"] == "0"
+    assert seen["env"]["CUDA_VISIBLE_DEVICES"] == "GPU-p0"
+    assert seen["command"][-1] == "pod-research-rank"
+    # Node 1's card of the group, on this pod's own GPU; its worker never writes the job's checkpoint.
+    assert [d["uuid"] for d in seen["request"]["gpu"]["devices"]] == ["GPU-p0"]
+    assert seen["request"]["output"] != payload["request"]["output"]
+    assert not (remote / "checkpoint.pt").exists()
+    assert {e["kind"] for e in pod_events(capsys)} == {"satellite"}
+
+    (remote / "research" / "done").unlink()
+    work = tmp_path / "node0"
+    (work / "tmp").mkdir(parents=True)
+    assert (
+        koala_gym.research_node(
+            json.loads(json.dumps(payload)),
+            0,
+            "10.0.0.1",
+            koala_gym.Emitter(),
+            work / "code",
+            work,
+            remote,
+        )
+        == 0
+    )
+    events = pod_events(capsys)
+    kinds = [e["kind"] for e in events]
+    assert kinds.index("mesh") < kinds.index("ready") and kinds[-1] == "done"
+    assert events[-1]["outcome"] == "succeeded"
+    assert events[-1]["checkpoint"]["path"] == payload["request"]["output"]
+    assert (remote / "research" / "done").read_text() == "succeeded"
+
+
+def test_node_0_settles_a_peer_failure_as_a_failed_job(tmp_path, monkeypatch, capsys):
+    payload = research_payload(tmp_path)
+    remote = Path(payload["remote"])
+    (remote / "research").mkdir()
+    (remote / "research" / "failed-1").write_text("worker exited 1")
+    fake_node(
+        monkeypatch,
+        lambda request: {"outcome": "unknown", "detail": "exited -9", "spent": 40},
+    )
+    work = tmp_path / "node0"
+    (work / "tmp").mkdir(parents=True)
+    assert (
+        koala_gym.research_node(
+            payload, 0, "10.0.0.1", koala_gym.Emitter(), work / "code", work, remote
+        )
+        == 0
+    )
+    done = pod_events(capsys)[-1]
+    assert done["kind"] == "done" and done["outcome"] == "failed"
+    assert done["error_code"] == "infrastructure_failure"
+    assert "failed-1" in done["detail"] and done["spent"] == "40"
+    assert (remote / "research" / "failed-0").exists()
+
+
+def test_a_mesh_that_does_not_form_fails_before_work_without_a_charge(
+    tmp_path, monkeypatch, capsys
+):
+    payload = research_payload(tmp_path)
+    remote = Path(payload["remote"])
+    seen = fake_node(monkeypatch, lambda request: pytest.fail("worker ran"), 1)
+    work = tmp_path / "node0"
+    (work / "tmp").mkdir(parents=True)
+    assert (
+        koala_gym.research_node(
+            payload, 0, "10.0.0.1", koala_gym.Emitter(), work / "code", work, remote
+        )
+        == 1
+    )
+    events = pod_events(capsys)
+    assert "ready" not in [e["kind"] for e in events]
+    assert events[-1]["kind"] == "done" and events[-1]["outcome"] == "pre_failure"
+    assert "command" not in seen and (remote / "research" / "failed-0").exists()
+
+
+def test_another_node_waits_for_node_0_after_its_own_failure(
+    tmp_path, monkeypatch, capsys
+):
+    """A Koala job ends when any pod does: a failed node stays up until node 0 has logged the outcome."""
+    payload = research_payload(tmp_path)
+    remote = Path(payload["remote"])
+    (remote / "research").mkdir()
+    (remote / "research" / "done").write_text("failed")
+    waits = []
+    monkeypatch.setattr(koala_gym.time, "sleep", lambda s: waits.append(s))
+    fake_node(
+        monkeypatch,
+        lambda request: {"outcome": "unknown", "detail": "exited 1", "spent": 9},
+    )
+    work = tmp_path / "node1"
+    (work / "tmp").mkdir(parents=True)
+    assert (
+        koala_gym.research_node(
+            payload, 1, "10.0.0.1", koala_gym.Emitter(), work / "code", work, remote
+        )
+        == 1
+    )
+    assert (remote / "research" / "failed-1").exists()
+    assert {e["kind"] for e in pod_events(capsys)} == {"satellite"}
+
+
+def test_a_mesh_check_stops_when_another_node_failed_and_node_0_leaves_its_marker(
+    tmp_path, monkeypatch, capsys
+):
+    payload = research_payload(tmp_path)
+    remote = Path(payload["remote"])
+    (remote / "research").mkdir()
+    (remote / "research" / "failed-1").write_text("environment build failed")
+    seen = fake_node(monkeypatch, lambda request: pytest.fail("worker ran"), None)
+    work = tmp_path / "node0"
+    (work / "tmp").mkdir(parents=True)
+    assert (
+        koala_gym.research_node(
+            payload, 0, "10.0.0.1", koala_gym.Emitter(), work / "code", work, remote
+        )
+        == 1
+    )
+    assert seen["check"].killed
+    done = pod_events(capsys)[-1]
+    assert done["kind"] == "done" and done["outcome"] == "pre_failure"
+    assert "failed-1" in done["detail"]
+    assert (remote / "research" / "done").read_text() == "pre_failure"

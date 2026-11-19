@@ -46,13 +46,37 @@ Keep `staging_dir` outside any git work tree: `koala code publish` packs tracked
 
 | Setting | Meaning |
 |---|---|
-| `research_gpus` | GPUs of one research job, on one node (default 1). The Gym's execution configuration lists that many virtual cards; the Gym leases them as one group and splits each update across them, and the pod maps them onto its own GPUs in order. |
+| `research_gpus` | GPUs of one research job (default 1). The Gym's execution configuration lists that many virtual cards; the Gym leases them as one group and splits each update across them, and the pods map them onto their own GPUs in order. |
+| `research_gpus_per_node` | GPUs per node (default 8). A larger `research_gpus` (a multiple of it) spans `research_gpus / research_gpus_per_node` nodes; see below. |
+| `research_mesh_timeout_seconds` | How long a multi-node worker waits for the other nodes at a collective (default 3600: compilation, checkpoint loads). |
 | `research_microbatch_size` | The Gym's `research_microbatch_size`: rows per GPU per forward/backward pass (default 1, as in the Gym). An update of the profile's `batch_size` rows accumulates gradients over its passes. |
 
 A profile's `batch_size` is the global rows per update, whatever the GPU count; `512` with `sequence_len` `2048` is
 the protocol's 1,048,576 tokens. The Gym's quote-time memory bound decides the largest microbatch it accepts: for the
 dense anchor shape on a 128 GiB limit that is 10 rows, and 8 divides the protocol's 512 rows evenly. A check with a final profile uses one GPU, and the Gym runs one
 numerical job at a time per state.
+
+### Several nodes
+
+With `research_gpus` 32 and `research_gpus_per_node` 8, one research job is one Koala job of 4 nodes x 8 GPUs. The
+Gym splits each update over the 32 cards exactly as on one machine with 32 GPUs (the quote, its FLOPs and memory bound
+do not change); node `k` trains cards `8k .. 8k+7`:
+
+1. The nodes meet through the job's directory on shared storage (as final runs do), and each pod runs a trusted NCCL
+   check (`pod-mesh-check`) as the worker identity before node 0 reports the job ready. A mesh that does not form
+   ends the job before its worker starts, so it is charged nothing. The pod's log records the measured bandwidth.
+2. Each node's worker process joins a one-process-per-node NCCL group on its first GPU, runs every collective once
+   (`NCCL_RUNTIME_CONNECT=0`), and only then installs the `pod_network` `deny` filter for every thread before it loads
+   candidate code: the worker keeps its connections to the job's own nodes and cannot open any other socket.
+3. Each node sums its local replicas' gradients with CUDA copies, as on one machine; the node sums are all-reduced, and
+   every node applies the same optimizer update. After each update the nodes compare a fingerprint of their state; if it
+   ever differs they take node 0's (the result's `execution.cross_node_resyncs` counts it). Dev evaluation is split the
+   same way.
+4. Node 0 alone reports to the relay and writes the checkpoint. The other nodes leave markers under
+   `<remote>/research/`; a node stops its worker when another node failed, and node 0 then settles a known failure.
+
+It needs a shared `remote_root` (H20's CPFS) and `pod_isolation` `none`: the Landlock backend unshares the network
+namespace.
 
 ## Commands
 
@@ -122,8 +146,10 @@ paths from `KOALA_E2E_DATA` and `KOALA_E2E_RESOURCES`.
 ## Limits
 
 - Remote dispatch is outside the Gym's agreed scope (one local machine, one concurrent numerical job). This adapter
-  keeps that scope: one Koala job at a time per Gym state, and a research job's GPUs on one node.
-- Research workers run in float32 without compilation, as in the Gym.
+  keeps one Koala job at a time per Gym state; a research job may span several nodes (above).
+- Research workers run in `research_dtype` (float32 by default) and compile only with `research_compile`.
+- A Koala Normal job has a maximum duration (48 h for one H20 node, 27 h for four): give research profiles a
+  `timeout_sec` below it, and continue longer runs from their checkpoints.
 - The Gym's final runs start with `--resume never`, and a Koala job has a maximum duration (`koala quota` shows it).
   A full formal run must finish inside one job. `official_smoke` bounds the final path for tests; its results are
   never official.

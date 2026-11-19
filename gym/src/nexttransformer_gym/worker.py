@@ -380,7 +380,7 @@ def execute(request):
             ):
                 raise GymError("numerical_failure", "Missing or non-finite gradient")
             optimizer.step()
-            parallel.synchronize()
+            parallel.synchronize(optimizer)
             return loss
 
         cost = (
@@ -423,30 +423,41 @@ def execute(request):
         * profile["dev_batches"],
         evaluate,
     )
-    output = Path(request["output"])
-    output.parent.mkdir(parents=True, exist_ok=True)
-    saved = {
-        "model": model.state_dict(),
-        "optimizer": optimizer.state_dict(),
-        "rng": rng_state(),
-        "routing_rng": model.routing_rng_state(),
-        "replica_routing_rng": parallel.routing_states(),
-        "data": train.state_dict(),
-        "candidate_hash": candidate["hash"],
-        "profile_hash": quote["profile_hash"],
-        "step": quote["target_update"],
-        "cumulative_flops": cumulative,
-        "schedule": "native-fixed-46875",
-        "stage": "joint",
-    }
-    torch.save(saved, output.with_suffix(".tmp"))
-    output.with_suffix(".tmp").replace(output)
+    # A collective across nodes: every node gathers, node 0 alone writes the checkpoint.
+    replica_routing = parallel.routing_states()
+    if parallel.node == 0:
+        output = Path(request["output"])
+        output.parent.mkdir(parents=True, exist_ok=True)
+        saved = {
+            "model": model.state_dict(),
+            "optimizer": optimizer.state_dict(),
+            "rng": rng_state(),
+            "routing_rng": model.routing_rng_state(),
+            "replica_routing_rng": replica_routing,
+            "data": train.state_dict(),
+            "candidate_hash": candidate["hash"],
+            "profile_hash": quote["profile_hash"],
+            "step": quote["target_update"],
+            "cumulative_flops": cumulative,
+            "schedule": "native-fixed-46875",
+            "stage": "joint",
+        }
+        torch.save(saved, output.with_suffix(".tmp"))
+        output.with_suffix(".tmp").replace(output)
+    placement = execution()
+    if parallel.nodes > 1:
+        placement.update(
+            nodes=parallel.nodes,
+            node=parallel.node,
+            total_device_count=parallel.total,
+            cross_node_resyncs=parallel.resyncs,
+        )
     emit(
         {
             "kind": "result",
             "value": {
                 **metrics,
-                "execution": execution(),
+                "execution": placement,
                 "curves": curves,
                 "step": quote["target_update"],
                 "training_tokens": quote["target_update"] * batch * length,
