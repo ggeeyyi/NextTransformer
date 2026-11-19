@@ -840,6 +840,41 @@ def test_checkpoint_damage_refused_before_dispatch(context, damage):
     assert call("get_budget")["reserved"] == "0"
 
 
+def test_a_job_trains_at_most_the_profile_span_and_continues_past_it(tmp_path):
+    profiles = json.loads((ROOT / "gym/examples/profiles.fixture.json").read_text())
+    profiles["research-fixture"]["max_updates_per_job"] = 1
+    backend = NativeBackend(
+        profiles, tmp_path, ROOT, execution_config={"isolation": ISOLATION}
+    )
+    service = Service(tmp_path / "gym.sqlite3", backend)
+    credentials = service.create_session(10**12, "span-trial")
+
+    def call(operation, **params):
+        return service.call(credentials["agent_token"], operation, params)
+
+    candidate = call(
+        "submit_candidate",
+        package_base64=base64.b64encode(candidate_bytes()).decode(),
+        idempotency_key="first",
+    )
+    shown = {p["id"]: p for p in call("describe_space")["profiles"]}
+    assert shown["research-fixture"]["max_updates_per_job"] == 1
+    assert "max_updates_per_job" not in shown["final-fixture"]
+    context = (service, credentials, call, candidate)
+    with pytest.raises(GymError, match="at most 1 updates") as refused:
+        run_job(context, target_update=2)
+    assert refused.value.code == "invalid_request"
+    assert call("get_budget")["reserved"] == "0"
+    first = run_job(context, target_update=1)
+    assert run_job(context, target_update=2, checkpoint_id=first["checkpoint_id"])
+
+    profiles["research-fixture"]["max_updates_per_job"] = 0
+    with pytest.raises(GymError, match="positive integers"):
+        NativeBackend(
+            profiles, tmp_path / "bad", ROOT, execution_config={"isolation": ISOLATION}
+        )
+
+
 def test_expired_quote_cannot_reserve_budget(context):
     service, credentials, call, candidate = context
     quote = call(
