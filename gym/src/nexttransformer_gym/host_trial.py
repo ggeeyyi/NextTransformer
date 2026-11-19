@@ -210,6 +210,7 @@ def agent_options(args):
             "version": args.agent_version,
             "max_turns": args.max_turns,
             "max_budget_usd": args.max_budget_usd,
+            "reasoning_effort": getattr(args, "reasoning_effort", None),
         }
     elif args.agent == "codex":
         values = {

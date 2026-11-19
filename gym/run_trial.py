@@ -14,6 +14,10 @@ import tomllib
 from nexttransformer_gym.common import GymError
 from nexttransformer_gym.gpu import configuration, discover
 
+CLAUDE_CODE_VERSION = "2.1.327"
+# Harbor's Claude Code agent passes these to `claude --effort`.
+CLAUDE_CODE_EFFORTS = ("low", "medium", "high", "xhigh", "max")
+
 
 def arguments():
     bootstrap = argparse.ArgumentParser(add_help=False)
@@ -47,7 +51,7 @@ def arguments():
     parser.add_argument(
         "--agent-version",
         default=agent.get("version"),
-        help="Agent CLI version; Claude Code defaults to 2.1.312, Codex must be pinned",
+        help=f"Agent CLI version; Claude Code defaults to {CLAUDE_CODE_VERSION}, Codex must be pinned",
     )
     parser.add_argument("--max-turns", type=int, default=agent.get("max_turns", 64))
     parser.add_argument(
@@ -58,7 +62,8 @@ def arguments():
     parser.add_argument(
         "--reasoning-effort",
         default=agent.get("reasoning_effort"),
-        help="Optional Codex model_reasoning_effort",
+        help="Optional reasoning effort: Codex model_reasoning_effort, or Claude Code "
+        "--effort (" + ", ".join(CLAUDE_CODE_EFFORTS) + ")",
     )
     parser.add_argument(
         "--timeout-sec", type=int, default=runtime.get("timeout_sec", 1800)
@@ -88,15 +93,24 @@ def arguments():
             parser.error("Agent USD limit must be finite and positive")
     if args.agent != "oracle" and not args.model:
         parser.error("Set --model or the configured model_env for the agent")
-    if args.agent == "claude-code" and args.agent_version is None:
-        args.agent_version = "2.1.312"
+    if args.agent == "claude-code":
+        if args.agent_version is None:
+            args.agent_version = CLAUDE_CODE_VERSION
+        if (
+            args.reasoning_effort is not None
+            and args.reasoning_effort not in CLAUDE_CODE_EFFORTS
+        ):
+            parser.error(
+                "Claude Code --reasoning-effort must be one of "
+                + ", ".join(CLAUDE_CODE_EFFORTS)
+            )
     if args.agent == "codex":
         if not args.agent_version:
             parser.error("Pin the Codex CLI version with --agent-version")
         if args.max_budget_usd is not None:
             parser.error("Codex has no USD limit; set a provider limit instead")
-    elif args.reasoning_effort is not None:
-        parser.error("--reasoning-effort applies to Codex only")
+    elif args.agent == "oracle" and args.reasoning_effort is not None:
+        parser.error("--reasoning-effort applies to Claude Code and Codex only")
     roles = ("client", "verifier")
     if any(not getattr(args, role + "_image") for role in roles):
         parser.error("Prebuilt images are required for: " + ", ".join(roles))
