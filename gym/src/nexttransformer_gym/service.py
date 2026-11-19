@@ -243,6 +243,13 @@ class Service:
             )
             start = checkpoint["step"]
         target = integer(p.get("target_update", 1), start + 1, profile["max_updates"])
+        span = profile.get("max_updates_per_job")
+        require(
+            operation != "train" or span is None or target - start <= span,
+            "invalid_request",
+            f"One job of this profile trains at most {span} updates; reach later steps by "
+            "continuing from the checkpoint it returns.",
+        )
         resource = p.get("resource_profile_id", profile["resource_profile_id"])
         require(
             resource == profile["resource_profile_id"],

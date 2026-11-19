@@ -149,7 +149,9 @@ paths from `KOALA_E2E_DATA` and `KOALA_E2E_RESOURCES`.
   keeps one Koala job at a time per Gym state; a research job may span several nodes (above).
 - Research workers run in `research_dtype` (float32 by default) and compile only with `research_compile`.
 - A Koala Normal job has a maximum duration (48 h for one H20 node, 27 h for four): give research profiles a
-  `timeout_sec` below it, and continue longer runs from their checkpoints.
+  `timeout_sec` below it. A job stopped at the timeout is charged for its started windows and returns no
+  checkpoint, so also set the profile's `max_updates_per_job` to a span that ends well within it; the Gym refuses
+  longer requests at quote time and shows the bound in `describe_space`, and the agent continues from checkpoints.
 - The Gym's final runs start with `--resume never`, and a Koala job has a maximum duration (`koala quota` shows it).
   A full formal run must finish inside one job. `official_smoke` bounds the final path for tests; its results are
   never official.

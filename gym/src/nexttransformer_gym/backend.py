@@ -92,6 +92,14 @@ class NativeBackend:
                 "invalid_request",
                 "Schedule horizon cannot be extended.",
             )
+            # Optional operator bound: the most updates one job may train, so a job ends within the
+            # cluster's job time limit; later steps continue from the returned checkpoint.
+            span = profile.get("max_updates_per_job")
+            require(
+                span is None or (type(span) is int and span > 0),
+                "invalid_request",
+                "Profile bounds must be explicit positive integers.",
+            )
         source_files = [
             p
             for root in (
@@ -305,6 +313,8 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
                 runtime_manifest_id=self.revision,
                 checkpoint_quota_bytes=profile.get("checkpoint_quota_bytes"),
             )
+            if profile.get("max_updates_per_job"):
+                public["max_updates_per_job"] = profile["max_updates_per_job"]
             if profile.get("official_plan"):
                 public["operator_final_training"] = {
                     "device_count": len(devices),
