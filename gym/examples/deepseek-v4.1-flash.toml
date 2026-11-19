@@ -5,7 +5,7 @@
 [agent]
 name = "claude-code"
 model_env = "GYM_RESEARCH_MODEL"
-version = "2.1.312"
+version = "2.1.327"
 max_turns = 64
 # Optional API cost limit. Remove this line to omit the limit.
 max_budget_usd = "5.00"

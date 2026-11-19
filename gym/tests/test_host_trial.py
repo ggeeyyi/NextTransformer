@@ -171,7 +171,7 @@ def test_host_lifecycle_hook_signs_current_service_submission_and_budget(
         args = SimpleNamespace(
             agent="claude-code",
             model="fixture-model",
-            agent_version="2.1.312",
+            agent_version="2.1.327",
             max_turns=8,
             max_budget_usd="0.10",
             jobs_dir=tmp_path / "jobs",

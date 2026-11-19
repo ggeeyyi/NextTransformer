@@ -250,9 +250,32 @@ def test_launcher_codex_rejects_unpinned_or_usd_limit(monkeypatch, extra):
         runner["arguments"]()
 
 
-def test_launcher_reasoning_effort_is_codex_only(monkeypatch):
+def test_launcher_claude_code_effort_and_default_version(monkeypatch):
+    from harbor.agents.installed.claude_code import ClaudeCodeOptions
+
     runner = runpy.run_path(str(ROOT / "gym/run_trial.py"))
     argv = [a if a != "codex" else "claude-code" for a in CODEX_ARGV]
-    monkeypatch.setattr(sys, "argv", argv + ["--reasoning-effort", "high"])
+    monkeypatch.setattr(sys, "argv", argv + ["--reasoning-effort", "xhigh"])
+    args = runner["arguments"]()
+    assert args.agent_version == runner["CLAUDE_CODE_VERSION"]
+    native = runner["agent_arguments"](args)
+    options = dict(
+        native[i + 1].split("=", 1)
+        for i, item in enumerate(native)
+        if item == "--agent-kwarg"
+    )
+    assert options["reasoning_effort"] == "xhigh"
+    assert options["version"] == runner["CLAUDE_CODE_VERSION"]
+    parsed = ClaudeCodeOptions.model_validate(options)
+    assert parsed.reasoning_effort == "xhigh"
+
+
+@pytest.mark.parametrize(
+    "agent, effort", [("claude-code", "extreme"), ("oracle", "high")]
+)
+def test_launcher_refuses_an_unknown_or_inapplicable_effort(monkeypatch, agent, effort):
+    runner = runpy.run_path(str(ROOT / "gym/run_trial.py"))
+    argv = [a if a != "codex" else agent for a in CODEX_ARGV]
+    monkeypatch.setattr(sys, "argv", argv + ["--reasoning-effort", effort])
     with pytest.raises(SystemExit):
         runner["arguments"]()
