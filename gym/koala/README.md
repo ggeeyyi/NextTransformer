@@ -96,6 +96,13 @@ A research job stages only its own profile's data and never the validation shard
   honours `cancel_job`.
 - The relay journals every Koala job in `<state>/koala-jobs.jsonl`, with pod start time and GPU-hours.
 
+## Claude Code
+
+`gym/run_trial.py --agent claude-code` installs Claude Code 2.1.327 in the client container unless `agent.version`
+pins another. `agent.reasoning_effort` (`low`, `medium`, `high`, `xhigh` or `max`) reaches `claude --effort`. Credentials
+come from the controller environment: `ANTHROPIC_API_KEY`, or a subscription token (`CLAUDE_CODE_OAUTH_TOKEN` with
+`CLAUDE_FORCE_OAUTH=1`).
+
 ## Codex
 
 `gym/run_trial.py --agent codex` runs Codex through Harbor. Pin the CLI with `--agent-version` and use the
