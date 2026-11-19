@@ -60,9 +60,9 @@ def log(message, **values):
 class Session:
     def __init__(self, config_path, profiles, state):
         self.config = koala_gym.load_config(config_path)
-        koala_gym.install_controller(self.config, config_path)
         self.state = state
-        self.execution = koala_gym.execution_settings(self.config)
+        # The Gym's execution configuration with this file's relay as its operator executor.
+        self.execution = koala_gym.execution_settings(self.config, config_path)
         self.open(profiles)
         self.credentials = self.service.create_session(10**21, "koala-gpu-e2e")
 

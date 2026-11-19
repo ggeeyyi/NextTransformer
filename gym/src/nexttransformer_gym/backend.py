@@ -34,7 +34,16 @@ class NativeBackend:
         from .isolation import preflight
 
         self.execution_config = configuration(execution_config)
+        # Static audits run here under the configuration's isolation; an executor confines candidate code where
+        # it runs, and its `none` still deserves the unisolated warning.
         preflight(self.execution_config["isolation"])
+        self.executor = self.execution_config.get("executor")
+        if (
+            self.executor
+            and self.executor["isolation"] == "none"
+            and self.execution_config["isolation"] != "none"
+        ):
+            preflight("none")
         self.profiles = copy.deepcopy(profiles)
         for profile in self.profiles.values():
             if self.execution_config["gpu_ids"] and not profile.get("official_plan"):
@@ -117,33 +126,30 @@ class NativeBackend:
                 for p in sorted(source_files)
             }
         )
-        # Query the actual numerical interpreter, not the controller environment.
-        metadata_script = """
-import ast, importlib.metadata as m, json, sys
-names = ('torch', 'numpy', 'pyarrow', 'tiktoken', 'rustbpe', 'filelock', 'fsspec', 'sympy')
-version = m.distribution('torch').locate_file('torch/version.py').read_text()
-cuda = None
-for node in ast.walk(ast.parse(version)):
-    if isinstance(node, ast.AnnAssign) and getattr(node.target, 'id', '') == 'cuda':
-        cuda = ast.literal_eval(node.value)
-print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list(sys.version_info[:3]), 'cuda_version':cuda}))
-"""
-        try:
-            self.worker_runtime = json.loads(
-                subprocess.check_output(
-                    [self.python, "-c", metadata_script], text=True, timeout=30
+        from .executor import public
+        from .remote import RUNTIME_SCRIPT
+
+        if self.executor:
+            # The executor's workers run elsewhere; their interpreter is declared, not this machine's.
+            self.worker_runtime = self.executor["runtime"]
+        else:
+            # Query the actual numerical interpreter, not the controller environment.
+            try:
+                self.worker_runtime = json.loads(
+                    subprocess.check_output(
+                        [self.python, "-c", RUNTIME_SCRIPT], text=True, timeout=30
+                    )
                 )
-            )
-        except (OSError, subprocess.SubprocessError, ValueError):
-            raise GymError(
-                "resource_unavailable",
-                "Cannot inspect the configured numerical Python runtime.",
-            ) from None
+            except (OSError, subprocess.SubprocessError, ValueError):
+                raise GymError(
+                    "resource_unavailable",
+                    "Cannot inspect the configured numerical Python runtime.",
+                ) from None
         self.revision = identity(
             {
                 "source": self.revision,
                 "worker_runtime": self.worker_runtime,
-                "execution_config": self.execution_config,
+                "execution_config": public(self.execution_config),
                 "compute_dtype": self.execution_config["research_dtype"]
                 if self.execution_config["gpu_ids"]
                 else "float32",
@@ -166,7 +172,7 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
         }
 
     def validate_placement(self, profile, gpu_id=None, server_id=None):
-        from .gpu import allocated, discover
+        from .gpu import allocated, allocation_cards
 
         profile = self.bounded_profile(profile)
         require(
@@ -201,7 +207,9 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
         card = next(
             (
                 card
-                for card in allocated(self.execution_config, discover())
+                for card in allocated(
+                    self.execution_config, allocation_cards(self.execution_config)
+                )
                 if str(gpu_id) in (card["id"], str(card["index"]))
             ),
             None,
@@ -214,11 +222,15 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
         return card["id"]
 
     def resources(self, global_busy=False):
+        from .executor import public
         from .resources import observe
-        from .gpu import allocated, discover, idle, leased
+        from .gpu import allocated, allocation_cards, idle, leased
 
         node = observe(self.server_id, self.profiles.values(), global_busy)
-        inventory = discover()
+        if self.executor:
+            # CPU and memory describe this controller, where static audits run; jobs run on the executor's cards.
+            node.update(backend="operator_executor", placement="operator_executor")
+        inventory = allocation_cards(self.execution_config)
         allowed = {card["id"] for card in allocated(self.execution_config, inventory)}
         runtime_ready = bool(self.worker_runtime["cuda_version"])
         cards = []
@@ -262,7 +274,7 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
             available_gpu_count=sum(card["available"] for card in cards),
             gpus=cards,
             configured_cuda_devices=self.execution_config["gpu_ids"],
-            execution_config=self.execution_config,
+            execution_config=public(self.execution_config),
             worker_runtime=self.worker_runtime,
             research_devices=[
                 f"cuda:{i}" for i in range(len(self.execution_config["gpu_ids"]))
@@ -324,40 +336,15 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
             yield public
 
     def environment(self, profile=None, official=False, gpu=None):
-        # Explicit environment prevents ambient plugin paths, credentials and proxies.
-        env = {
-            "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
-            "PYTHONPATH": os.pathsep.join(
-                [str(Path(__file__).parent.parent), str(self.platform_root)]
-            ),
-            "NANOCHAT_DTYPE": "float32",
-            "TORCHDYNAMO_DISABLE": "1",
-            "OMP_NUM_THREADS": "1",
-            "USER": "gym-worker",
-            "PYTHONDONTWRITEBYTECODE": "1",
-            "HOME": str(self.state_dir),
-            "XDG_CACHE_HOME": str(self.state_dir / "cache"),
-            "CUDA_VISIBLE_DEVICES": "",
-        }
-        if (
-            not official
-            and profile
-            and str(profile.get("device", "cpu")).startswith("cuda")
-        ):
-            require(
-                gpu is not None,
-                "resource_unavailable",
-                "Research GPU execution requires a scheduler allocation.",
-            )
-            env["CUDA_VISIBLE_DEVICES"] = ",".join(
-                card["id"] for card in gpu.get("devices", [gpu])
-            )
-            env["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-            env["NANOCHAT_DTYPE"] = self.execution_config["research_dtype"]
-            env["TORCHDYNAMO_DISABLE"] = (
-                "0" if self.execution_config["research_compile"] else "1"
-            )
-            env["FLA_DISABLE_BACKEND_DISPATCH"] = "1"
+        from .remote import worker_environment
+
+        env = worker_environment(
+            self.platform_root,
+            self.state_dir,
+            None if official else profile,
+            self.execution_config,
+            gpu.get("devices", [gpu]) if gpu else None,
+        )
         if official:
             require(
                 profile is not None and profile.get("cuda_visible_devices"),
@@ -402,7 +389,24 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
                 ) from None
         return self.cache[key]
 
+    def runs_remotely(self, request):
+        """Whether an operator executor runs this request (every scheduled job; static audits stay local)."""
+        return bool(self.executor) and request.get("mode") == "execute"
+
+    def remote_execution(self):
+        """What an executor needs to run a job as this Gym would: the declared runtime and confinement, and the
+        research precision and compiler setting (the request's `execution`)."""
+        return {
+            "runtime": self.executor["runtime"],
+            "isolation": self.executor["isolation"],
+            "network": self.executor["network"],
+            "research_dtype": self.execution_config["research_dtype"],
+            "research_compile": self.execution_config["research_compile"],
+        }
+
     def worker_command(self, request):
+        if self.runs_remotely(request):
+            return list(self.executor["command"])
         if request.get("quote", {}).get("operation") == "official":
             # Official source is separately reviewed/admitted in an operator-owned snapshot.
             return [self.python, "-m", "nexttransformer_gym.worker"]
@@ -415,16 +419,28 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
             self.execution_config["isolation"],
         )
 
+    def worker_launch(self, request, profile=None, official=False, gpu=None):
+        """Environment and identity of the process that runs `request`: the local worker, or the operator's
+        executor (the controller's user, with the variables its configuration names)."""
+        env = self.environment(profile, official, gpu)
+        if self.runs_remotely(request):
+            env.update(
+                {
+                    name: os.environ[name]
+                    for name in self.executor["environment"]
+                    if name in os.environ
+                }
+            )
+            return env, {}
+        return env, self.worker_identity(request)
+
     @staticmethod
     def worker_identity(request):
         # Docker controllers may be root for volume bootstrap. Namespace creation
         # runs as an unprivileged UID; the worker receives no controller capabilities.
-        if (
-            os.geteuid() == 0
-            and request.get("quote", {}).get("operation") != "official"
-        ):
-            return {"user": 65534, "group": 65534, "extra_groups": []}
-        return {}
+        from .remote import worker_identity
+
+        return worker_identity(request)
 
     @staticmethod
     def bound(report, operation, updates, profile, check=None):
@@ -448,18 +464,9 @@ print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list
             }
             require(check in costs, "invalid_request", "Unknown named diagnostic.")
             return costs[check]
-        return (
-            init
-            + updates
-            * (
-                int(report.get("research_forward", fwd))
-                + int(report.get("research_backward", bwd))
-                + int(report.get("research_reduction", 0))
-                + opt
-            )
-            + profile["dev_batches"]
-            * int(report.get("research_evaluation", report["evaluation"]))
-        )
+        from .accounting import training_bound
+
+        return training_bound(report, updates, profile["dev_batches"])
 
     def checkpoint_path(self, checkpoint_id):
         require(
@@ -608,6 +615,11 @@ class Scheduler:
             if quote["checkpoint_id"]
             else None,
         }
+        if self.backend.runs_remotely(request):
+            request["execution"] = self.backend.remote_execution()
+        env, launch_identity = self.backend.worker_launch(
+            request, profile, quote["operation"] == "official", request["gpu"]
+        )
         process = subprocess.Popen(
             self.backend.worker_command(request),
             stdin=subprocess.PIPE,
@@ -615,12 +627,10 @@ class Scheduler:
             stderr=subprocess.PIPE,
             text=True,
             bufsize=1,
-            env=self.backend.environment(
-                profile, quote["operation"] == "official", request["gpu"]
-            ),
+            env=env,
             cwd=self.backend.state_dir,
             start_new_session=True,
-            **self.backend.worker_identity(request),
+            **launch_identity,
         )
         pending, result, cancelled, failure = None, None, False, None
         # Drain stderr to a bounded private log without blocking stdout.
@@ -679,7 +689,14 @@ class Scheduler:
                         "Worker no longer owns this job.",
                     )
                     kind = event["kind"]
-                    if kind == "intent":
+                    if kind == "poll":
+                        # A worker that cannot wait for its next intent (an operator executor) asks directly.
+                        send(
+                            {"cancel": True}
+                            if current["cancel_requested"]
+                            else {"continue": True}
+                        )
+                    elif kind == "intent":
                         require(
                             pending is None,
                             "integrity_violation",

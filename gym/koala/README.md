@@ -1,22 +1,40 @@
 # Gym on Koala
 
 `koala_gym.py` runs the unchanged [Gym](../README.md) on a CPU host and executes its numerical jobs on Koala GPU
-clusters. It is the only Koala-specific file. Harbor, the agent and verifier containers, the Gym controller, its API,
-budget and evidence all stay on the host; each research, check or final job becomes one Koala job.
+clusters. It is the only Koala-specific file, and it plugs into the Gym only through its public interfaces: it is a
+launcher of the Gym's multi-node executor (`nexttransformer_gym.nodes`; [DESIGN.md, "Operator
+executors"](../DESIGN.md#operator-executors)). The Gym's relay speaks the worker protocol, bills, cancels and runs
+every node, as it does for local machines over ssh; this file only says how a job reaches Koala. Harbor, the agent and
+verifier containers, the Gym controller, its API, budget and evidence all stay on the host; each research, check or
+final job becomes one Koala job.
 
 ```text
 host (CPU, Docker)
 ├─ Harbor: agent container (Claude Code or Codex) and verifier container
 ├─ Gym controller: API, budget, state; static audits in the local bubblewrap sandbox
-└─ relay (one per numerical job): publish a code bundle, submit one Koala job, follow its log,
-   replay the outcome through the Gym's worker protocol
+└─ relay (the executor command, one per numerical job): the Gym's nodes relay with the Koala launcher:
+   publish a code bundle, submit one Koala job, follow node 0's log, speak the Gym's worker protocol
+   (bill ahead of the work, poll for cancel_job)
       ▼
-Koala GPU pod: the candidate's training or checks, as `nobody`
+Koala GPU pods: build the environment, meet the other nodes, fetch object-store inputs, then the Gym's node
+(`nexttransformer_gym.nodes`): the candidate's training or checks, as `nobody`
 ```
 
-The agent never reaches Koala. Koala and object-store credentials go to the relay only, and pods cannot connect back
-to the host: the pod acknowledges the worker's operations within the job's reservation, and the relay records the
-outcome.
+The agent never reaches Koala. Koala and object-store credentials go to the relay only (the executor's
+`environment`), and pods cannot connect back to the host: the pod acknowledges the worker's operations within the
+job's reservation, and the relay bills the Gym ahead of the progress it reads from the pod's log.
+
+`trial` and `cli` write the Gym's execution configuration (`execution.<CONF name>.json`, next to CONF): the local
+sandbox for static audits, and an `executor` block with the relay command, the relay's credentials, the job's cards
+(`research_gpus` virtual identities named `gpu_name`), the pods' recorded runtime (`probe`) and the pods' confinement
+(`pod_isolation`, `pod_network`). They then start the Gym's own `run_trial.py` or `nexttransformer_gym.cli` with it.
+In the pods, the Gym's node checks the runtime and runs the worker with the Gym's own identity, environment and
+confinement (`nexttransformer_gym.nodes`, `nexttransformer_gym.remote`).
+
+What Koala adds to the Gym's executor (`KoalaLauncher` and the pod entry): the code bundle and the Koala job,
+waiting while the Normal quota is full, node 0's output from the Koala log, the pods' environment (`uv sync`), the
+nodes' rendezvous on shared storage, object-store staging on H200 (data, checkpoints, the job's files), the pod-time
+journal and the multi-node final runs.
 
 ## Setup
 
@@ -46,7 +64,7 @@ Keep `staging_dir` outside any git work tree: `koala code publish` packs tracked
 
 | Setting | Meaning |
 |---|---|
-| `research_gpus` | GPUs of one research job (default 1). The Gym's execution configuration lists that many virtual cards; the Gym leases them as one group and splits each update across them, and the pods map them onto their own GPUs in order. |
+| `research_gpus` | GPUs of one research job (default 1). The executor block lists that many cards (named `gpu_name`, which is what agents see); the Gym leases them as one group and splits each update across them, and the pods map them onto their own GPUs in order. |
 | `research_gpus_per_node` | GPUs per node (default 8). A larger `research_gpus` (a multiple of it) spans `research_gpus / research_gpus_per_node` nodes; see below. |
 | `research_mesh_timeout_seconds` | How long a multi-node worker waits for the other nodes at a collective (default 3600: compilation, checkpoint loads). |
 | `research_microbatch_size` | The Gym's `research_microbatch_size`: rows per GPU per forward/backward pass (default 1, as in the Gym). An update of the profile's `batch_size` rows accumulates gradients over its passes. |
@@ -60,14 +78,17 @@ numerical job at a time per state.
 
 With `research_gpus` 32 and `research_gpus_per_node` 8, one research job is one Koala job of 4 nodes x 8 GPUs. The
 Gym splits each update over the 32 cards exactly as on one machine with 32 GPUs (the quote, its FLOPs and memory bound
-do not change); node `k` trains cards `8k .. 8k+7`:
+do not change); node `k` trains cards `8k .. 8k+7`. The pods find their node index and node 0's address through the
+job's directory on shared storage; everything else is the Gym's multi-node executor, the same as on local machines:
 
-1. The nodes meet through the job's directory on shared storage (as final runs do), and each pod runs a trusted NCCL
-   check (`pod-mesh-check`) as the worker identity before node 0 reports the job ready. A mesh that does not form
-   ends the job before its worker starts, so it is charged nothing. The pod's log records the measured bandwidth.
-2. Each node's worker process joins a one-process-per-node NCCL group on its first GPU, runs every collective once
-   (`NCCL_RUNTIME_CONNECT=0`), and only then installs the `pod_network` `deny` filter for every thread before it loads
-   candidate code: the worker keeps its connections to the job's own nodes and cannot open any other socket.
+1. Each pod runs the Gym's NCCL
+   check (`python -m nexttransformer_gym.mesh check`) as the worker identity before node 0 reports the job ready. A
+   mesh that does not form ends the job before its worker starts, so it is charged nothing. The pod's log records the
+   measured bandwidth.
+2. Each node runs the Gym's mesh worker (`python -m nexttransformer_gym.mesh worker`): it joins a one-process-per-node
+   NCCL group on its first GPU, runs every collective once, and only then refuses new network sockets in every thread
+   (`pod_network` `deny`) before it loads candidate code: the worker keeps its connections to the job's own nodes and
+   cannot open any other socket.
 3. Each node sums its local replicas' gradients with CUDA copies, as on one machine; the node sums are all-reduced, and
    every node applies the same optimizer update. After each update the nodes compare a fingerprint of their state; if it
    ever differs they take node 0's (the result's `execution.cross_node_resyncs` counts it). Dev evaluation is split the
@@ -100,7 +121,7 @@ gym/.venv/bin/python gym/koala/koala_gym.py --koala CONF jobs --state STATE [--s
 | | H20 (`"cluster": "h20"`) | H200 (`"cluster": "h200"`) |
 |---|---|---|
 | Pod kernel | No Landlock, no user namespaces | Landlock and user namespaces |
-| `pod_isolation` | `none`: the worker runs as `nobody`; `pod_network: "deny"` refuses new network sockets with seccomp | `landlock` |
+| `pod_isolation` | `none`: the worker runs as `nobody`; `pod_network: "deny"` refuses new network sockets with the Gym's seccomp filter | `landlock` |
 | Storage | CPFS holds `remote_root`, data and checkpoints | No shared filesystem: `remote_root` is an `s3://` prefix, mirrored in `pod_remote_dir`; `data_stage` stages data per job |
 | Code bundles | OSS | S3 |
 | Final runs | Several nodes, rendezvous over TCP at node 0 | One node |
@@ -113,12 +134,16 @@ A research job stages only its own profile's data and never the validation shard
 
 ## Accounting and recovery
 
-- One Gym operation per Koala job: the intent when the pod reports that the worker starts, the charge (the quoted
-  bound) when it reports the outcome. A job that ends before its worker starts is charged nothing.
+- Billing ahead of the work (`executor.Charges`): when the pod reports that the worker starts, the initialization and
+  the first 16 updates; then 16 updates ahead of the progress in the pod's log; exactly the quoted bound when it
+  reports success. A job that ends before its worker starts is charged nothing; a stopped or failed job, its started
+  windows.
 - An unknown outcome keeps the reservation for the Gym's `reconcile`.
-- While Koala refuses submissions because the quota is in use, the relay retries every `quota_wait_seconds` and
-  honours `cancel_job`.
+- The relay polls the Gym for `cancel_job` (the worker protocol's `poll`), also while Koala refuses submissions
+  because the quota is in use (it retries every `quota_wait_seconds`).
 - The relay journals every Koala job in `<state>/koala-jobs.jsonl`, with pod start time and GPU-hours.
+- The Gym's relay does all of this for every launcher; the Koala launcher maps a full quota to the relay's retry, and
+  a stop to `koala stop`.
 
 ## Claude Code
 
@@ -145,8 +170,10 @@ paths from `KOALA_E2E_DATA` and `KOALA_E2E_RESOURCES`.
 
 ## Limits
 
-- Remote dispatch is outside the Gym's agreed scope (one local machine, one concurrent numerical job). This adapter
-  keeps one Koala job at a time per Gym state; a research job may span several nodes (above).
+- The Gym runs one numerical job at a time per state, so this executor keeps one Koala job at a time per Gym state;
+  a research job may span several nodes (above).
+- Multi-node final runs still adapt the Gym's official pipeline in-process (`install_official`): that path is outside
+  the Gym's executor interface (the Gym's own multi-node executor runs research and checks only).
 - Research workers run in `research_dtype` (float32 by default) and compile only with `research_compile`.
 - A Koala Normal job has a maximum duration (48 h for one H20 node, 27 h for four): give research profiles a
   `timeout_sec` below it. A job stopped at the timeout is charged for its started windows and returns no

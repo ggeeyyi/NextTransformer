@@ -65,9 +65,28 @@ def admission_status(checks, report, profile):
     return True, None
 
 
+def across_nodes(records):
+    """One execution record for a group of nodes, as for one machine with all their cards: node 0's primary device
+    and runtime, and every node's cards in global order, each with its node."""
+    merged = dict(records[0], nodes=len(records))
+    if "devices" in merged:
+        devices = [
+            dict(card, node=node)
+            for node, record in enumerate(records)
+            for card in record["devices"]
+        ]
+        merged.update(
+            gpu_ids=[card["gpu_id"] for card in devices],
+            device_count=len(devices),
+            devices=devices,
+        )
+    return merged
+
+
 def execute(request):
     import torch
     from .numerics import build
+    from .research import gather_nodes, mesh
     from .data import streams
     from nexttransformer.models.native.config import NativeTrainConfig
     from nexttransformer.training.optimizer import build_optimizer
@@ -142,6 +161,8 @@ def execute(request):
                 peak_memory_reserved_bytes=torch.cuda.max_memory_reserved(0),
                 memory_limit_bytes=gpu["memory_limit_bytes"],
             )
+        if mesh()[1] > 1:  # a collective: every node of a group reports here
+            result = across_nodes(gather_nodes(result, device))
         return result
 
     emit({"kind": "runtime", "value": execution()})
@@ -347,6 +368,7 @@ def execute(request):
             }
         )
         return
+    from .accounting import evaluation_cost, update_cost
     from .research import ResearchParallel
 
     parallel = ResearchParallel(model, device_count)
@@ -383,12 +405,7 @@ def execute(request):
             parallel.synchronize(optimizer)
             return loss
 
-        cost = (
-            int(report.get("research_forward", forward))
-            + int(report.get("research_backward", backward))
-            + int(report.get("research_reduction", 0))
-            + optimizer_cost
-        )
+        cost = update_cost(report)
         loss = operation(f"update-{update + 1}", cost, train_step)
         cumulative += cost
         curves.append({"update": update + 1, "training_loss": loss})
@@ -418,10 +435,7 @@ def execute(request):
         }
 
     metrics = operation(
-        "dev-evaluation",
-        int(report.get("research_evaluation", report["evaluation"]))
-        * profile["dev_batches"],
-        evaluate,
+        "dev-evaluation", evaluation_cost(report, profile["dev_batches"]), evaluate
     )
     # A collective across nodes: every node gathers, node 0 alone writes the checkpoint.
     replica_routing = parallel.routing_states()

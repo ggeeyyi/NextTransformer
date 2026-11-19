@@ -39,6 +39,7 @@ def configuration(value=None):
                 "max_concurrent_jobs",
                 "allow_idle_graphics",
                 "isolation",
+                "executor",
             }
         ),
         "invalid_request",
@@ -49,6 +50,24 @@ def configuration(value=None):
         "invalid_request",
         "Unsupported execution configuration schema.",
     )
+    memory = value.get("gpu_memory_limit_bytes", 4 * 1024**3)
+    require(
+        type(memory) is int and memory > 0,
+        "invalid_request",
+        "GPU memory budget must be a positive integer.",
+    )
+    executor = None
+    if value.get("executor") is not None:
+        from .executor import settings
+
+        # An operator executor's cards are the allocation; they never resolve to local devices.
+        executor = settings(value["executor"], memory)
+        declared = [device["id"] for device in executor["devices"]]
+        require(
+            [str(x) for x in value.setdefault("gpu_ids", declared)] == declared,
+            "invalid_request",
+            "With an executor, gpu_ids are the executor's device ids, in order.",
+        )
     ids = value.get("gpu_ids", [])
     require(
         isinstance(ids, list)
@@ -62,12 +81,6 @@ def configuration(value=None):
     )
     ids = [str(x) for x in ids]
     require(len(ids) == len(set(ids)), "invalid_request", "Duplicate GPU allocations.")
-    memory = value.get("gpu_memory_limit_bytes", 4 * 1024**3)
-    require(
-        type(memory) is int and memory > 0,
-        "invalid_request",
-        "GPU memory budget must be a positive integer.",
-    )
     require(
         type(value.get("max_concurrent_jobs", 1)) is int
         and value.get("max_concurrent_jobs", 1) == 1,
@@ -104,7 +117,7 @@ def configuration(value=None):
         "invalid_request",
         "isolation must be one of: " + ", ".join(BACKENDS) + ".",
     )
-    return {
+    result = {
         "schema_version": "gym.execution.v1",
         "gpu_ids": ids,
         "gpu_memory_limit_bytes": memory,
@@ -115,6 +128,9 @@ def configuration(value=None):
         "allow_idle_graphics": allow_graphics,
         "isolation": isolation,
     }
+    if executor is not None:
+        result["executor"] = executor
+    return result
 
 
 def _query(fields, kind="gpu"):
@@ -175,6 +191,15 @@ def _process_counts(xml):
             "process_count": len(all_processes),
         }
     return result
+
+
+def allocation_cards(config):
+    """The allocation's cards: an operator executor's declared cards, or this machine's observed devices."""
+    if config.get("executor"):
+        from .executor import inventory
+
+        return inventory(config)
+    return discover()
 
 
 def discover():
@@ -298,7 +323,7 @@ def leased(uuid):
 @contextmanager
 def reserve(config, requested=None):
     """A lease coordinates Gym instances; it cannot exclude unrelated host jobs."""
-    observed = discover()
+    observed = allocation_cards(config)
     candidates = [
         card
         for card in allocated(config, observed)
@@ -319,7 +344,11 @@ def reserve(config, requested=None):
             except BlockingIOError:
                 continue
             fresh = next(
-                (x for x in allocated(config, discover()) if x["id"] == card["id"]),
+                (
+                    x
+                    for x in allocated(config, allocation_cards(config))
+                    if x["id"] == card["id"]
+                ),
                 None,
             )
             if fresh is None or not idle(fresh, config):
@@ -334,8 +363,8 @@ def reserve(config, requested=None):
 
 @contextmanager
 def reserve_group(config):
-    """Acquire the entire operator-selected machine-local group or release all."""
-    observed = discover()
+    """Acquire the entire operator-selected group or release all."""
+    observed = allocation_cards(config)
     cards = allocated(config, observed)
     require(
         len(cards) == len(config["gpu_ids"]) and bool(cards),

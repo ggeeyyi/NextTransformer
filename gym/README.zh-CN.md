@@ -6,7 +6,7 @@ Gym 用于运行模型架构研究实验：宿主机执行训练，Harbor 在独
 本文示例使用合成数据，不代表生产 ClimbMix 或 CORE-22 成绩。
 
 - [安装](#安装) · [启动研究会话](#启动研究会话) · [运行实验并提交](#运行实验并提交)
-- [Gym 接口](#gym-api) · [候选格式](#提交原生候选) · [Worker 隔离](#worker-isolation)
+- [Gym 接口](#gym-api) · [候选格式](#提交原生候选) · [Worker 隔离](#worker-isolation) · [多台机器](#多台机器)
 - [错误与恢复](#错误与恢复) · [检查安装](#检查安装)
 
 Agent 的操作要求见[任务指令](tasks/architecture-research/instruction.md)。以下宿主机命令均在仓库根目录执行。
@@ -212,6 +212,41 @@ CPU 会话可以只配置这一个字段：
 
 控制器以 root 运行时，所有后端的 worker 都以 `nobody` 运行。该用户必须能读取平台源码和 worker Python。
 `get_resources` 在 `execution_config` 中报告当前后端。
+
+## 多台机器
+
+一个研究任务可以使用多台机器的 GPU。Gym 的多机执行器负责运行；Gym 的其余部分不变，Agent 看到的是一组卡。
+这些机器之间需要能通过 TCP 互通（NCCL），能以与控制器相同的路径访问一个目录（`job_root`，例如 NFS），
+使用相同的 Python 环境（`python`），并允许控制器免密 ssh 登录。
+
+```json
+{
+  "schema_version": "gym.nodes.v1",
+  "launcher": "ssh",
+  "hosts": [{"ssh": "gpu-a", "address": "10.0.0.1"}, {"ssh": "gpu-b", "address": "10.0.0.2"}],
+  "gpus_per_node": 8,
+  "python": "/opt/nexttransformer/gym/.venv/bin/python",
+  "job_root": "/shared/gym-jobs",
+  "isolation": "none",
+  "network": "deny"
+}
+```
+
+```sh
+gym/.venv/bin/python -m nexttransformer_gym.nodes configure nodes.json --execution execution.base.json --out execution.json
+gym/.venv/bin/python gym/run_trial.py --execution-config execution.json ...
+```
+
+`configure` 记录各机器的运行时和 GPU；`execution.base.json` 提供执行配置的其他字段。
+之后一个研究任务使用全部 16 张 GPU：节点 k 训练第 8k 到 8k+7 张卡，每次更新的切分与一台有 16 张 GPU 的机器完全相同。
+跨机器的任务需要隔离 `none`：各机器会合后，网络 `deny` 拒绝新建 socket；ssh 用户为 root 时，worker 以 `nobody` 运行。
+`"launcher": "local"` 在本机以进程运行各节点。集群插件提供自己的启动器（[Koala](koala/README.md)）；
+详见 [DESIGN.zh-CN.md](DESIGN.zh-CN.md#多机执行器)。
+
+> **未在裸机上测试。** GPU 任务只通过 Koala 启动器在这个执行器上运行过（单节点，以及一个使用 4 节点 × 8 张 H20 的研究任务）。
+> `local` 和 `ssh` 启动器只在一台机器上用 CPU 节点测试过（`ssh` 用的是替身）。在不经 Koala 的裸机 GPU 机器上，
+> 真实的 ssh 与共享存储、按标识映射卡、拒绝忙碌的卡以及机器间的 NCCL 都没有测试过。`configure` 发现 GPU 时会打印警告；
+> 请先跑一个有界的任务。
 
 ## 错误与恢复
 

@@ -26,6 +26,22 @@ def mesh():
     return 0, 1
 
 
+def gather_nodes(value, device=None):
+    """Every node's `value`, in node order (a collective across nodes), or [value] on one machine.
+
+    Object collectives stage their bytes on the calling thread's current device, which must be the group's."""
+    _, nodes = mesh()
+    if nodes == 1:
+        return [value]
+    import torch.distributed as dist
+
+    gathered = [None] * nodes
+    cuda = device is not None and torch.device(device).type == "cuda"
+    with torch.cuda.device(device) if cuda else nullcontext():
+        dist.all_gather_object(gathered, value)
+    return gathered
+
+
 def all_reduce_tensors(tensors):
     """Sum tensors across nodes in place, in buckets of one dtype and device."""
     import torch.distributed as dist
@@ -269,14 +285,8 @@ class ResearchParallel:
         local = [model.routing_rng_state() for model in self.models]
         if self.nodes == 1:
             return local
-        import torch.distributed as dist
-
-        # Object collectives stage their bytes on the calling thread's current device, which must be the group's.
         device = next(self.models[0].parameters()).device
-        gathered = [None] * self.nodes
-        with torch.cuda.device(device) if device.type == "cuda" else nullcontext():
-            dist.all_gather_object(gathered, local)
-        return [state for part in gathered for state in part]
+        return [state for part in gather_nodes(local, device) for state in part]
 
     def restore_routing_states(self, states):
         if len(states) != self.total:

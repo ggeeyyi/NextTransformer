@@ -1,24 +1,30 @@
 #!/usr/bin/env python3
-"""Koala execution for the upstream Gym. This is the only Koala-specific file.
+"""Koala for the Gym's multi-node executor. This is the only Koala-specific file.
 
-The Gym's controller, API, budget and evidence code run unchanged on this machine, with or without
-local GPUs. This file starts them with three substitutions and runs their numerical jobs as Koala
-jobs:
+It plugs into the Gym only through the Gym's public interfaces (nexttransformer_gym.nodes, .executor, .remote; see
+the Gym's DESIGN.md, "Operator executors"). The Gym's controller, API, budget and evidence code run unchanged on this
+machine, with or without local GPUs, and the Gym's multi-node executor (`nodes`) runs every job, as it does on local
+machines over ssh; this file is its Koala launcher:
 
-* GPU discovery reports operator-configured virtual cards instead of local devices;
-* the runtime identity is the pod's recorded runtime (`probe`), not this machine's interpreter;
-* a research, check or final job's worker process is a relay: it publishes a code bundle, submits
-  one Koala job, follows its log and replays the outcome through the Gym's worker protocol.
+* `trial` and `cli` write a Gym execution configuration whose `executor` block names this file's relay, the job's
+  cards (virtual identities, the configured GPU name), the pods' recorded runtime (`probe`) and the pods'
+  confinement, and then start the Gym's own entry points (run_trial.py, nexttransformer_gym.cli) unmodified;
+* the Gym starts the relay for each job it schedules: `nodes.relay` with `KoalaLauncher`, which publishes a code
+  bundle, submits one Koala job of the job's nodes (waiting while the Normal quota is full), reads node 0's output
+  from the Koala log and stops the job; the Gym's relay speaks the worker protocol, bills ahead of the observed
+  work, polls for cancel_job, journals the job and keeps the checkpoint pointer;
+* each pod builds the environment, finds its node index and node 0's address on shared storage, fetches what an
+  object store holds, and then runs the Gym's node (`nodes.run`): the runtime check, the worker identity,
+  environment and confinement, and on a group of nodes the mesh check and mesh worker.
 
-Static audits (`inspect_cost`, calibration grids) still run in the local sandbox (`local_isolation`,
-bubblewrap by default). The same Gym code serves a GPU machine (upstream entry points) and this
-machine (this file's entry).
+Static audits (`inspect_cost`, calibration grids) run in the Gym's local sandbox (`local_isolation`, bubblewrap by
+default).
 
-Isolation. Candidate code trains in the pods, so the Gym's execution configuration reports the pod
-backend (`pod_isolation`: the Gym's `bwrap`, `landlock` or `none`). Each pod checks that backend's
-prerequisites as root before work and fails closed, without a charge, when they are missing. As in
-the Gym, a root controller (here the pod) runs every non-official worker as `nobody`; official final
-runs execute the operator's admitted snapshot without a sandbox, as the Gym does.
+Isolation. Candidate code trains in the pods, so the executor block reports the pod backend (`pod_isolation`: the
+Gym's `bwrap`, `landlock` or `none`, with `pod_network`). Each pod checks that backend's prerequisites as root before
+work and fails closed, without a charge, when they are missing. As in the Gym, a root runner (here the pod) runs
+every non-official worker as `nobody`; official final runs execute the operator's admitted snapshot without a
+sandbox, as the Gym does.
 
 Clusters. One file serves both Koala GPU clusters; a configuration names one (`cluster`).
 * H20 (`h20`): kernel 5.10 without Landlock or user namespaces, so `pod_isolation` is `none` (the worker runs as
@@ -31,21 +37,19 @@ Clusters. One file serves both Koala GPU clusters; a configuration names one (`c
   has one node. Bundles go to S3. `relay_env` passes the credentials either store needs.
 `probe` confirms a configuration's backend and runtime on its cluster before use.
 
-Research GPUs. A research job uses `research_gpus` GPUs: the Gym's execution configuration lists that many virtual
-cards, the Gym leases them as one group and splits each update across them, and the pods map them onto their own
-GPUs in order. Up to `research_gpus_per_node` GPUs fit one node; a larger group spans research_gpus /
-research_gpus_per_node nodes, and the Gym's split of each update is the same as on one machine with that many GPUs.
-`research_microbatch_size` is the Gym's rows per GPU per pass; an update accumulates gradients over its passes. A check
-with a final profile uses one GPU.
+Research GPUs. A research job uses `research_gpus` GPUs: the executor block lists that many cards, the Gym leases
+them as one group and splits each update across them, and the pods map them onto their own GPUs in order. Up to
+`research_gpus_per_node` GPUs fit one node; a larger group spans research_gpus / research_gpus_per_node nodes, and
+the Gym's split of each update is the same as on one machine with that many GPUs. `research_microbatch_size` is the
+Gym's rows per GPU per pass; an update accumulates gradients over its passes. A check with a final profile uses one
+GPU.
 
-Multi-node research. Every node runs the Gym worker on its share of the group (cards node*k .. node*k+k-1). Before
-the worker starts, the pod checks that the nodes reach each other over NCCL (`pod-mesh-check`, before the job is
-reported ready, so a broken mesh charges nothing). Each worker process then joins a one-process-per-node NCCL group,
-warms it up and only then refuses new network sockets (`pod_network` `deny`), before any candidate code loads: the
-workers keep the connections to their own job's nodes and open no others. Node 0 reports to the relay and alone writes
-the checkpoint; the other nodes write markers under `<remote>/research/` and stop their worker when a peer fails or
-node 0 is done. It needs a shared `remote_root` (the rendezvous) and `pod_isolation` `none`: the Landlock backend
-unshares the network namespace.
+Multi-node research. The pods meet through shared storage (`<remote>/rendezvous`); the rest is the Gym's
+multi-node executor (nodes.research_node): the mesh check before the job is reported ready, the mesh worker on each
+node's share of the group (cards node*k .. node*k+k-1), node 0 reporting and alone writing the checkpoint, and
+markers under `<remote>/research/` (a Koala job ends when any of its pods ends, so the other nodes wait for node 0).
+It needs a shared `remote_root` (the rendezvous) and `pod_isolation` `none`: the Landlock backend unshares the
+network namespace.
 
 Commands (controller, with the Gym environment's Python):
   koala_gym.py --koala koala.json probe                    record the pod runtime once
@@ -53,20 +57,20 @@ Commands (controller, with the Gym environment's Python):
   koala_gym.py --koala koala.json cli <nexttransformer_gym.cli arguments>
   koala_gym.py --koala koala.json jobs --state <gym state> [--stop-orphans]
 Internal:
-  koala_gym.py relay koala.json                            started by the Gym scheduler
+  koala_gym.py relay koala.json                            the executor command the Gym starts per job
   koala_gym.py pod job.json                                Koala job entry on every node
 
-Accounting. A pod cannot reach this machine and a normal job has no interactive entry, so the pod
-acknowledges the worker's operations itself, within the job's reservation, and the relay records
-one Gym operation per Koala job: the intent when the pod reports that the worker starts, the charge
-(the quoted bound) when the pod reports the outcome. A job that ends before its worker starts is
-charged nothing; a started job that fails or is cancelled is charged its whole bound; an unknown
-outcome keeps the reservation for the operator's `reconcile`. Cancellation reaches a queued or
-running Koala job through the Gym's own job record.
+Accounting. A pod cannot reach this machine and a normal job has no interactive entry, so node 0 acknowledges the
+worker's operations itself, within the job's reservation, and the Gym's relay bills ahead of the work it reads from
+the log (executor.Charges): the first window when the pod reports that the worker starts, more as progress arrives,
+and exactly the quoted bound when the pod reports success. A job that ends before its worker starts is charged
+nothing; a started job that fails or is cancelled is charged its started windows; an unknown outcome keeps the
+reservation for the operator's `reconcile`.
 
-Multi-node final runs. Node 0 runs the Gym's official pipeline; its rank spawn is split across the
-nodes, which meet over TCP at node 0 (found through shared storage). `official_smoke` bounds that
-path for tests (trainer smoke steps, no audit or export); its results are never official.
+Multi-node final runs. Node 0 runs the Gym's official pipeline; its rank spawn is split across the nodes, which
+meet over TCP at node 0 (found through shared storage). `official_smoke` bounds that path for tests (trainer smoke
+steps, no audit or export); its results are never official. This path still adapts the Gym's official pipeline
+in-process (see `install_official`).
 """
 
 import argparse
@@ -76,9 +80,7 @@ import os
 import re
 import shlex
 import shutil
-import signal
 import socket
-import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -87,27 +89,24 @@ from pathlib import Path
 
 THIS = Path(__file__).resolve()
 MARK = "KOALA_GYM "
-GYM = "GYM_EVENT "
+CHECKPOINT_SCHEMA = "koala_gym.checkpoint.v1"
 LABEL = "koala-job"
 ENDED = ("Succeeded", "Failed", "Stopped", "Deleting")
 CHUNK = 3000
-UNKNOWN_EXIT = 3
-# The Gym's runtime query (backend.NativeBackend.__init__). If upstream changes it, update this copy and re-probe.
-RUNTIME_SCRIPT = """
-import ast, importlib.metadata as m, json, sys
-names = ('torch', 'numpy', 'pyarrow', 'tiktoken', 'rustbpe', 'filelock', 'fsspec', 'sympy')
-version = m.distribution('torch').locate_file('torch/version.py').read_text()
-cuda = None
-for node in ast.walk(ast.parse(version)):
-    if isinstance(node, ast.AnnAssign) and getattr(node.target, 'id', '') == 'cuda':
-        cuda = ast.literal_eval(node.value)
-print(json.dumps({'dependencies': {n:m.version(n) for n in names}, 'python':list(sys.version_info[:3]), 'cuda_version':cuda}))
-"""
 VIRTUAL_UUID = "GPU-4b6f616c-6167-7900-8000-{:012x}"  # a placeholder identity, never a local device
 PLATFORM_FILES = ("pyproject.toml", "uv.lock", "README.md", ".python-version")
 PLATFORM_DIRS = ("nexttransformer", "nanochat")
+# Caches and work files never ship (a code bundle counts its files against the publisher's preview).
 IGNORE = shutil.ignore_patterns(
-    "__pycache__", "*.pyc", ".git", ".venv", "node_modules", ".agent-work"
+    "__pycache__",
+    "*.pyc",
+    ".git",
+    ".venv",
+    "node_modules",
+    ".agent-work",
+    ".ruff_cache",
+    ".pytest_cache",
+    ".mypy_cache",
 )
 
 DEFAULTS = {
@@ -143,7 +142,8 @@ DEFAULTS = {
     "official_smoke": None,
     "site_config": None,
     "virtual_gpu_offset": 0,
-    "gpu_name": "Koala GPU",
+    # The cards' name agents see (get_resources, results).
+    "gpu_name": "GPU",
     "gpu_memory_total_bytes": None,
     "gpu_memory_limit_bytes": None,
     "runtime": None,
@@ -597,30 +597,6 @@ def pod_command(config, entry):
 # ------------------------------------------------------------------------------------------ controller
 
 
-class RuntimeQuery:
-    """Stands in for `subprocess` while NativeBackend records the numerical runtime."""
-
-    def __init__(self, real, runtime):
-        self.real, self.runtime = real, runtime
-
-    def __getattr__(self, name):
-        return getattr(self.real, name)
-
-    def check_output(self, args, *rest, **options):
-        if (
-            isinstance(args, (list, tuple))
-            and len(args) == 3
-            and args[1] == "-c"
-            and "importlib.metadata" in args[2]
-        ):
-            if args[2].strip() != RUNTIME_SCRIPT.strip():
-                raise RuntimeError(
-                    "The Gym's runtime query changed; update koala_gym.RUNTIME_SCRIPT and re-run probe"
-                )
-            return json.dumps(self.runtime)
-        return self.real.check_output(args, *rest, **options)
-
-
 def virtual_ids(config):
     """Gym GPU leases coordinate processes per card identity; give each configuration its own cards."""
     return [
@@ -629,131 +605,38 @@ def virtual_ids(config):
     ]
 
 
-def virtual_inventory(config):
-    cards = []
-    for index in range(int(config["research_gpus"])):
-        uuid = VIRTUAL_UUID.format(int(config["virtual_gpu_offset"]) + index)
-        cards.append(
-            {
-                "id": uuid,
-                "uuid": uuid,
-                "index": index,
-                "device_minor": index,
-                "name": f"{config['gpu_name']} (Koala job)",
-                "memory_total_bytes": config["gpu_memory_total_bytes"],
-                "memory_free_bytes": config["gpu_memory_total_bytes"],
-                "utilization_percent": 0,
-                "process_count": 0,
-                "compute_process_count": 0,
-                "graphics_process_count": 0,
-            }
-        )
-    return {"status": "ok", "gpus": cards}
-
-
-CONTROLLER = {}
-
-
-def install_controller(config, config_path):
-    """Replace the Gym's local GPU discovery, runtime query and numerical worker launch.
-
-    Installing again only switches the configuration the replacements read.
-    """
-    import inspect
-
-    from nexttransformer_gym import backend, gpu, isolation
-
-    if not config["runtime"]:
-        raise SystemExit(
-            "koala_gym: no pod runtime recorded; run `koala_gym.py --koala ... probe` first"
-        )
-    CONTROLLER.update(config=config, path=str(Path(config_path).resolve()))
-    if getattr(backend.NativeBackend, "koala_gym", False):
-        return
-    for name in ("__init__", "worker_command", "environment"):
-        if not hasattr(backend.NativeBackend, name):
-            raise SystemExit(
-                f"koala_gym: the Gym no longer has NativeBackend.{name}; update koala_gym.py"
-            )
-    if list(inspect.signature(isolation.command).parameters) != [
-        "python",
-        "platform",
-        "request",
-        "backend",
-    ] or not callable(getattr(isolation, "preflight", None)):
-        raise SystemExit(
-            "koala_gym: the Gym's isolation.command/preflight changed; update koala_gym.py"
-        )
-    gpu.discover = lambda: virtual_inventory(CONTROLLER["config"])
-    original_init = backend.NativeBackend.__init__
-    original_command = backend.NativeBackend.worker_command
-    original_environment = backend.NativeBackend.environment
-    real_preflight = isolation.preflight
-
-    def controller_preflight(_backend):
-        # The configured backend is the pods'; each pod checks it. Here only the local sandbox runs, and
-        # the Gym's own warning still appears when candidate code trains without one.
-        settings = CONTROLLER["config"]
-        real_preflight(settings["local_isolation"])
-        if (
-            settings["pod_isolation"] == "none"
-            and settings["local_isolation"] != "none"
-        ):
-            real_preflight("none")
-
-    def __init__(self, *args, **options):
-        real = backend.subprocess
-        backend.subprocess = RuntimeQuery(real, CONTROLLER["config"]["runtime"])
-        isolation.preflight = controller_preflight
-        try:
-            original_init(self, *args, **options)
-        finally:
-            backend.subprocess = real
-            isolation.preflight = real_preflight
-
-    def worker_command(self, request):
-        if request.get("mode") == "execute":
-            return [sys.executable, str(THIS), "relay", CONTROLLER["path"]]
-        if request.get("quote", {}).get("operation") == "official":
-            return original_command(self, request)
-        return isolation.command(
-            self.python,
-            self.platform_root,
-            request,
-            CONTROLLER["config"]["local_isolation"],
-        )
-
-    def environment(self, profile=None, official=False, gpu=None):
-        env = original_environment(self, profile, official, gpu)
-        # Only the scheduler starts a worker with a profile, and that worker is the relay: it alone gets
-        # the operator's Koala credentials. Sandboxed audits and snapshot preparation never see them.
-        if profile is not None:
-            env.update(
-                {
-                    k: os.environ[k]
-                    for k in CONTROLLER["config"]["relay_env"]
-                    if k in os.environ
-                }
-            )
-        return env
-
-    backend.NativeBackend.__init__ = __init__
-    backend.NativeBackend.worker_command = worker_command
-    backend.NativeBackend.environment = environment
-    backend.NativeBackend.koala_gym = True
-
-
-def execution_settings(config):
-    """The Gym's execution configuration for this Koala configuration (it reports the pods' backend)."""
+def execution_settings(config, config_path):
+    """The Gym execution configuration for a Koala configuration: this file's relay as the operator executor."""
     return {
         "schema_version": "gym.execution.v1",
-        "gpu_ids": virtual_ids(config),
         "gpu_memory_limit_bytes": config["gpu_memory_limit_bytes"],
         "research_microbatch_size": config["research_microbatch_size"],
         "research_dtype": config["research_dtype"],
         "research_compile": config["research_compile"],
         "max_concurrent_jobs": 1,
-        "isolation": config["pod_isolation"],
+        # Static audits run on this machine.
+        "isolation": config["local_isolation"],
+        "executor": {
+            "command": [
+                sys.executable,
+                str(THIS),
+                "relay",
+                str(Path(config_path).resolve()),
+            ],
+            # Only the relay receives the code-bundle credentials.
+            "environment": list(config["relay_env"]),
+            "devices": [
+                {
+                    "id": uuid,
+                    "name": config["gpu_name"],
+                    "memory_total_bytes": config["gpu_memory_total_bytes"],
+                }
+                for uuid in virtual_ids(config)
+            ],
+            "runtime": config["runtime"],
+            "isolation": config["pod_isolation"],
+            "network": config["pod_network"],
+        },
     }
 
 
@@ -761,7 +644,7 @@ def execution_config(config, config_path):
     # One file per Koala configuration: sessions with other offsets or backends may start concurrently.
     config_path = Path(config_path).resolve()
     path = config_path.with_name(f"execution.{config_path.stem}.json")
-    value = execution_settings(config)
+    value = execution_settings(config, config_path)
     if not path.exists() or json.loads(path.read_text()) != value:
         path.write_text(json.dumps(value, indent=2) + "\n")
     return path
@@ -782,10 +665,14 @@ def check_worker_python(config, python):
 
 
 def controller(config_path, mode, argv):
+    """Write the execution configuration, then start the Gym's own entry point with it."""
     if os.geteuid() == 0:
         raise SystemExit("koala_gym: run the controller as an ordinary user")
     config = load_config(config_path)
-    install_controller(config, config_path)
+    if not config["runtime"]:
+        raise SystemExit(
+            "koala_gym: no pod runtime recorded; run `koala_gym.py --koala ... probe` first"
+        )
     if "--execution-config" not in argv:
         argv = ["--execution-config", str(execution_config(config, config_path)), *argv]
     if "--worker-python" in argv:
@@ -801,136 +688,22 @@ def controller(config_path, mode, argv):
     import nexttransformer_gym
 
     if mode == "cli":
-        from nexttransformer_gym.cli import main
-
-        sys.argv = ["nt-gym", *argv]
-        return main()
-    import runpy
-
-    script = Path(nexttransformer_gym.__file__).resolve().parents[2] / "run_trial.py"
-    sys.argv = [str(script), *argv]
-    runpy.run_path(str(script), run_name="__main__")
+        command = [sys.executable, "-m", "nexttransformer_gym.cli", *argv]
+    else:
+        script = (
+            Path(nexttransformer_gym.__file__).resolve().parents[2] / "run_trial.py"
+        )
+        command = [sys.executable, str(script), *argv]
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os.execv(sys.executable, command)
 
 
 # ----------------------------------------------------------------------------------------------- relay
 
 
-class Protocol:
-    """The worker side of the Gym scheduler protocol (worker.py: intent -> ack -> work -> charge)."""
-
-    def emit(self, value):
-        print(GYM + json.dumps(value, allow_nan=False), flush=True)
-
-    def reply(self):
-        line = sys.stdin.readline()
-        if not line:
-            raise RuntimeError("the Gym scheduler closed the worker protocol")
-        return json.loads(line)
-
-    def intent(self, amount, label=LABEL):
-        self.emit({"kind": "intent", "label": label, "amount": str(amount)})
-        reply = self.reply()
-        if reply.get("cancel"):
-            return False
-        if reply != {"ack": label}:
-            raise RuntimeError("accounting acknowledgement mismatch")
-        return True
-
-    def charge(self, amount, label=LABEL):
-        self.emit({"kind": "charge", "label": label, "amount": str(amount)})
-        if self.reply() != {"ack": label}:
-            raise RuntimeError("charge acknowledgement mismatch")
-
-    def failed(self, code, detail=None):
-        self.emit(
-            {
-                "kind": "failed",
-                "error_code": code,
-                "accounting": "conservative_operation_bound",
-            }
-        )
-        if detail:
-            note(f"{code}: {detail}")
-
-
+# Updates billed ahead of the progress the relay observes (executor.Charges).
 TRAIN_WINDOW_STEPS = 16
-
-
-class WindowAccountant:
-    """Progressive ahead-of-work billing so mid-run cancellations refund unstarted steps."""
-
-    def __init__(self, protocol, quote, profile, bound):
-        self.protocol = protocol
-        self.bound = int(bound)
-        self.settled = 0
-        self.inflight = None
-        self.seq = 0
-        self.start_step = int(quote.get("start_update") or 0)
-        target = int(quote.get("target_update") or 1)
-        self.total_steps = max(1, target - self.start_step)
-        report = quote.get("cost_report") or {}
-        self.windowed = (
-            quote.get("operation") == "train"
-            and bool(report)
-            and self.total_steps > TRAIN_WINDOW_STEPS
-        )
-        if self.windowed:
-            self.init_cost = int(report["initialization"])
-            self.step_cost = (
-                int(report.get("research_forward", report["forward"]))
-                + int(report.get("research_backward", report["backward"]))
-                + int(report.get("research_reduction", 0))
-                + int(report["optimizer"])
-            )
-
-    def _target_amount(self, completed_steps):
-        if not self.windowed or completed_steps >= self.total_steps:
-            return self.bound
-        horizon = min(self.total_steps, max(0, completed_steps) + TRAIN_WINDOW_STEPS)
-        if horizon >= self.total_steps:
-            return self.bound
-        return min(self.bound, self.init_cost + horizon * self.step_cost)
-
-    def advance(self, completed_steps=0):
-        target = self._target_amount(completed_steps)
-        covered = self.settled + (self.inflight[1] if self.inflight else 0)
-        if target <= covered:
-            return True
-        if self.inflight is not None:
-            label, amount = self.inflight
-            self.protocol.charge(amount, label=label)
-            self.settled += amount
-            self.inflight = None
-        delta = target - self.settled
-        self.seq += 1
-        label = LABEL if not self.windowed and self.seq == 1 else f"{LABEL}-{self.seq}"
-        if not self.protocol.intent(delta, label=label):
-            return False
-        self.inflight = (label, delta)
-        return True
-
-    def settle_current(self):
-        if self.inflight is not None:
-            label, amount = self.inflight
-            self.protocol.charge(amount, label=label)
-            self.settled += amount
-            self.inflight = None
-
-    def settle_full(self):
-        self.settle_current()
-        if self.settled < self.bound:
-            delta = self.bound - self.settled
-            self.seq += 1
-            label = f"{LABEL}-{self.seq}"
-            if not self.protocol.intent(delta, label=label):
-                return False
-            self.protocol.charge(delta, label=label)
-            self.settled += delta
-        return True
-
-
-def note(message):
-    print(f"koala_gym relay: {message}", file=sys.stderr, flush=True)
 
 
 def utc(seconds=None):
@@ -942,38 +715,6 @@ def journal(state, **entry):
         handle.write(json.dumps({"time": utc(), **entry}) + "\n")
 
 
-def usage(first, last, nodes, gpus):
-    """Pod time from the first pod event to `last` (pod clock), and the GPU-hours it held."""
-    if first is None or last is None:
-        return {}
-    seconds = max(0.0, float(last) - float(first))
-    return {
-        "pod_started": utc(first),
-        "pod_seconds": round(seconds, 1),
-        "gpu_hours": round(seconds * int(nodes) * int(gpus) / 3600, 4),
-    }
-
-
-def cancel_requested(state, quote_id):
-    """Whether the Gym recorded cancel_job for this quote's job (read-only)."""
-    database = state / "gym.sqlite3"
-    try:
-        connection = sqlite3.connect(f"file:{database}?mode=ro", uri=True, timeout=5)
-        try:
-            rows = connection.execute(
-                "SELECT value FROM objects WHERE kind='job'"
-            ).fetchall()
-        finally:
-            connection.close()
-    except sqlite3.Error:
-        return False
-    for (value,) in rows:
-        job = json.loads(value)
-        if job.get("quote_id") == quote_id:
-            return bool(job.get("cancel_requested"))
-    return False
-
-
 def final_topology(config, profile):
     smoke = config["official_smoke"]
     shape = smoke or config["final"]
@@ -983,13 +724,6 @@ def final_topology(config, profile):
             f"final topology {nodes}x{gpus} differs from the profile's GPU allocation"
         )
     return nodes, gpus
-
-
-def allocated_devices(allocation):
-    """The cards of a Gym GPU allocation: one card, or a group (`devices`); a CPU job still gets one GPU pod."""
-    if not allocation:
-        return [{}]
-    return list(allocation.get("devices") or [allocation])
 
 
 def build_job(config, request, remote):
@@ -1011,7 +745,7 @@ def build_job(config, request, remote):
     checkpoint = None
     if request.get("checkpoint"):
         pointer = json.loads(Path(request["checkpoint"]).read_text())
-        if pointer.get("schema") != "koala_gym.checkpoint.v1":
+        if pointer.get("schema") != CHECKPOINT_SCHEMA:
             raise PodError(
                 "incompatible_checkpoint",
                 "the retained checkpoint is not a Koala checkpoint pointer",
@@ -1063,315 +797,81 @@ def build_job(config, request, remote):
 
 
 def research_topology(config, allocation):
-    """(nodes, GPUs per node) of a non-official job: a group larger than one node spans whole nodes."""
-    count, per = (
-        len(allocated_devices(allocation)),
-        int(config["research_gpus_per_node"]),
+    """(nodes, GPUs per node) of a non-official job: a group larger than one node spans whole nodes; a CPU job
+    still gets one GPU pod."""
+    from nexttransformer_gym import nodes
+
+    return nodes.research_topology(
+        len(nodes.allocated_devices(allocation)), int(config["research_gpus_per_node"])
     )
-    if count <= per:
-        return 1, count
-    if count % per:
-        raise KoalaError(f"a group of {count} GPUs does not fill nodes of {per}")
-    return count // per, per
+
+
+class KoalaLauncher:
+    """The Koala transport of the Gym's multi-node executor (a nexttransformer_gym.nodes.Launcher): a job is one
+    Koala job of `nodes` pods running this file's `pod` entry, its code a published bundle, and node 0's output the
+    Koala log. The Gym's relay does the rest: the worker protocol, billing ahead of the observed work, cancel_job,
+    the profile timeout, the journal (`koala-jobs.jsonl`) and the checkpoint pointer."""
+
+    name = "Koala"
+    mark = MARK
+    journal_file = "koala-jobs.jsonl"
+    checkpoint_schema = CHECKPOINT_SCHEMA
+
+    def __init__(self, config):
+        self.config, self.koala = config, Koala(config)
+        self.margin_seconds = int(config["relay_margin_seconds"])
+        self.poll_seconds = float(config["poll_seconds"])
+        # While Koala refuses submissions because the Normal quota is in use.
+        self.busy_seconds = float(config["quota_wait_seconds"])
+        self.window = TRAIN_WINDOW_STEPS
+
+    def plan(self, request, tag):
+        remote = (
+            f"{self.config['remote_root'].rstrip('/')}/{tag}/{request['quote']['id']}"
+        )
+        return build_job(self.config, request, remote)
+
+    def prepare(self, payload, request, snapshot):
+        staged = stage(
+            self.config,
+            payload["quote_id"],
+            payload,
+            request["platform_root"],
+            snapshot,
+        )
+        bundle, digest = self.koala.publish(staged)
+        return {
+            "bundle": bundle,
+            "bundle_sha256": digest,
+            "remote": payload.get("remote_uri") or payload["remote"],
+        }
+
+    def start(self, record, nodes, gpus):
+        from nexttransformer_gym.nodes import Busy
+
+        try:
+            return self.koala.submit(
+                pod_command(self.config, "pod"), record["bundle"], nodes, gpus
+            )
+        except QuotaFull as error:
+            raise Busy(str(error)) from None
+
+    def lines(self, job):
+        return self.koala.log(job)
+
+    def ended(self, job):
+        status = self.koala.status(job)
+        return status if status in ENDED else None
+
+    def stop(self, job):
+        self.koala.stop(job)
 
 
 def relay(config_path):
-    config = load_config(config_path)
-    koala, protocol, state = Koala(config), Protocol(), Path.cwd()
-    request = json.loads(sys.stdin.readline())
-    quote, profile = request["quote"], request["profile"]
-    operation, bound = quote["operation"], int(quote["bound"])
-    tag = hashlib.sha256(str(state).encode()).hexdigest()[:12]
-    remote = f"{config['remote_root'].rstrip('/')}/{tag}/{quote['id']}"
-    deadline = time.monotonic() + max(
-        60, int(profile["timeout_sec"]) - int(config["relay_margin_seconds"])
-    )
-    try:
-        payload, snapshot = build_job(config, request, remote)
-    except PodError as error:
-        protocol.failed(error.code, str(error))
-        return 0
-    except (KoalaError, KeyError) as error:
-        protocol.failed(
-            "resource_unavailable", f"cannot describe the Koala job: {error}"
-        )
-        return 0
-    nodes, gpus = payload["nodes"], payload["gpus_per_node"]
+    """The executor command the Gym starts per job: the Gym's multi-node relay over Koala."""
+    from nexttransformer_gym.nodes import relay as nodes_relay
 
-    class Stopped(Exception):
-        pass
-
-    def stopped(signum, frame):
-        raise Stopped()
-
-    # No Koala job exists until submit returns, so a SIGTERM here ends the relay with a certain failure.
-    signal.signal(signal.SIGTERM, stopped)
-    try:
-        staged = stage(config, quote["id"], payload, request["platform_root"], snapshot)
-        bundle, digest = koala.publish(staged)
-        waited = 0.0
-        while True:
-            try:
-                job = koala.submit(pod_command(config, "pod"), bundle, nodes, gpus)
-                break
-            except QuotaFull as error:
-                pause = float(config["quota_wait_seconds"])
-                if cancel_requested(state, quote["id"]):
-                    note(f"cancelled while waiting {waited:.0f} s for Koala quota")
-                    protocol.emit({"kind": "cancelled"})
-                    return 0
-                if time.monotonic() + pause > deadline:
-                    raise KoalaError(
-                        f"the Koala quota stayed full for {waited:.0f} s, until the profile "
-                        f"timeout: {error}"
-                    ) from None
-                note(f"Koala quota is full; retrying in {pause:.0f} s: {error}")
-                time.sleep(pause)
-                waited += pause
-    except Stopped:
-        protocol.failed(
-            "resource_unavailable",
-            "the relay was terminated before a Koala job was submitted",
-        )
-        return 0
-    except (KoalaError, OSError, KeyError) as error:
-        protocol.failed("resource_unavailable", f"Koala submission failed: {error}")
-        return 0
-    signal.signal(signal.SIGTERM, signal.SIG_DFL)
-    if waited:
-        note(f"submitted after waiting {waited:.0f} s for Koala quota")
-    journal(
-        state,
-        quote_id=quote["id"],
-        operation=operation,
-        job=job,
-        bundle=bundle,
-        bundle_sha256=digest,
-        remote=remote,
-        nodes=nodes,
-        gpus_per_node=gpus,
-        event="submitted",
-    )
-    note(f"submitted {job} ({nodes}x{gpus} GPU) for {operation} quote {quote['id']}")
-
-    class Terminated(Exception):
-        pass
-
-    def terminate(signum, frame):
-        raise Terminated()
-
-    signal.signal(signal.SIGTERM, terminate)
-    accountant = WindowAccountant(protocol, quote, profile, bound)
-    started, seen, chunks = False, 0, {}
-    # Pod clock: the first event seen (boot) and the latest. The relay polls the log tail from the start, so it
-    # sees the boot event before a long run scrolls it away.
-    span = {"first": None, "last": None}
-
-    def held(end=None):
-        return usage(span["first"], span["last"] if end is None else end, nodes, gpus)
-
-    def unknown(reason, end=None):
-        journal(
-            state,
-            quote_id=quote["id"],
-            job=job,
-            event="unknown",
-            reason=reason,
-            **held(end),
-        )
-        note(
-            f"outcome unknown ({reason}); the reservation stays for reconcile; Koala job {job}"
-        )
-        return UNKNOWN_EXIT
-
-    def finish(done):
-        outcome = done.get("outcome")
-        journal(
-            state,
-            quote_id=quote["id"],
-            job=job,
-            event="ended",
-            outcome=outcome,
-            error_code=done.get("error_code"),
-            spent=done.get("spent"),
-            **held(done.get("t")),
-        )
-        if outcome == "pre_failure":
-            protocol.failed(
-                done.get("error_code", "resource_unavailable"), done.get("detail")
-            )
-            return 0
-        if not started:
-            return unknown("the pod reported an outcome without starting its worker")
-        if outcome == "succeeded":
-            parts = chunks.get("result", {})
-            if len(parts) != done.get("result_chunks"):
-                return unknown("the result was not fully logged")
-            result = json.loads("".join(parts[i] for i in range(len(parts))))
-            if operation == "train":
-                saved = done.get("checkpoint") or {}
-                pointer = {
-                    "schema": "koala_gym.checkpoint.v1",
-                    "job": job,
-                    "remote_path": saved.get("path"),
-                    "sha256": saved.get("sha256"),
-                    "size_bytes": saved.get("size_bytes"),
-                    "step": result.get("step"),
-                    "candidate_hash": quote.get("candidate_hash"),
-                    "profile_hash": quote.get("profile_hash"),
-                }
-                Path(request["output"]).write_text(json.dumps(pointer, indent=1))
-            if not accountant.settle_full():
-                protocol.emit({"kind": "cancelled"})
-                return 0
-            protocol.emit({"kind": "result", "value": result})
-            return 0
-        if outcome == "failed":
-            accountant.settle_current()
-            protocol.failed(
-                done.get("error_code", "infrastructure_failure"), done.get("detail")
-            )
-            return 0
-        return unknown(done.get("detail") or f"pod outcome {outcome}")
-
-    def read():
-        """Handle new pod events; returns an exit code once the job is settled."""
-        nonlocal started, seen
-        lines = koala.log(job)
-        for event in events(lines):
-            if event.get("seq", 0) <= seen:
-                continue
-            seen = event["seq"]
-            kind = event.get("kind")
-            if isinstance(event.get("t"), (int, float)):
-                span["first"] = (
-                    event["t"]
-                    if span["first"] is None
-                    else min(span["first"], event["t"])
-                )
-                span["last"] = (
-                    event["t"]
-                    if span["last"] is None
-                    else max(span["last"], event["t"])
-                )
-            if kind == "ready" and not started:
-                if not accountant.advance(0):
-                    koala.stop(job)
-                    journal(
-                        state,
-                        quote_id=quote["id"],
-                        job=job,
-                        event="stopped",
-                        reason="cancelled before work",
-                        **held(time.time()),
-                    )
-                    protocol.emit({"kind": "cancelled"})
-                    return 0
-                started = True
-                journal(
-                    state,
-                    quote_id=quote["id"],
-                    job=job,
-                    event="running",
-                    **(
-                        {
-                            "pod_started": utc(span["first"]),
-                            "pod_started_t": round(span["first"], 3),
-                        }
-                        if span["first"] is not None
-                        else {}
-                    ),
-                )
-            elif kind == "runtime":
-                protocol.emit({"kind": "runtime", "value": event["value"]})
-            elif kind == "progress":
-                step = int(event["step"])
-                protocol.emit({"kind": "progress", "step": step})
-                if started and not accountant.advance(step - accountant.start_step):
-                    koala.stop(job)
-                    journal(
-                        state,
-                        quote_id=quote["id"],
-                        job=job,
-                        event="stopped",
-                        reason="cancel_job",
-                        **held(time.time()),
-                    )
-                    protocol.emit({"kind": "cancelled"})
-                    return 0
-            elif kind == "chunk":
-                chunks.setdefault(event["name"], {})[event["i"]] = event["data"]
-            elif kind == "restarted":
-                koala.stop(job)
-                return unknown("a pod restarted after it had begun")
-            elif kind == "done":
-                return finish(event)
-        return None if lines is not None else "unreadable"
-
-    try:
-        while True:
-            outcome = read()
-            if isinstance(outcome, int):
-                return outcome
-            if cancel_requested(state, quote["id"]):
-                koala.stop(job)
-                journal(
-                    state,
-                    quote_id=quote["id"],
-                    job=job,
-                    event="stopped",
-                    reason="cancel_job",
-                    **held(time.time() if started else None),
-                )
-                if started:
-                    accountant.settle_current()
-                protocol.emit({"kind": "cancelled"})
-                return 0
-            status = koala.status(job)
-            if status in ENDED:
-                outcome = read()
-                if isinstance(outcome, int):
-                    return outcome
-                if not started and outcome is None and seen > 0:
-                    protocol.failed(
-                        "resource_unavailable",
-                        f"Koala job {job} ended ({status}) before its worker started",
-                    )
-                    journal(
-                        state,
-                        quote_id=quote["id"],
-                        job=job,
-                        event="ended",
-                        outcome="pre_failure",
-                        status=status,
-                        **held(),
-                    )
-                    return 0
-                return unknown(f"Koala job ended ({status}) without a logged outcome")
-            if time.monotonic() > deadline:
-                koala.stop(job)
-                journal(
-                    state,
-                    quote_id=quote["id"],
-                    job=job,
-                    event="stopped",
-                    reason="profile timeout",
-                    **held(time.time() if started else None),
-                )
-                if started:
-                    accountant.settle_current()
-                protocol.failed(
-                    "infrastructure_failure",
-                    f"Koala job {job} exceeded the profile timeout",
-                )
-                return 0
-            time.sleep(float(config["poll_seconds"]))
-    except Terminated:
-        koala.stop(job)
-        return unknown(
-            "the relay was terminated; the Koala job was stopped",
-            end=time.time() if span["first"] is not None else None,
-        )
+    return nodes_relay(KoalaLauncher(load_config(config_path)))
 
 
 # ---------------------------------------------------------------------------------------------- jobs
@@ -1401,23 +901,13 @@ def live_relays(state):
 
 def gym_jobs(state):
     """The Gym's job records by quote: (job id, owner session id, state); read-only."""
-    database = state / "gym.sqlite3"
-    try:
-        connection = sqlite3.connect(f"file:{database}?mode=ro", uri=True, timeout=5)
-        try:
-            rows = connection.execute(
-                "SELECT id, owner, value FROM objects WHERE kind='job'"
-            ).fetchall()
-        finally:
-            connection.close()
-    except sqlite3.Error:
-        return {}
-    found = {}
-    for job_id, owner, value in rows:
-        record = json.loads(value)
-        if record.get("quote_id"):
-            found[record["quote_id"]] = (job_id, owner, record.get("state"))
-    return found
+    from nexttransformer_gym.executor import jobs as records
+
+    return {
+        record["quote_id"]: (record["id"], record["session_id"], record["state"])
+        for record in records(state)
+        if record.get("quote_id")
+    }
 
 
 def jobs(config_path, argv):
@@ -1502,6 +992,8 @@ def jobs(config_path, argv):
                         ),
                         None,
                     )
+                    from nexttransformer_gym.nodes import usage
+
                     held = usage(
                         pod_started,
                         time.time(),
@@ -1807,37 +1299,20 @@ def pod(job_path):
 
 
 def runtime_of(python):
-    return json.loads(
-        subprocess.check_output([python, "-c", RUNTIME_SCRIPT], text=True, timeout=120)
+    """The Gym's runtime record of `python` (what the controller's revision binds)."""
+    from nexttransformer_gym.remote import runtime
+
+    return runtime(python)
+
+
+def worker_env(payload, code, work, devices=None, official=False):
+    """The Gym's worker environment in a pod (nexttransformer_gym.nodes.worker_env); a final run's trusted
+    pipeline sees every GPU and runs in the official precision."""
+    from nexttransformer_gym import nodes
+
+    env = nodes.worker_env(
+        dict(payload, request={}) if official else payload, code, work, devices
     )
-
-
-def worker_env(payload, code, work, official=False):
-    env = {
-        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
-        "PYTHONPATH": os.pathsep.join([str(code / "gym" / "src"), str(code)]),
-        "NANOCHAT_DTYPE": "float32",
-        "TORCHDYNAMO_DISABLE": "1",
-        "OMP_NUM_THREADS": "1",
-        "USER": "gym-worker",
-        "PYTHONDONTWRITEBYTECODE": "1",
-        "HOME": str(work / "home"),
-        "XDG_CACHE_HOME": str(work / "home" / "cache"),
-        "CUDA_VISIBLE_DEVICES": "",
-    }
-    for key in (
-        "LD_LIBRARY_PATH",
-        "NCCL_SOCKET_IFNAME",
-        "NCCL_IB_HCA",
-        "NCCL_IB_GID_INDEX",
-        "NCCL_IB_DISABLE",
-        "NCCL_NET_GDR_LEVEL",
-        "NCCL_DEBUG",
-        "GLOO_SOCKET_IFNAME",
-    ):
-        if key in os.environ:
-            env[key] = os.environ[key]
-    (work / "home").mkdir(parents=True, exist_ok=True)
     if official:
         env.pop("CUDA_VISIBLE_DEVICES")
         env.update(
@@ -1845,412 +1320,11 @@ def worker_env(payload, code, work, official=False):
             TORCHDYNAMO_DISABLE="0",
             FLA_DISABLE_BACKEND_DISPATCH="1",
             OMP_NUM_THREADS="8",
-            HOME=str(work / "home"),
             PYTHONUNBUFFERED="1",
         )
         if payload.get("site_config"):
             env["NEXTTRANSFORMER_SITE_CONFIG"] = payload["site_config"]
-    elif str(
-        payload.get("request", {}).get("profile", {}).get("device", "cpu")
-    ).startswith("cuda"):
-        env.update(
-            NANOCHAT_DTYPE=payload.get("research_dtype", "float32"),
-            TORCHDYNAMO_DISABLE="0" if payload.get("research_compile", False) else "1",
-            FLA_DISABLE_BACKEND_DISPATCH="1",
-        )
     return env
-
-
-def local_gpus(count):
-    """The pod's allocated GPUs in index order, in the Gym's device record format."""
-    from nexttransformer_gym import gpu
-
-    seen = gpu.discover()
-    if seen.get("status") == "ok" and len(seen["gpus"]) == count:
-        return sorted(seen["gpus"], key=lambda card: card["index"])
-    import xml.etree.ElementTree as ET
-
-    root = ET.fromstring(
-        subprocess.check_output(["nvidia-smi", "-q", "-x"], text=True, timeout=30)
-    )
-    cards = root.findall("gpu")
-    if len(cards) != count:
-        raise PodError(
-            "resource_unavailable",
-            f"the pod sees {len(cards)} GPUs, expected {count}",
-        )
-
-    def record(index, card):
-        mib = lambda path: int(card.findtext(path).split()[0]) * 1024**2
-        uuid = card.findtext("uuid").strip()
-        return {
-            "id": uuid,
-            "uuid": uuid,
-            "index": index,
-            "device_minor": int(card.findtext("minor_number")),
-            "name": card.findtext("product_name").strip(),
-            "memory_total_bytes": mib("fb_memory_usage/total"),
-            "memory_free_bytes": mib("fb_memory_usage/free"),
-            "utilization_percent": 0,
-            "process_count": 0,
-            "compute_process_count": 0,
-            "graphics_process_count": 0,
-        }
-
-    return [record(index, card) for index, card in enumerate(cards)]
-
-
-def assign_gpus(allocation, cards):
-    """Replace an allocation's virtual cards with the pod's cards, in order, keeping each memory limit.
-
-    Returns the Gym's `gpu` record (one card, or the first card with `devices` for a group) and the
-    CUDA_VISIBLE_DEVICES value; the worker's cuda:i is the group's i-th card."""
-    wanted = allocated_devices(allocation)
-    if len(cards) != len(wanted):
-        raise PodError(
-            "resource_unavailable",
-            f"the pod has {len(cards)} GPUs for an allocation of {len(wanted)}",
-        )
-    devices = [
-        dict(card, memory_limit_bytes=virtual.get("memory_limit_bytes"))
-        for card, virtual in zip(cards, wanted)
-    ]
-    record = (
-        dict(devices[0], devices=devices)
-        if (allocation or {}).get("devices")
-        else devices[0]
-    )
-    return record, ",".join(card["uuid"] for card in devices)
-
-
-def bubblewrap_available(backend_name):
-    """The Gym's preflight checks nothing for bwrap; a pod without it must fail before work, not during it."""
-    if backend_name != "bwrap":
-        return
-    run = (
-        subprocess.run(
-            [
-                "bwrap",
-                "--unshare-all",
-                "--die-with-parent",
-                "--ro-bind",
-                "/",
-                "/",
-                "--dev",
-                "/dev",
-                "--proc",
-                "/proc",
-                "true",
-            ],
-            capture_output=True,
-            text=True,
-        )
-        if shutil.which("bwrap")
-        else None
-    )
-    if run is None or run.returncode:
-        raise PodError(
-            "resource_unavailable",
-            "bubblewrap is unavailable in the pod: "
-            + (run.stderr.strip()[-300:] if run else "not installed"),
-        )
-
-
-def grant(path, identity):
-    """Hand a directory the pod (root) created to the worker identity; on storage that refuses
-    ownership changes, make it world-writable with the sticky bit instead."""
-    path.mkdir(parents=True, exist_ok=True)
-    try:
-        os.chown(path, identity["user"], identity["group"])
-    except PermissionError:
-        os.chmod(path, 0o1777)
-
-
-def reach(path, root):
-    """Let other users traverse, not list, every directory from root down to path.
-
-    Pods create directories with umask 0077, so a worker running as nobody could not reach a workspace it owns.
-    Directories outside root are left alone."""
-    path, root = Path(path), Path(root)
-    for directory in [path, *path.parents]:
-        if directory != root and root not in directory.parents:
-            continue
-        mode = directory.stat().st_mode
-        if not mode & 0o001:
-            os.chmod(directory, (mode & 0o7777) | 0o001)
-
-
-def stop_identity(identity):
-    """Kill every process still running as the worker identity, after the worker itself has exited.
-
-    Without a PID namespace a worker's detached children outlive it; they must not touch its outputs while the pod
-    hashes and reports them. A child running as that identity sends kill(-1), which reaches exactly the processes
-    the identity may signal. Only a root pod does this, and never for root."""
-    if not identity or os.geteuid() != 0 or not identity.get("user"):
-        return
-    for _ in range(
-        2
-    ):  # a second pass catches children forked while the first was signalling
-        subprocess.run(
-            [
-                sys.executable,
-                "-c",
-                "import os, signal\ntry:\n    os.kill(-1, signal.SIGKILL)\n"
-                "except ProcessLookupError:\n    pass",
-            ],
-            user=identity["user"],
-            group=identity["group"],
-            extra_groups=[],
-            check=False,
-            timeout=60,
-        )
-
-
-SOCKET_SYSCALL = {"x86_64": (0xC000003E, 41), "aarch64": (0xC00000B7, 198)}
-SECCOMP_SYSCALL = {"x86_64": 317, "aarch64": 277}
-
-
-def deny_sockets(domains, all_threads=False):
-    """Refuse socket(2) for the given address families with EACCES, for this process and its children.
-
-    An unprivileged seccomp filter (no_new_privs): it works where the pod has neither user namespaces nor
-    Landlock. Sockets opened before the filter, and pipes, keep working. With `all_threads` the filter binds
-    every thread of the process (SECCOMP_FILTER_FLAG_TSYNC), including threads started before it."""
-    import ctypes
-    import errno
-    import platform
-
-    class Filter(ctypes.Structure):
-        _fields_ = [
-            ("code", ctypes.c_uint16),
-            ("jt", ctypes.c_uint8),
-            ("jf", ctypes.c_uint8),
-            ("k", ctypes.c_uint32),
-        ]
-
-    class Program(ctypes.Structure):
-        _fields_ = [("len", ctypes.c_uint16), ("filter", ctypes.POINTER(Filter))]
-
-    arch, socket_nr = SOCKET_SYSCALL[platform.machine()]
-    load, jeq, jge, ret = 0x20, 0x15, 0x35, 0x06
-    n = len(domains)
-    program = [
-        (load, 0, 0, 4),
-        (jeq, 1, 0, arch),
-        (ret, 0, 0, 0x80000000),  # other architectures: kill
-        (load, 0, 0, 0),
-        (jge, 3 + n, 0, 0x40000000),  # x32 system calls: refuse
-        (jeq, 0, 1 + n, socket_nr),
-        (load, 0, 0, 16),  # socket(2): its domain
-        *[(jeq, n - i, 0, domain) for i, domain in enumerate(domains)],
-        (ret, 0, 0, 0x7FFF0000),
-        (ret, 0, 0, 0x00050000 | errno.EACCES),
-    ]
-    filters = (Filter * len(program))(*(Filter(*f) for f in program))
-    prog = Program(len(program), filters)
-    libc = ctypes.CDLL(None, use_errno=True)
-
-    def install():
-        if all_threads:
-            # seccomp(SECCOMP_SET_MODE_FILTER, SECCOMP_FILTER_FLAG_TSYNC, prog); a thread id means one refused.
-            return libc.syscall(
-                SECCOMP_SYSCALL[platform.machine()], 1, 1, ctypes.byref(prog)
-            )
-        # prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, prog): this thread and its descendants.
-        return libc.prctl(22, 2, ctypes.byref(prog), 0, 0)
-
-    for call in (lambda: libc.prctl(38, 1, 0, 0, 0), install):  # PR_SET_NO_NEW_PRIVS
-        if call() != 0:
-            raise OSError(ctypes.get_errno(), "seccomp filter refused")
-
-
-def pod_netdeny(argv):
-    """`pod-netdeny [--unix] -- COMMAND`: run COMMAND without new IPv4/IPv6 (and, with --unix, Unix) sockets."""
-    split = argv.index("--")
-    domains = [2, 10] + (
-        [1] if "--unix" in argv[:split] else []
-    )  # AF_INET, AF_INET6, AF_UNIX
-    deny_sockets(domains)
-    os.execvp(argv[split + 1], argv[split + 1 :])
-
-
-def netdeny_command(code, device, command):
-    """CPU workers also lose Unix sockets, as under the Gym's landlock backend; CUDA workers keep them."""
-    unix = [] if str(device).startswith("cuda") else ["--unix"]
-    return [
-        sys.executable,
-        str(code / "koala_gym.py"),
-        "pod-netdeny",
-        *unix,
-        "--",
-        *command,
-    ]
-
-
-def drive(
-    command,
-    env,
-    request,
-    credit,
-    emit,
-    cwd,
-    stderr_path,
-    progress_every=60.0,
-    identity=None,
-    started=None,
-):
-    """Run one Gym worker and acknowledge its operations within the job's reservation."""
-    with open(stderr_path, "a") as stderr:
-        process = subprocess.Popen(
-            command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=stderr,
-            text=True,
-            bufsize=1,
-            env=env,
-            cwd=cwd,
-            **(identity or {}),
-        )
-        if started is not None:
-            started(process)
-
-        def send(value):
-            process.stdin.write(json.dumps(value) + "\n")
-            process.stdin.flush()
-
-        send(request)
-        spent, pending, result, failure, refused = 0, None, None, None, False
-        step, shown, last = None, None, 0.0
-        for line in process.stdout:
-            if not line.startswith(GYM):
-                continue
-            event = json.loads(line[len(GYM) :])
-            kind = event.get("kind")
-            if kind == "intent":
-                amount = int(event["amount"])
-                if pending is not None or amount < 0 or spent + amount > credit:
-                    refused = True
-                    send({"cancel": True})
-                    continue
-                pending = event
-                send({"ack": event["label"]})
-            elif kind == "charge":
-                if pending is None or (event["label"], event["amount"]) != (
-                    pending["label"],
-                    pending["amount"],
-                ):
-                    process.kill()
-                    process.wait()
-                    return {
-                        "outcome": "unknown",
-                        "detail": "worker charge without a matching intent",
-                        "spent": spent,
-                    }
-                spent += int(event["amount"])
-                pending = None
-                send({"ack": event["label"]})
-            elif kind == "runtime":
-                emit("runtime", value=event["value"])
-            elif kind == "progress":
-                step = event["step"]
-                if time.time() - last >= progress_every:
-                    emit("progress", step=step)
-                    shown, last = step, time.time()
-            elif kind == "result":
-                result = event["value"]
-            elif kind == "failed":
-                failure = event.get("error_code", "infrastructure_failure")
-            elif kind == "cancelled":
-                refused = True
-        code = process.wait()
-    if step is not None and step != shown:
-        emit("progress", step=step)
-    if code == 0 and pending is None:
-        if failure:
-            return {"outcome": "failed", "error_code": failure, "spent": spent}
-        if refused:
-            return {
-                "outcome": "failed",
-                "error_code": "insufficient_budget",
-                "spent": spent,
-            }
-        if result is not None:
-            return {"outcome": "succeeded", "result": result, "spent": spent}
-    return {
-        "outcome": "unknown",
-        "detail": f"worker exited {code} without a settled outcome",
-        "spent": spent,
-    }
-
-
-def explain(outcome, path):
-    """Add the worker's stderr tail to an unsuccessful outcome."""
-    if outcome["outcome"] != "succeeded" and path.exists():
-        tail = path.read_text(errors="replace")[-1500:]
-        outcome["detail"] = "\n".join(filter(None, [outcome.get("detail"), tail]))[
-            -3000:
-        ]
-
-
-def keep_log(path, remote):
-    """Copy a pod-local log next to the job's CPFS files: /local-ssd disappears with the pod."""
-    if path.exists():
-        target = remote / "logs" / f"{host_name()}-{path.name}"
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(path, target)
-
-
-def report(emit, payload, outcome, remote):
-    request = payload["request"]
-    if outcome["outcome"] == "succeeded":
-        result = outcome["result"]
-        (remote / "result.json").write_text(json.dumps(result, indent=1))
-        checkpoint = None
-        if request["quote"]["operation"] == "train":
-            path = Path(request["output"])
-            checkpoint = {
-                "path": str(path),
-                "sha256": sha256(path),
-                "size_bytes": path.stat().st_size,
-            }
-        if payload.get("remote_uri"):
-            try:
-                Store(payload["s5cmd"]).upload(remote, payload["remote_uri"])
-            except (PodError, OSError, subprocess.SubprocessError) as error:
-                emit(
-                    "done",
-                    outcome="unknown",
-                    detail=f"the job's files were not uploaded: {error}"[-1500:],
-                    spent=str(outcome["spent"]),
-                )
-                return 1
-            if checkpoint:
-                checkpoint["path"] = (
-                    f"{payload['remote_uri']}/{path.relative_to(remote)}"
-                )
-        parts = emit.blob("result", result)
-        emit(
-            "done",
-            outcome="succeeded",
-            result_chunks=parts,
-            checkpoint=checkpoint,
-            spent=str(outcome["spent"]),
-        )
-        return 0
-    if payload.get("remote_uri"):
-        try:  # logs of a failed job, best effort
-            Store(payload["s5cmd"]).upload(remote, payload["remote_uri"])
-        except (PodError, OSError, subprocess.SubprocessError):
-            pass
-    emit(
-        "done",
-        outcome=outcome["outcome"],
-        error_code=outcome.get("error_code"),
-        detail=outcome.get("detail"),
-        spent=str(outcome.get("spent", 0)),
-    )
-    return 0 if outcome["outcome"] == "failed" else 1
 
 
 def stage_inputs(payload, request):
@@ -2313,446 +1387,52 @@ def stage_inputs(payload, request):
             allow(path, 0o005 if path.is_dir() else 0o004)
 
 
+def publisher(payload, remote):
+    """Without shared storage (an s3:// remote_root) a pod uploads the job's files before node 0 reports, and
+    later jobs find the checkpoint in the object store."""
+    if not payload.get("remote_uri"):
+        return None
+    store = Store(payload["s5cmd"])
+
+    def publish(checkpoint):
+        store.upload(remote, payload["remote_uri"])
+        if checkpoint:
+            relative = Path(checkpoint["path"]).relative_to(remote)
+            checkpoint = dict(checkpoint, path=f"{payload['remote_uri']}/{relative}")
+        return checkpoint
+
+    return publish
+
+
 def pod_run(job_path, node, master, seq):
-    """On each node, in the pod environment: verify the runtime, then run the Gym worker."""
+    """On each node, in the pod environment: the pod's inputs, then the Gym's node (nexttransformer_gym.nodes)."""
     payload = json.loads(Path(job_path).read_text())
     emit = Emitter(int(seq))
     node = int(node)
     work, remote = Path(payload["work"]), Path(payload["remote"])
     code = work / "code"
     sys.path[:0] = [str(code / "gym" / "src"), str(code)]
+    from nexttransformer_gym import nodes
+
     try:
-        runtime = runtime_of(sys.executable)
-        if runtime != payload["runtime"]:
-            raise PodError(
-                "resource_unavailable",
-                f"pod runtime {runtime} differs from the recorded {payload['runtime']}",
-            )
-        if payload.get("checkpoint") and node == 0:
-            if payload["checkpoint"].get("uri"):
-                Store(payload["s5cmd"]).get(
-                    payload["checkpoint"]["uri"], payload["checkpoint"]["path"]
-                )
-            if sha256(payload["checkpoint"]["path"]) != payload["checkpoint"]["sha256"]:
-                raise PodError(
-                    "incompatible_checkpoint",
-                    "the stored checkpoint differs from its recorded hash",
-                )
+        nodes.check_runtime(payload)
+        checkpoint = payload.get("checkpoint")
+        if checkpoint and node == 0 and checkpoint.get("uri"):
+            Store(payload["s5cmd"]).get(checkpoint["uri"], checkpoint["path"])
+        nodes.check_checkpoint(payload, node)
         stage_inputs(payload, payload["request"])
         if payload.get("site"):
             site = work / "site.json"
             site.write_text(json.dumps(payload["site"], indent=1))
             payload["site_config"] = str(site)
-    except PodError as error:
-        emit(
-            "done",
-            outcome="pre_failure",
-            error_code=error.code,
-            detail=str(error)[-1500:],
-        )
-        return 1
     except Exception as error:
-        emit(
-            "done",
-            outcome="pre_failure",
-            error_code="resource_unavailable",
-            detail=repr(error)[-1500:],
-        )
-        return 1
-    request = payload["request"]
-    (work / "tmp").mkdir(exist_ok=True)
-    if request["quote"]["operation"] == "official":
+        return nodes.pre_failure(payload, node, emit, error)
+    if payload["request"]["quote"]["operation"] == "official":
+        (work / "tmp").mkdir(parents=True, exist_ok=True)
         return official_node(payload, node, master, emit, code, work, remote)
-    if int(payload["nodes"]) > 1:
-        return research_node(payload, node, master, emit, code, work, remote)
-    if node != 0:
-        return 0
-    env = worker_env(payload, code, work)
-    try:
-        from nexttransformer_gym.backend import NativeBackend
-
-        # The Gym's own rule: a root controller (the pod) runs every non-official worker as nobody.
-        identity = NativeBackend.worker_identity(request)
-        if str(request["profile"].get("device", "cpu")).startswith("cuda"):
-            wanted = allocated_devices(request.get("gpu"))
-            request["gpu"], visible = assign_gpus(
-                request.get("gpu"), local_gpus(len(wanted))
-            )
-            env.update(CUDA_VISIBLE_DEVICES=visible, CUDA_DEVICE_ORDER="PCI_BUS_ID")
-        workspace = Path(request["output"]).parent
-        workspace.mkdir(parents=True, exist_ok=True)
-        if identity:
-            for path in (work / "tmp", work / "home", workspace):
-                grant(path, identity)
-            reach(workspace, payload.get("remote_root") or remote.parent.parent)
-            reach(work / "tmp", work)
-        if payload["isolation"] in ("bwrap", "landlock"):
-            from nexttransformer_gym.isolation import command, preflight
-
-            bubblewrap_available(payload["isolation"])
-            preflight(payload["isolation"])
-            worker = command(sys.executable, str(code), request, payload["isolation"])
-        else:
-            worker = [sys.executable, "-m", "nexttransformer_gym.worker"]
-            if payload.get("network", "deny") == "deny":
-                worker = netdeny_command(
-                    code, request["profile"].get("device", "cpu"), worker
-                )
-    except Exception as error:
-        emit(
-            "done",
-            outcome="pre_failure",
-            error_code=getattr(error, "code", "resource_unavailable"),
-            detail=repr(error)[-1500:],
-        )
-        return 1
-    emit(
-        "ready",
-        isolation=payload["isolation"],
-        uid=identity.get("user", os.geteuid()),
-        network="allowed"
-        if payload["isolation"] == "none" and payload.get("network") == "allow"
-        else "denied",
+    return nodes.run(
+        payload, node, master, emit, code, work, remote, publisher(payload, remote)
     )
-    outcome = drive(
-        worker,
-        env,
-        request,
-        int(payload["credit"]),
-        emit,
-        work / "tmp",
-        work / "worker.stderr",
-        progress_every=15.0,
-        identity=identity,
-    )
-    stop_identity(identity)
-    explain(outcome, work / "worker.stderr")
-    keep_log(work / "worker.stderr", remote)
-    return report(emit, payload, outcome, remote)
-
-
-# ---------------------------------------------------------------------------------- multi-node research
-
-# Connect every NCCL algorithm when the group forms, so nothing connects after the socket filter; NCCL's RAS service
-# keeps sockets of its own, and torch's heartbeat monitor and timeout dumps are not needed.
-MESH_ENV = {
-    "NCCL_RUNTIME_CONNECT": "0",
-    "NCCL_RAS_ENABLE": "0",
-    "TORCH_NCCL_ENABLE_MONITORING": "0",
-    "TORCH_NCCL_DUMP_ON_TIMEOUT": "0",
-}
-PEER_GRACE_SECONDS = 60
-
-
-def mesh_spec(payload, node, master, port):
-    """The trusted description of a node's place in the job, for its research processes (never candidate input)."""
-    return json.dumps(
-        {
-            "node": node,
-            "nodes": int(payload["nodes"]),
-            "master": master,
-            "port": port,
-            "timeout": int(payload.get("mesh_timeout_seconds", 3600)),
-            "network": payload.get("network", "deny"),
-        }
-    )
-
-
-def research_node(payload, node, master, emit, code, work, remote):
-    """One node of a multi-node research job: its share of the GPU group, a worker in the nodes' NCCL group."""
-    import threading
-
-    request = payload["request"]
-    nodes, per = int(payload["nodes"]), int(payload["gpus_per_node"])
-    lead = node == 0
-    handoff = remote / "research"
-    handoff.mkdir(parents=True, exist_ok=True)
-
-    def mark(name, text=""):
-        tmp = handoff / f".{name}-{os.getpid()}"
-        tmp.write_text(text)
-        tmp.replace(handoff / name)
-
-    def peers_failed():
-        return sorted(
-            p.name for p in handoff.glob("failed-*") if p.name != f"failed-{node}"
-        )
-
-    def await_lead(seconds):
-        """Another node stays up until node 0 has logged the outcome: a Koala job ends when any of its pods does,
-        and node 0 must still report (a pre-failure, a failure, or the result)."""
-        deadline = time.time() + seconds
-        while not (handoff / "done").exists() and time.time() < deadline:
-            time.sleep(5)
-
-    # Only node 0's log reaches the relay; the others record their events for people reading the pods' logs.
-    report_to = (
-        emit
-        if lead
-        else lambda kind, **fields: emit("satellite", node=node, event=kind, **fields)
-    )
-    env = worker_env(payload, code, work)
-    env.update(
-        {k: v for k, v in os.environ.items() if k.startswith("NCCL_")}, **MESH_ENV
-    )
-    identity = {}
-    try:
-        if payload["isolation"] != "none":
-            raise PodError(
-                "resource_unavailable", "multi-node research needs pod_isolation none"
-            )
-        from nexttransformer_gym.backend import NativeBackend
-
-        identity = NativeBackend.worker_identity(request)
-        wanted = allocated_devices(request.get("gpu"))
-        if len(wanted) != nodes * per:
-            raise PodError(
-                "resource_unavailable",
-                f"a group of {len(wanted)} GPUs for {nodes} nodes of {per}",
-            )
-        share = wanted[node * per : (node + 1) * per]
-        request["gpu"], visible = assign_gpus(
-            dict(request["gpu"], devices=share), local_gpus(per)
-        )
-        env.update(CUDA_VISIBLE_DEVICES=visible, CUDA_DEVICE_ORDER="PCI_BUS_ID")
-        if not lead:  # node 0 alone writes the job's checkpoint
-            request["output"] = str(work / "tmp" / "follower" / "checkpoint.pt")
-        workspace = Path(request["output"]).parent
-        workspace.mkdir(parents=True, exist_ok=True)
-        if identity:
-            for path in (work / "tmp", work / "home", workspace):
-                grant(path, identity)
-            reach(workspace, payload.get("remote_root") or remote.parent.parent)
-            reach(work / "tmp", work)
-        port = int(payload["master_port"])
-        # Before node 0 reports ready (a broken mesh charges nothing): the nodes meet as the worker identity. A
-        # node that failed before the check leaves a marker, and the others stop waiting for it.
-        check = subprocess.Popen(
-            [sys.executable, str(code / "koala_gym.py"), "pod-mesh-check"],
-            env=dict(
-                env, KOALA_GYM_RESEARCH_MESH=mesh_spec(payload, node, master, port + 1)
-            ),
-            cwd=work / "tmp",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            **identity,
-        )
-        output = []
-        reader = threading.Thread(
-            target=lambda: output.append(check.stdout.read()), daemon=True
-        )
-        reader.start()
-        deadline = time.time() + float(payload["rendezvous_seconds"]) + 600
-        while check.poll() is None:
-            failed = peers_failed()
-            if failed or time.time() > deadline:
-                check.kill()
-                check.wait()
-                raise PodError(
-                    "resource_unavailable",
-                    "the NCCL mesh check stopped: "
-                    + (", ".join(failed) or "the nodes did not meet in time"),
-                )
-            time.sleep(2)
-        reader.join(60)
-        text = "".join(output)
-        (work / "mesh.log").write_text(text)
-        keep_log(work / "mesh.log", remote)
-        if check.returncode:
-            raise PodError(
-                "resource_unavailable",
-                "the nodes did not form an NCCL group: " + text[-1200:],
-            )
-        report_to("mesh", value=mesh_result(text))
-        env["KOALA_GYM_RESEARCH_MESH"] = mesh_spec(payload, node, master, port)
-        worker = [sys.executable, str(code / "koala_gym.py"), "pod-research-rank"]
-    except Exception as error:
-        mark(f"failed-{node}", repr(error)[-1500:])
-        if not lead:
-            report_to("pre_failure", detail=repr(error)[-1500:])
-            await_lead(float(payload["rendezvous_seconds"]) + 900)
-            return 1
-        emit(
-            "done",
-            outcome="pre_failure",
-            error_code=getattr(error, "code", "resource_unavailable"),
-            detail=repr(error)[-1500:],
-        )
-        mark("done", "pre_failure")
-        return 1
-    if lead:
-        emit(
-            "ready",
-            isolation=payload["isolation"],
-            uid=identity.get("user", os.geteuid()),
-            network="allowed" if payload.get("network") == "allow" else "denied",
-            nodes=nodes,
-            gpus_per_node=per,
-        )
-    stop, stopped_by = threading.Event(), {}
-
-    def watch(process):
-        """Stop this node's worker when a peer failed (after a grace period) or, on another node, node 0 ended."""
-
-        def loop():
-            first = None
-            while not stop.wait(5):
-                failed = peers_failed()
-                ended = not lead and (handoff / "done").exists()
-                if failed and first is None:
-                    first = time.time()
-                if ended or (failed and time.time() - first >= PEER_GRACE_SECONDS):
-                    stopped_by["reason"] = ", ".join(failed) or "node 0 ended"
-                    process.kill()
-                    stop_identity(identity)
-                    return
-
-        threading.Thread(target=loop, daemon=True).start()
-
-    outcome = drive(
-        worker,
-        env,
-        request,
-        int(payload["credit"]),
-        report_to,
-        work / "tmp",
-        work / "worker.stderr",
-        progress_every=15.0 if lead else 300.0,
-        identity=identity,
-        started=watch,
-    )
-    stop.set()
-    stop_identity(identity)
-    if outcome["outcome"] != "succeeded":
-        mark(f"failed-{node}", outcome.get("detail") or outcome["outcome"])
-    if lead and outcome["outcome"] == "unknown":
-        # A peer's failure ends this worker at its next collective; that is a known failure, not a lost job.
-        deadline = time.time() + PEER_GRACE_SECONDS
-        while not peers_failed() and not stopped_by and time.time() < deadline:
-            time.sleep(5)
-        failed = peers_failed()
-        if failed or stopped_by:
-            outcome = {
-                "outcome": "failed",
-                "error_code": "infrastructure_failure",
-                "spent": outcome["spent"],
-                "detail": "another node failed: "
-                + (", ".join(failed) or stopped_by.get("reason", "")),
-            }
-    explain(outcome, work / "worker.stderr")
-    keep_log(work / "worker.stderr", remote)
-    if not lead:
-        report_to("worker", outcome=outcome["outcome"], detail=outcome.get("detail"))
-        # Node 0 stops its own worker PEER_GRACE_SECONDS after this node's failure marker, or its worker fails at
-        # the next collective (within the mesh timeout); either way it then reports and leaves the done marker.
-        await_lead(int(payload.get("mesh_timeout_seconds", 3600)) + 900)
-        return 0 if outcome["outcome"] == "succeeded" else 1
-    code_ = report(emit, payload, outcome, remote)
-    mark("done", outcome["outcome"])
-    return code_
-
-
-def mesh_result(stdout):
-    """The mesh check's JSON line; NCCL may log around it (NCCL_DEBUG)."""
-    for line in reversed(stdout.splitlines()):
-        if line.startswith("{"):
-            try:
-                return json.loads(line)
-            except ValueError:
-                continue
-    return None
-
-
-def mesh_group(mesh):
-    """Join the job's one-process-per-node NCCL group on this node's first GPU, connected eagerly."""
-    import datetime
-
-    import torch
-    import torch.distributed as dist
-
-    torch.cuda.set_device(0)
-    dist.init_process_group(
-        "nccl",
-        init_method=f"tcp://{mesh['master']}:{int(mesh['port'])}",
-        rank=int(mesh["node"]),
-        world_size=int(mesh["nodes"]),
-        timeout=datetime.timedelta(seconds=int(mesh["timeout"])),
-        device_id=torch.device("cuda", 0),
-    )
-    return torch, dist
-
-
-def warm_mesh(torch, dist):
-    """Run each collective the research worker uses, small and large, so NCCL has connected all of them."""
-    world = dist.get_world_size()
-    for numel in (1, 1 << 10, 1 << 20, 1 << 26):
-        for dtype in (torch.float32, torch.float64, torch.int32, torch.bfloat16):
-            value = torch.ones(numel, dtype=dtype, device="cuda")
-            dist.all_reduce(value)
-            dist.all_reduce(value, op=dist.ReduceOp.MAX)
-            dist.broadcast(value, src=0)
-            dist.all_gather([torch.empty_like(value) for _ in range(world)], value)
-            del value
-    gathered = [None] * world
-    dist.all_gather_object(gathered, {"node": dist.get_rank()})
-    dist.barrier()
-    torch.cuda.synchronize()
-    torch.cuda.empty_cache()
-
-
-def pod_mesh_check():
-    """Trusted check that a multi-node research job's nodes form an NCCL group; prints the measured bandwidth."""
-    mesh = json.loads(os.environ["KOALA_GYM_RESEARCH_MESH"])
-    torch, dist = mesh_group(mesh)
-    warm_mesh(torch, dist)
-    value = torch.ones(1 << 28, dtype=torch.float32, device="cuda")  # 1 GiB
-    seconds = []
-    for _ in range(3):
-        torch.cuda.synchronize()
-        start = time.perf_counter()
-        dist.all_reduce(value)
-        torch.cuda.synchronize()
-        seconds.append(time.perf_counter() - start)
-    best, world = min(seconds), dist.get_world_size()
-    print(
-        json.dumps(
-            {
-                "node": dist.get_rank(),
-                "nodes": world,
-                "all_reduce_gib": 1,
-                "seconds": round(best, 4),
-                "bus_gbit_per_s": round(2 * (world - 1) / world * 8 / best, 1),
-            }
-        ),
-        flush=True,
-    )
-    dist.destroy_process_group()
-    return 0
-
-
-def pod_research_rank():
-    """A multi-node research worker, as the worker identity: join the nodes' NCCL group, refuse new network
-    sockets in every thread (`pod_network` deny), and only then run the Gym worker and its candidate code."""
-    import traceback
-
-    mesh = json.loads(os.environ.pop("KOALA_GYM_RESEARCH_MESH"))
-    torch, dist = mesh_group(mesh)
-    warm_mesh(torch, dist)
-    if mesh.get("network", "deny") == "deny":
-        deny_sockets([2, 10], all_threads=True)  # AF_INET, AF_INET6
-    from nexttransformer_gym.worker import main
-
-    code_ = 0
-    try:
-        main()
-    except BaseException:
-        traceback.print_exc()
-        code_ = 1
-    # Leave without tearing the NCCL group down: a peer that already left would make that wait.
-    sys.stdout.flush()
-    sys.stderr.flush()
-    os._exit(code_)
 
 
 # --------------------------------------------------------------------------------- multi-node final run
@@ -2772,6 +1452,8 @@ def topology(payload, node, master):
 
 
 def official_node(payload, node, master, emit, code, work, remote):
+    from nexttransformer_gym import nodes
+
     env = worker_env(payload, code, work, official=True)
     env["KOALA_GYM_TOPOLOGY"] = json.dumps(topology(payload, node, master))
     handoff = remote / "official"
@@ -2785,7 +1467,7 @@ def official_node(payload, node, master, emit, code, work, remote):
                 stdout=log,
                 stderr=subprocess.STDOUT,
             ).returncode
-        keep_log(work / "satellite.log", remote)
+        nodes.keep_log(work / "satellite.log", remote, host_name())
         emit("satellite", node=node, exit=code_)
         # Stay up until node 0 has logged its outcome: a job may end when one of its pods does.
         deadline = time.time() + 3600
@@ -2798,7 +1480,7 @@ def official_node(payload, node, master, emit, code, work, remote):
         gpus_per_node=payload["gpus_per_node"],
         smoke=payload.get("smoke"),
     )
-    outcome = drive(
+    outcome = nodes.drive(
         [sys.executable, str(code / "koala_gym.py"), "pod-official"],
         env,
         payload["request"],
@@ -2820,9 +1502,9 @@ def official_node(payload, node, master, emit, code, work, remote):
             smoke=payload["smoke"],
             dev_bpb=None,
         )
-    explain(outcome, work / "worker.stderr")
-    keep_log(work / "worker.stderr", remote)
-    code_ = report(emit, payload, outcome, remote)
+    nodes.explain(outcome, work / "worker.stderr")
+    nodes.keep_log(work / "worker.stderr", remote, host_name())
+    code_ = nodes.report(emit, payload, outcome, remote, publisher(payload, remote))
     (handoff / "done").write_text(outcome["outcome"])
     return code_
 
@@ -3075,7 +1757,7 @@ print("PROBE_RESULT " + json.dumps(out, sort_keys=True), flush=True)
 
 def confinement(payload, python, code, work, backend_name, device):
     """Run PROBE_SCRIPT as the worker identity under one backend; report what it reached."""
-    from nexttransformer_gym import isolation
+    from nexttransformer_gym import nodes, remote
 
     checks = payload["checks"]
     data = checks["data"]
@@ -3086,22 +1768,22 @@ def confinement(payload, python, code, work, backend_name, device):
         "checkpoint": None,
         "output": str(workspace / "checkpoint.pt"),
     }
-    identity = (
-        {"user": 65534, "group": 65534, "extra_groups": []} if os.geteuid() == 0 else {}
-    )
+    identity = remote.worker_identity({})
     open_dir, plain = work / "world-writable", work / "world-readable.txt"
     open_dir.mkdir(exist_ok=True)
     os.chmod(open_dir, 0o1777)
     plain.write_text("outside the allowed paths\n")
     os.chmod(plain, 0o644)
     for path in (workspace, work / "home"):
-        grant(path, identity) if identity else path.mkdir(parents=True, exist_ok=True)
+        nodes.grant(path, identity) if identity else path.mkdir(
+            parents=True, exist_ok=True
+        )
     if identity:
-        reach(
+        nodes.reach(
             workspace,
             payload.get("remote_root") or Path(payload["remote"]).parent.parent,
         )
-        reach(work / "home", work)
+        nodes.reach(work / "home", work)
     env = {
         "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
         "PYTHONDONTWRITEBYTECODE": "1",
@@ -3110,7 +1792,7 @@ def confinement(payload, python, code, work, backend_name, device):
         "CUDA_VISIBLE_DEVICES": "",
     }
     if device == "cuda":
-        card = local_gpus(1)[0]
+        card = nodes.local_gpus(1)[0]
         request["gpu"] = card
         env.update(CUDA_VISIBLE_DEVICES=card["uuid"], CUDA_DEVICE_ORDER="PCI_BUS_ID")
     beat, stop = workspace / "daemon.beat", workspace / "daemon.stop"
@@ -3132,14 +1814,12 @@ def confinement(payload, python, code, work, backend_name, device):
         "daemon_stop": str(stop),
     }
     worker = [python, "-c", PROBE_SCRIPT, json.dumps(spec)]
-    if backend_name == "landlock":
-        argv = isolation.landlock_command(python, str(code), request, worker)
-    elif backend_name == "bwrap":
-        argv = isolation.bwrap_command(python, str(code), request, worker)
-    elif backend_name == "none-netdeny":
-        argv = netdeny_command(code, device, worker)
+    if backend_name == "none-netdeny":
+        argv = remote.worker_command(python, code, request, "none", "deny", worker)
     else:
-        argv = worker
+        argv = remote.worker_command(
+            python, code, request, backend_name, "allow", worker
+        )
     report_ = {}
     try:
         run = subprocess.run(
@@ -3171,7 +1851,7 @@ def confinement(payload, python, code, work, backend_name, device):
     report_["reserved_reached"] = reserved_reached(checks, report_)
     report_["daemon_beat_written"] = beat.exists()
     report_["daemon_outlived_worker"] = alive()
-    stop_identity(identity)
+    nodes.stop_identity(identity)
     report_["daemon_survived_cleanup"] = alive()
     stop.write_text("stop")
     return report_
@@ -3193,16 +1873,14 @@ def pod_probe_checks(job_path):
     work = Path(payload["work"])
     code = work / "code"
     sys.path[:0] = [str(code / "gym" / "src"), str(code)]
-    from nexttransformer_gym import isolation, landlock
+    from nexttransformer_gym import remote
 
-    out = {"kernel": os.uname().release, "uid": os.geteuid()}
-    try:
-        out["landlock_abi"] = landlock.abi_version()
-    except OSError as error:
-        out["landlock_abi"] = f"error: {error}"
-    identity = (
-        {"user": 65534, "group": 65534, "extra_groups": []} if os.geteuid() == 0 else {}
-    )
+    out = {
+        "kernel": os.uname().release,
+        "uid": os.geteuid(),
+        "landlock_abi": remote.landlock_abi(),
+    }
+    identity = remote.worker_identity({})
     for flags in (
         ["--user"],
         ["--user", "--net", "--ipc", "--uts"],
@@ -3216,8 +1894,7 @@ def pod_probe_checks(job_path):
         )
     backend_name = payload["isolation"]
     try:
-        bubblewrap_available(backend_name)
-        isolation.preflight(backend_name)
+        remote.preflight(backend_name)
         out["isolation_ok"] = True
     except Exception as error:
         out["isolation_ok"] = False
@@ -3248,6 +1925,7 @@ def pod_probe(job_path):
     work.mkdir(parents=True, exist_ok=True)
     code = work / "code"
     copy_code(Path(job_path).resolve().parent, code)
+    sys.path[:0] = [str(code / "gym" / "src"), str(code)]
     report_ = {"host": host_name()}
     try:
         python = build_env(payload, code, work)
@@ -3301,17 +1979,8 @@ def main(argv=None):
         "pod-satellite",
         "pod-probe",
         "pod-probe-checks",
-        "pod-netdeny",
-        "pod-mesh-check",
-        "pod-research-rank",
     ):
         command, rest = argv[0], argv[1:]
-        if command == "pod-netdeny":
-            return pod_netdeny(rest)
-        if command == "pod-mesh-check":
-            return pod_mesh_check()
-        if command == "pod-research-rank":
-            return pod_research_rank()
         if command == "pod-probe-checks":
             return pod_probe_checks(rest[0])
         if command == "relay":

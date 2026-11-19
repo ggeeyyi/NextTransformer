@@ -6,7 +6,7 @@ Gym runs model architecture research experiments: the host runs training, and Ha
 The examples use synthetic data. They do not represent production ClimbMix or CORE-22 performance.
 
 - [Install](#install) · [Start a research session](#start-a-research-session) · [Run an experiment and submit](#run-an-experiment-and-submit)
-- [Gym API](#gym-api) · [Submit a native candidate](#submit-a-native-candidate) · [Worker isolation](#worker-isolation)
+- [Gym API](#gym-api) · [Submit a native candidate](#submit-a-native-candidate) · [Worker isolation](#worker-isolation) · [Several machines](#several-machines)
 - [Errors and recovery](#errors-and-recovery) · [Check the installation](#check-the-installation)
 
 The Agent's requirements are in the [task instructions](tasks/architecture-research/instruction.md). Run the host commands below from the repository root.
@@ -301,6 +301,44 @@ A CPU session can use a configuration with only this field:
 
 If the controller runs as root, workers run as `nobody` under every backend. That user must be able to read the platform source and the worker Python.
 `get_resources` reports the configured backend in `execution_config`.
+
+## Several machines
+
+One research job can train on the GPUs of several machines. The Gym's multi-node executor runs it; the rest of the
+Gym is unchanged, and agents see one group of cards. The machines must reach each other over TCP (NCCL), see a
+directory at the same path as the controller (`job_root`, on NFS for example), have the same Python environment
+(`python`) and accept ssh from the controller without a password.
+
+```json
+{
+  "schema_version": "gym.nodes.v1",
+  "launcher": "ssh",
+  "hosts": [{"ssh": "gpu-a", "address": "10.0.0.1"}, {"ssh": "gpu-b", "address": "10.0.0.2"}],
+  "gpus_per_node": 8,
+  "python": "/opt/nexttransformer/gym/.venv/bin/python",
+  "job_root": "/shared/gym-jobs",
+  "isolation": "none",
+  "network": "deny"
+}
+```
+
+```sh
+gym/.venv/bin/python -m nexttransformer_gym.nodes configure nodes.json --execution execution.base.json --out execution.json
+gym/.venv/bin/python gym/run_trial.py --execution-config execution.json ...
+```
+
+`configure` records the machines' runtime and GPUs; `execution.base.json` holds the configuration's other fields.
+A research job then uses all 16 GPUs: node k trains cards 8k to 8k+7, and each update is split exactly as on one
+machine with 16 GPUs. A job spanning machines needs isolation `none`: network `deny` refuses new sockets once the
+machines have met, and workers run as `nobody` when the ssh user is root. `"launcher": "local"` runs the nodes as
+processes on this machine. A cluster plugin supplies its own launcher ([Koala](koala/README.md)); see
+[DESIGN.md](DESIGN.md#multi-node-executor).
+
+> **Untested on bare metal.** GPU jobs have run on this executor only through the Koala launcher (one node, and one
+> research job on 4 nodes x 8 H20). The `local` and `ssh` launchers have been tested only with CPU nodes on one
+> machine (`ssh` through a stand-in). On bare-metal GPU machines without Koala they are untested: real ssh and shared
+> storage, the mapping of cards by identity, the busy-card refusal and NCCL between machines. `configure` prints a
+> warning when it finds GPUs; run a bounded job first.
 
 ## Errors and recovery
 

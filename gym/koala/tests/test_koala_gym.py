@@ -27,6 +27,7 @@ sys.path[:0] = [str(HERE.parent), str(ROOT / "gym" / "src"), str(ROOT)]
 
 import koala_gym  # noqa: E402
 from nexttransformer_gym.backend import NativeBackend, Scheduler  # noqa: E402
+from nexttransformer_gym.common import GymError  # noqa: E402
 from nexttransformer_gym.evidence import snapshot, verify_receipt  # noqa: E402
 from nexttransformer_gym.final import get_final_run, launch_final_run  # noqa: E402
 from nexttransformer_gym.service import Service  # noqa: E402
@@ -85,11 +86,12 @@ def gym(request):
         )
     path = base / "koala.json"
     path.write_text(json.dumps(config))
-    koala_gym.install_controller(koala_gym.load_config(path), path)
     profiles = json.loads((ROOT / "gym/examples/profiles.fixture.json").read_text())
     for profile in profiles.values():
         profile["timeout_sec"] = 600
-    backend = NativeBackend(profiles, base / "state", ROOT)
+    backend = NativeBackend(
+        profiles, base / "state", ROOT, execution_config=cpu_settings(path)
+    )
     service = Service(base / "state" / "gym.sqlite3", backend)
     credentials = service.create_session(10**12, "koala-test")
 
@@ -117,6 +119,15 @@ def gym(request):
             env=dict(os.environ, HOME=str(home)),
         )
     shutil.rmtree(base, ignore_errors=True)
+
+
+def cpu_settings(path, **values):
+    """The adapter's execution configuration with no cards: the fixture's CPU research profiles."""
+    settings = koala_gym.execution_settings(
+        dict(koala_gym.load_config(path), **values), path
+    )
+    settings["executor"]["devices"] = []
+    return settings
 
 
 def fake_settings(gym, **values):
@@ -536,9 +547,12 @@ def test_final_rank_spawn_splits_across_nodes_and_meets_over_tcp(tmp_path):
 def test_koala_credentials_reach_only_the_relay(gym, monkeypatch):
     monkeypatch.setenv("OSS_ACCESS_KEY_ID", "test-id")
     backend = gym["service"].backend
-    assert "OSS_ACCESS_KEY_ID" not in backend.environment()
     profile = backend.profiles["research-fixture"]
-    assert backend.environment(profile)["OSS_ACCESS_KEY_ID"] == "test-id"
+    assert "OSS_ACCESS_KEY_ID" not in backend.environment(profile)
+    env, identity = backend.worker_launch({"mode": "execute"}, profile)
+    assert env["OSS_ACCESS_KEY_ID"] == "test-id" and identity == {}
+    audit_env, _ = backend.worker_launch({"mode": "inspect", "profile": profile})
+    assert "OSS_ACCESS_KEY_ID" not in audit_env
     inspect = backend.worker_command({"mode": "inspect", "profile": profile})
     assert inspect[0].endswith("bwrap") and inspect[-2:] == [
         "-m",
@@ -573,111 +587,38 @@ def test_a_pod_without_its_isolation_prerequisites_fails_before_work_without_a_c
 
 
 def test_local_workers_use_the_local_sandbox_and_the_gym_reports_the_pods(
-    gym, monkeypatch
+    gym, tmp_path
 ):
-    from nexttransformer_gym import isolation
-
     config = koala_gym.load_config(gym["path"])
     config.update(pod_isolation="landlock", local_isolation="bwrap")
     path = koala_gym.execution_config(config, gym["path"])
     assert path.name == f"execution.{gym['path'].stem}.json"
-    assert json.loads(path.read_text())["isolation"] == "landlock"
-    seen = []
-    monkeypatch.setattr(
-        isolation,
-        "command",
-        lambda python, platform, request, backend: seen.append(backend) or ["x"],
+    written = json.loads(path.read_text())
+    assert written["isolation"] == "bwrap"
+    assert written["executor"]["isolation"] == "landlock"
+    profiles = json.loads((ROOT / "gym/examples/profiles.fixture.json").read_text())
+    settings = dict(written, executor=dict(written["executor"], devices=[]))
+    # The pods' landlock is checked in the pods, never on this ordinary-user controller.
+    backend = NativeBackend(
+        profiles, tmp_path / "state", ROOT, execution_config=settings
     )
-    monkeypatch.setitem(koala_gym.CONTROLLER, "config", config)
-    backend = gym["service"].backend
-    assert backend.worker_command({"mode": "inspect", "profile": {}}) == [
-        "x"
-    ] and seen == ["bwrap"]
+    assert backend.worker_command({"mode": "inspect", "profile": {}})[0].endswith(
+        "bwrap"
+    )
     official = backend.worker_command(
         {"mode": "inspect", "quote": {"operation": "official"}}
     )
     assert official[-2:] == ["-m", "nexttransformer_gym.worker"]
     assert backend.worker_command({"mode": "execute"})[-2] == "relay"
+    shown = backend.resources()["execution_config"]
+    assert shown["executor"]["isolation"] == "landlock"
+    assert "command" not in shown["executor"] and "environment" not in shown["executor"]
 
 
 def test_a_landlock_controller_is_refused(gym):
     gym["path"].write_text(json.dumps(dict(gym["config"], local_isolation="landlock")))
     with pytest.raises(SystemExit, match="local_isolation"):
         koala_gym.load_config(gym["path"])
-
-
-def test_a_worker_identity_can_reach_its_workspace_without_listing_the_tree(tmp_path):
-    root = tmp_path / "remote"
-    workspace = root / "tag" / "quote"
-    workspace.mkdir(parents=True)
-    outside = tmp_path / "other"
-    outside.mkdir()
-    for path in (tmp_path, outside, root, root / "tag", workspace):
-        path.chmod(0o700)  # what a pod's umask 0077 leaves
-    koala_gym.reach(workspace, root)
-    for path in (root, root / "tag", workspace):
-        assert path.stat().st_mode & 0o777 == 0o701  # traverse only: no listing
-    assert (
-        outside.stat().st_mode & 0o777 == 0o700
-        and tmp_path.stat().st_mode & 0o777 == 0o700
-    )
-
-
-PROBE_SOCKETS = """
-import os, socket
-def t(family):
-    try:
-        socket.socket(family).close()
-        return "ok"
-    except OSError as error:
-        return error.errno
-read, write = os.pipe()
-os.write(write, b"x")
-print(t(socket.AF_INET), t(socket.AF_INET6), t(socket.AF_UNIX), os.read(read, 1) == b"x")
-"""
-
-
-@pytest.mark.parametrize(
-    "device, expected", [("cuda", "13 13 ok True"), ("cpu", "13 13 13 True")]
-)
-def test_unsandboxed_pod_workers_open_no_network_sockets(tmp_path, device, expected):
-    code = tmp_path / "code"
-    code.mkdir()
-    shutil.copy(HERE.parent / "koala_gym.py", code / "koala_gym.py")
-    command = koala_gym.netdeny_command(
-        code, device, [sys.executable, "-c", PROBE_SOCKETS]
-    )
-    run = subprocess.run(
-        ["bash", "-c", " ".join(f"'{a}'" for a in command)],
-        capture_output=True,
-        text=True,
-    )
-    assert run.returncode == 0, run.stderr
-    assert run.stdout.split() == expected.split()
-
-
-def test_the_identity_cleanup_runs_only_in_a_root_pod_and_never_for_root(monkeypatch):
-    calls = []
-    monkeypatch.setattr(koala_gym.subprocess, "run", lambda *a, **k: calls.append(k))
-    nobody = {"user": 65534, "group": 65534, "extra_groups": []}
-    monkeypatch.setattr(koala_gym.os, "geteuid", lambda: 1000)
-    koala_gym.stop_identity(nobody)
-    assert calls == []  # an ordinary controller: no identity switch, nothing to kill
-    monkeypatch.setattr(koala_gym.os, "geteuid", lambda: 0)
-    koala_gym.stop_identity({})
-    koala_gym.stop_identity({"user": 0, "group": 0})
-    assert calls == []
-    koala_gym.stop_identity(nobody)
-    assert len(calls) == 2 and all(
-        c["user"] == 65534 and c["extra_groups"] == [] for c in calls
-    )
-
-
-def test_usage_counts_every_gpu_of_every_node():
-    assert koala_gym.usage(None, 10.0, 1, 8) == {}
-    held = koala_gym.usage(1000.0, 1000.0 + 1800, 2, 8)
-    assert held["pod_seconds"] == 1800.0 and held["gpu_hours"] == 8.0
-    assert held["pod_started"] == "1970-01-01T00:16:40Z"
 
 
 def test_the_probe_reports_reserved_paths_the_worker_reaches(tmp_path):
@@ -880,12 +821,15 @@ def test_research_gpus_and_microbatch_reach_the_gym_execution_configuration(gym)
             research_compile=True,
         )
     )
-    settings = configuration(koala_gym.execution_settings(config))
+    settings = configuration(koala_gym.execution_settings(config, gym["path"]))
     assert len(set(settings["gpu_ids"])) == 2
     assert settings["research_microbatch_size"] == 4
     assert settings["research_dtype"] == "bfloat16"
     assert settings["research_compile"] is True
-    assert settings["isolation"] == config["pod_isolation"]
+    assert settings["isolation"] == config["local_isolation"]
+    assert settings["executor"]["isolation"] == config["pod_isolation"]
+    assert settings["executor"]["runtime"] == config["runtime"]
+    assert {d["name"] for d in settings["executor"]["devices"]} == {config["gpu_name"]}
     payload, _ = koala_gym.build_job(
         config,
         {
@@ -895,7 +839,10 @@ def test_research_gpus_and_microbatch_reach_the_gym_execution_configuration(gym)
         },
         str(gym["base"] / "remote"),
     )
-    env = koala_gym.worker_env(payload, gym["base"] / "code", gym["base"] / "work")
+    env = koala_gym.worker_env(
+        payload, gym["base"] / "code", gym["base"] / "work", [{"id": "GPU-a"}]
+    )
+    assert env["CUDA_VISIBLE_DEVICES"] == "GPU-a"
     assert env["NANOCHAT_DTYPE"] == "bfloat16"
     assert env["TORCHDYNAMO_DISABLE"] == "0"
     assert env["FLA_DISABLE_BACKEND_DISPATCH"] == "1"
@@ -907,31 +854,6 @@ def test_research_gpus_and_microbatch_reach_the_gym_execution_configuration(gym)
         koala_gym.load_config(write_config(gym, research_dtype="float16"))
     with pytest.raises(SystemExit, match="research_compile"):
         koala_gym.load_config(write_config(gym, research_compile="yes"))
-
-
-def test_the_pod_maps_a_gpu_group_onto_its_own_gpus_in_order():
-    virtual = [
-        {"id": f"GPU-virtual-{i}", "uuid": f"GPU-virtual-{i}", "memory_limit_bytes": 7}
-        for i in range(2)
-    ]
-    cards = [
-        {"id": "GPU-a", "uuid": "GPU-a", "index": 0, "device_minor": 3},
-        {"id": "GPU-b", "uuid": "GPU-b", "index": 1, "device_minor": 5},
-    ]
-    record, visible = koala_gym.assign_gpus({**virtual[0], "devices": virtual}, cards)
-    assert visible == "GPU-a,GPU-b" and record["id"] == "GPU-a"
-    assert [
-        (d["uuid"], d["device_minor"], d["memory_limit_bytes"])
-        for d in record["devices"]
-    ] == [
-        ("GPU-a", 3, 7),
-        ("GPU-b", 5, 7),
-    ]
-    single, visible = koala_gym.assign_gpus(virtual[0], cards[:1])
-    assert visible == "GPU-a" and "devices" not in single
-    assert single["memory_limit_bytes"] == 7
-    with pytest.raises(koala_gym.PodError, match="1 GPUs for an allocation of 2"):
-        koala_gym.assign_gpus({**virtual[0], "devices": virtual}, cards[:1])
 
 
 def test_a_research_job_asks_koala_for_the_gym_allocations_gpus(gym, tmp_path):
@@ -962,7 +884,6 @@ def test_a_two_gpu_research_job_reaches_koala_as_one_two_gpu_job(gym):
         virtual_gpu_offset=4000 + int(uuid.uuid4().hex[:4], 16),
     )
     config = koala_gym.load_config(path)
-    koala_gym.install_controller(config, path)
     profiles = json.loads((ROOT / "gym/examples/profiles.fixture.json").read_text())
     for profile in profiles.values():
         profile["timeout_sec"] = 600
@@ -970,7 +891,7 @@ def test_a_two_gpu_research_job_reaches_koala_as_one_two_gpu_job(gym):
         profiles,
         gym["base"] / "state-2gpu",
         ROOT,
-        execution_config=koala_gym.execution_settings(config),
+        execution_config=koala_gym.execution_settings(config, path),
     )
     service = Service(gym["base"] / "state-2gpu" / "gym.sqlite3", backend)
     credentials = service.create_session(10**12, "koala-test-2gpu")
@@ -1082,7 +1003,7 @@ def test_a_research_group_larger_than_a_node_spans_whole_nodes(gym, tmp_path):
         shapes.append((payload["nodes"], payload["gpus_per_node"]))
     assert shapes == [(2, 2), (1, 2), (1, 1)]
     assert payload["mesh_timeout_seconds"] == 3600
-    with pytest.raises(koala_gym.KoalaError, match="does not fill"):
+    with pytest.raises(GymError, match="does not fill"):
         koala_gym.research_topology(config, {**group[0], "devices": group[:3]})
 
 
@@ -1105,293 +1026,65 @@ def test_multi_node_research_needs_whole_nodes_shared_storage_and_no_netns_sandb
         koala_gym.load_config(write_config(gym, **{**base, **values}))
 
 
-PROBE_THREAD_SOCKETS = """
-import socket, sys, threading
-sys.path.insert(0, sys.argv[1])
-import koala_gym
-ready, go, result = threading.Event(), threading.Event(), {}
-def early():
-    ready.set()
-    go.wait()
-    try:
-        socket.socket(socket.AF_INET).close()
-        result["early"] = "ok"
-    except OSError as error:
-        result["early"] = error.errno
-thread = threading.Thread(target=early)
-thread.start()
-ready.wait()
-listener = socket.socket()
-listener.bind(("127.0.0.1", 0))
-listener.listen()
-client = socket.create_connection(listener.getsockname())
-server, _ = listener.accept()
-koala_gym.deny_sockets([socket.AF_INET, socket.AF_INET6], all_threads=sys.argv[2] == "all")
-go.set()
-thread.join()
-client.sendall(b"x")
-print(result["early"], server.recv(1) == b"x")
-"""
+# --------------------------------------------------------------------------------------- the Gym's interface
 
 
-@pytest.mark.parametrize("scope, expected", [("all", "13 True"), ("thread", "ok True")])
-def test_the_all_thread_socket_filter_binds_threads_started_before_it(scope, expected):
-    """NCCL and the store start threads before the filter; only the all-thread filter binds them, and the
-    connections opened before it keep working."""
-    run = subprocess.run(
-        [sys.executable, "-c", PROBE_THREAD_SOCKETS, str(HERE.parent), scope],
-        capture_output=True,
-        text=True,
-        check=False,
+def gym_imports(function):
+    """The Gym modules a top-level function of koala_gym.py imports or runs (`-m`)."""
+    import ast
+
+    tree = ast.parse((HERE.parent / "koala_gym.py").read_text())
+    node = next(
+        n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == function
     )
-    assert run.returncode == 0, run.stderr
-    assert run.stdout.split() == expected.split()
+    found = set()
+    for item in ast.walk(node):
+        if isinstance(item, ast.ImportFrom) and (item.module or "").startswith(
+            "nexttransformer_gym"
+        ):
+            module = item.module
+            found |= (
+                {f"{module}.{a.name}" for a in item.names}
+                if module == "nexttransformer_gym"
+                else {module}
+            )
+        if isinstance(item, ast.Constant) and str(item.value).startswith(
+            "nexttransformer_gym."
+        ):
+            found.add(item.value)
+    return found
 
 
-def research_payload(base, nodes=2, per=1):
-    remote = base / "cpfs" / "tag" / "q"
-    remote.mkdir(parents=True)
-    group = [
-        {"id": f"GPU-v{i}", "uuid": f"GPU-v{i}", "memory_limit_bytes": 7}
-        for i in range(nodes * per)
-    ]
-    return {
-        "request": {
-            "quote": {"id": "q", "operation": "train", "bound": "100"},
-            "profile": {"device": "cuda:0"},
-            "gpu": {**group[0], "devices": group},
-            "output": str(remote / "checkpoint.pt"),
-        },
-        "remote": str(remote),
-        "remote_root": str(base / "cpfs"),
-        "nodes": nodes,
-        "gpus_per_node": per,
-        "credit": "100",
-        "isolation": "none",
-        "network": "deny",
-        "master_port": 29531,
-        "mesh_timeout_seconds": 60,
-        "rendezvous_seconds": 60,
-    }
+PUBLIC = {
+    "nexttransformer_gym.executor",
+    "nexttransformer_gym.nodes",
+    "nexttransformer_gym.remote",
+    "nexttransformer_gym.cli",
+}
+# The official final-run path still adapts the Gym's official pipeline in-process.
+OFFICIAL = {"install_official", "rank_entry", "pod_official", "smoke_invoke"}
 
 
-class FakeCheck:
-    """A mesh check process: finishes with `code`, or (code None) runs until killed."""
+def test_the_adapter_uses_only_the_gyms_public_interface_outside_the_official_path():
+    import ast
 
-    def __init__(self, code):
-        self.code, self.killed = code, False
-        self.stdout = io.StringIO(
-            'NCCL INFO ring\n{"node": 0, "bus_gbit_per_s": 1.0}\n'
-        )
-
-    @property
-    def returncode(self):
-        return -9 if self.killed else self.code
-
-    def poll(self):
-        return self.returncode
-
-    def kill(self):
-        self.killed = True
-
-    def wait(self):
-        return self.returncode
+    tree = ast.parse((HERE.parent / "koala_gym.py").read_text())
+    functions = [n.name for n in tree.body if isinstance(n, ast.FunctionDef)]
+    for name in functions:
+        used = gym_imports(name)
+        if name in OFFICIAL:
+            continue
+        assert used <= PUBLIC, (name, used - PUBLIC)
+    source = (HERE.parent / "koala_gym.py").read_text()
+    for private in ("NativeBackend", "install_controller", "RuntimeQuery", "sqlite3"):
+        assert private not in source
+    # The Gym's multi-node executor runs the nodes and the relay; this file is its Koala transport only.
+    for generic in ("def drive(", "def research_node(", "def report(", "Charges(", "Channel("):
+        assert generic not in source
 
 
-def fake_node(monkeypatch, outcome, mesh_code=0):
-    """Stand-ins for the pod's GPUs, worker identity, mesh check and worker."""
-    seen = {}
-    monkeypatch.setattr(
-        koala_gym,
-        "local_gpus",
-        lambda n: [
-            {"id": f"GPU-p{i}", "uuid": f"GPU-p{i}", "index": i, "device_minor": i}
-            for i in range(n)
-        ],
-    )
-    monkeypatch.setattr(
-        NativeBackend, "worker_identity", staticmethod(lambda request: {})
-    )
-    monkeypatch.setattr(koala_gym, "PEER_GRACE_SECONDS", 0)
-    real_popen = subprocess.Popen
-
-    def popen(command, *args, **options):
-        if "pod-mesh-check" in command:
-            seen["mesh"] = json.loads(options["env"]["KOALA_GYM_RESEARCH_MESH"])
-            seen["check"] = FakeCheck(mesh_code)
-            return seen["check"]
-        return real_popen(command, *args, **options)
-
-    monkeypatch.setattr(koala_gym.subprocess, "Popen", popen)
-
-    def drive(command, env, request, credit, emit, cwd, stderr_path, **options):
-        seen.update(command=command, env=env, request=request)
-        return outcome(request)
-
-    monkeypatch.setattr(koala_gym, "drive", drive)
-    return seen
-
-
-def pod_events(capsys):
-    return [
-        json.loads(line[len(koala_gym.MARK) :])
-        for line in capsys.readouterr().out.splitlines()
-        if line.startswith(koala_gym.MARK)
-    ]
-
-
-def test_each_node_trains_its_share_and_only_node_0_reports_and_writes(
-    tmp_path, monkeypatch, capsys
-):
-    payload = research_payload(tmp_path)
-    remote = Path(payload["remote"])
-
-    def succeeded(request):
-        Path(request["output"]).parent.mkdir(parents=True, exist_ok=True)
-        Path(request["output"]).write_bytes(b"weights")
-        return {"outcome": "succeeded", "result": {"step": 1}, "spent": 100}
-
-    seen = fake_node(monkeypatch, succeeded)
-    (remote / "research").mkdir()
-    (remote / "research" / "done").write_text("succeeded")  # lets node 1 leave at once
-    work = tmp_path / "node1"
-    (work / "tmp").mkdir(parents=True)
-    copy = json.loads(json.dumps(payload))
-    assert (
-        koala_gym.research_node(
-            copy, 1, "10.0.0.1", koala_gym.Emitter(), work / "code", work, remote
-        )
-        == 0
-    )
-    assert seen["mesh"] == {
-        "node": 1,
-        "nodes": 2,
-        "master": "10.0.0.1",
-        "port": 29532,
-        "timeout": 60,
-        "network": "deny",
-    }
-    assert json.loads(seen["env"]["KOALA_GYM_RESEARCH_MESH"])["port"] == 29531
-    assert seen["env"]["NCCL_RUNTIME_CONNECT"] == "0"
-    assert seen["env"]["CUDA_VISIBLE_DEVICES"] == "GPU-p0"
-    assert seen["command"][-1] == "pod-research-rank"
-    # Node 1's card of the group, on this pod's own GPU; its worker never writes the job's checkpoint.
-    assert [d["uuid"] for d in seen["request"]["gpu"]["devices"]] == ["GPU-p0"]
-    assert seen["request"]["output"] != payload["request"]["output"]
-    assert not (remote / "checkpoint.pt").exists()
-    assert {e["kind"] for e in pod_events(capsys)} == {"satellite"}
-
-    (remote / "research" / "done").unlink()
-    work = tmp_path / "node0"
-    (work / "tmp").mkdir(parents=True)
-    assert (
-        koala_gym.research_node(
-            json.loads(json.dumps(payload)),
-            0,
-            "10.0.0.1",
-            koala_gym.Emitter(),
-            work / "code",
-            work,
-            remote,
-        )
-        == 0
-    )
-    events = pod_events(capsys)
-    kinds = [e["kind"] for e in events]
-    assert kinds.index("mesh") < kinds.index("ready") and kinds[-1] == "done"
-    assert events[-1]["outcome"] == "succeeded"
-    assert events[-1]["checkpoint"]["path"] == payload["request"]["output"]
-    assert (remote / "research" / "done").read_text() == "succeeded"
-
-
-def test_node_0_settles_a_peer_failure_as_a_failed_job(tmp_path, monkeypatch, capsys):
-    payload = research_payload(tmp_path)
-    remote = Path(payload["remote"])
-    (remote / "research").mkdir()
-    (remote / "research" / "failed-1").write_text("worker exited 1")
-    fake_node(
-        monkeypatch,
-        lambda request: {"outcome": "unknown", "detail": "exited -9", "spent": 40},
-    )
-    work = tmp_path / "node0"
-    (work / "tmp").mkdir(parents=True)
-    assert (
-        koala_gym.research_node(
-            payload, 0, "10.0.0.1", koala_gym.Emitter(), work / "code", work, remote
-        )
-        == 0
-    )
-    done = pod_events(capsys)[-1]
-    assert done["kind"] == "done" and done["outcome"] == "failed"
-    assert done["error_code"] == "infrastructure_failure"
-    assert "failed-1" in done["detail"] and done["spent"] == "40"
-    assert (remote / "research" / "failed-0").exists()
-
-
-def test_a_mesh_that_does_not_form_fails_before_work_without_a_charge(
-    tmp_path, monkeypatch, capsys
-):
-    payload = research_payload(tmp_path)
-    remote = Path(payload["remote"])
-    seen = fake_node(monkeypatch, lambda request: pytest.fail("worker ran"), 1)
-    work = tmp_path / "node0"
-    (work / "tmp").mkdir(parents=True)
-    assert (
-        koala_gym.research_node(
-            payload, 0, "10.0.0.1", koala_gym.Emitter(), work / "code", work, remote
-        )
-        == 1
-    )
-    events = pod_events(capsys)
-    assert "ready" not in [e["kind"] for e in events]
-    assert events[-1]["kind"] == "done" and events[-1]["outcome"] == "pre_failure"
-    assert "command" not in seen and (remote / "research" / "failed-0").exists()
-
-
-def test_another_node_waits_for_node_0_after_its_own_failure(
-    tmp_path, monkeypatch, capsys
-):
-    """A Koala job ends when any pod does: a failed node stays up until node 0 has logged the outcome."""
-    payload = research_payload(tmp_path)
-    remote = Path(payload["remote"])
-    (remote / "research").mkdir()
-    (remote / "research" / "done").write_text("failed")
-    waits = []
-    monkeypatch.setattr(koala_gym.time, "sleep", lambda s: waits.append(s))
-    fake_node(
-        monkeypatch,
-        lambda request: {"outcome": "unknown", "detail": "exited 1", "spent": 9},
-    )
-    work = tmp_path / "node1"
-    (work / "tmp").mkdir(parents=True)
-    assert (
-        koala_gym.research_node(
-            payload, 1, "10.0.0.1", koala_gym.Emitter(), work / "code", work, remote
-        )
-        == 1
-    )
-    assert (remote / "research" / "failed-1").exists()
-    assert {e["kind"] for e in pod_events(capsys)} == {"satellite"}
-
-
-def test_a_mesh_check_stops_when_another_node_failed_and_node_0_leaves_its_marker(
-    tmp_path, monkeypatch, capsys
-):
-    payload = research_payload(tmp_path)
-    remote = Path(payload["remote"])
-    (remote / "research").mkdir()
-    (remote / "research" / "failed-1").write_text("environment build failed")
-    seen = fake_node(monkeypatch, lambda request: pytest.fail("worker ran"), None)
-    work = tmp_path / "node0"
-    (work / "tmp").mkdir(parents=True)
-    assert (
-        koala_gym.research_node(
-            payload, 0, "10.0.0.1", koala_gym.Emitter(), work / "code", work, remote
-        )
-        == 1
-    )
-    assert seen["check"].killed
-    done = pod_events(capsys)[-1]
-    assert done["kind"] == "done" and done["outcome"] == "pre_failure"
-    assert "failed-1" in done["detail"]
-    assert (remote / "research" / "done").read_text() == "pre_failure"
+def test_agents_see_neither_koala_nor_the_relay(gym):
+    resources = gym["call"]("get_resources")
+    text = json.dumps(resources)
+    assert "koala" not in text.lower() and "relay" not in text
+    assert '"backend": "operator_executor"' in text

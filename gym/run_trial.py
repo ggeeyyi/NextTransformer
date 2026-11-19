@@ -178,7 +178,9 @@ def main():
                     "agent_arguments": agent_arguments(args),
                     "research_flops_limit": str(args.research_flops_limit),
                     "timeout_sec": args.timeout_sec,
-                    "execution_backend": "local_subprocess",
+                    "execution_backend": "operator_executor"
+                    if (args.execution_policy or {}).get("executor")
+                    else "local_subprocess",
                     "gym_backend": "host",
                     "worker_python": args.worker_python,
                     "execution_config": (
@@ -193,7 +195,12 @@ def main():
         return
     from nexttransformer_gym.host_trial import run
 
-    if args.execution_policy and args.execution_policy["gpu_ids"]:
+    # An operator executor's cards are declared, never local devices.
+    if (
+        args.execution_policy
+        and args.execution_policy["gpu_ids"]
+        and not args.execution_policy.get("executor")
+    ):
         args.execution_policy = resolve_gpu_policy(args.execution_policy)
     return run(args, image_id)
 

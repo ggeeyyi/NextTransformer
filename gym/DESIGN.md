@@ -113,7 +113,9 @@ Research training uses data parallelism and gradient accumulation with a fixed g
 All sessions in that state share the worker slot, including jobs with uncertain outcomes.
 Separate states do not share a machine-wide scheduler lock.
 Operators run one research trial at a time to enforce the agreed scope.
-Remote dispatch and concurrent independent numerical jobs are outside this scope.
+Concurrent independent numerical jobs are outside this scope.
+An operator executor (below) may run the one job on other machines instead: the Gym's multi-node executor
+runs it on a group of machines over ssh, and a cluster plugin can supply its own transport.
 
 The operator controls GPU allocation, memory limits and the CUDA Python environment.
 The launcher converts GPU indices to stable UUIDs and saves the execution policy.
@@ -133,6 +135,84 @@ These controls do not guarantee a limit on arbitrary direct CUDA allocations.
 Results record the primary model device, all allocated GPU IDs, runtime versions and per-device peak GPU memory.
 Training cost bounds trace the actual microbatch shapes and include gradient reduction/accumulation arithmetic;
 optimizer cost is charged once per global update. Diagnostics retain their full-batch cost and memory bounds.
+
+## Operator executors
+
+An operator executor runs the scheduled numerical jobs somewhere other than the controller.
+The controller, API, budget, evidence and static audits stay on this machine and are unchanged.
+The operator declares the executor in the execution configuration (`executor.py` documents the fields):
+
+- `command` replaces the local worker for every scheduled job: research training, checks and final runs.
+  It starts in the state directory as the controller's user and speaks the worker protocol on stdin/stdout.
+- `environment` names controller variables (credentials) that only the executor process receives.
+- `devices` are the cards one job may use, in order. Gym leases them like local cards and never observes them.
+  Their names are what agents see. `gpu_ids` defaults to their ids.
+- `runtime` is the remote numerical interpreter's record. The revision binds it instead of a local query.
+- `isolation` and `network` state how the remote side confines candidate code. `none` prints the unisolated warning.
+
+Static audits keep the configuration's own `isolation`, so a controller without GPUs still sandboxes them.
+Agents and the revision see the configuration without `command` and `environment`.
+Resource reports name the backend `operator_executor`.
+
+The worker protocol is the interface. Gym writes the request as one JSON line and answers each event:
+an intent with an acknowledgement or a cancellation, a charge (repeating the open intent) with an acknowledgement,
+and a `poll` with a cancellation or `{"continue": true}`.
+`runtime`, `progress`, `result`, `failed` and `cancelled` events need no answer.
+A job ends with one result, failure or cancellation and exit status 0; anything else is left for `reconcile`.
+A train job's output file is its checkpoint artifact: Gym retains and hashes it and returns it when a later job continues.
+An executor may store there a reference to weights it keeps elsewhere.
+The request also carries `execution`: the declared runtime and confinement and the research precision and compiler setting.
+
+An executor that learns of progress only after the work bills ahead of it (`executor.Charges`).
+A training job of more than one window starts with its initialization and one window of updates and stays one window
+ahead of the observed progress. A stopped job keeps the updates that never started unbilled.
+Other jobs are billed their whole bound when they start. A successful job settles exactly its bound.
+The per-update cost comes from `accounting`, which the worker charges too.
+`executor.jobs` lists a state's job records read-only for operator tools.
+
+The remote side runs the Gym worker with Gym's own rules from `remote`: the runtime record, the machine's GPUs
+as device records, the unprivileged identity of a root runner, the worker environment, the isolation preflight and
+the confined worker command. With isolation `none` and network `deny`, a seccomp filter (`netdeny`) refuses new
+IPv4/IPv6 sockets, and Unix sockets for CPU work.
+
+A research group larger than one machine runs one worker per node (`mesh`).
+The executor starts `python -m nexttransformer_gym.mesh worker` on each node with that node's share of the cards
+and the node's index, the node count and node 0's address. The worker forms the process group with every
+connection made eagerly, runs each collective once and only then (network `deny`) refuses new sockets in every
+thread, before it reads the request and loads candidate code.
+`ResearchParallel` splits each update over every node's devices exactly as on one machine with that many devices,
+all-reduces the node sums, and restores node 0's state if a node's state fingerprint ever differs.
+Node 0 alone writes the checkpoint. The executor reports node 0's events and stops the other nodes when one fails.
+`mesh check` forms the group the same way and measures its bandwidth before the job is reported ready.
+
+### Multi-node executor
+
+`nexttransformer_gym.nodes` is an executor for a group of machines. A launcher starts the nodes of a job.
+`local` (processes on this machine) and `ssh` (node k on `hosts[k]`) are built in.
+A cluster plugin subclasses `nodes.Launcher` with its own transport and runs `nodes.relay` as its executor command.
+`python -m nexttransformer_gym.nodes configure nodes.json --out execution.json` records the nodes' runtime and GPUs
+and writes the execution configuration. The rest of the Gym is unchanged.
+Each job gets a directory on storage that the controller and every node see at the same path (`job_root`).
+It holds the job description, a copy of the platform, the checkpoint and the logs.
+
+The relay is the executor command. It writes the job, starts the nodes and reads node 0's events.
+It bills ahead of them (`executor.Charges`), polls for cancellation, and stops the nodes on cancellation or at the profile timeout.
+It journals each job with its node time. A train job returns a pointer to the checkpoint in the job directory.
+
+A node checks its interpreter against the declared runtime and the input checkpoint against its hash.
+It takes its share of the group by card identity and refuses a card that runs another compute process.
+It runs the Gym worker with the Gym's identity, environment and confinement, or, for a job spanning nodes, the mesh check and the mesh worker.
+A mesh that does not form ends the job before node 0 reports ready, so it charges nothing.
+Node 0 alone acknowledges the worker's operations within the job's reservation, reports and writes the checkpoint.
+The other nodes leave markers and stop their worker when a peer fails, node 0 ends or the relay leaves a stop marker.
+A job spanning nodes needs isolation `none` with network `deny`: the sandboxes give the worker a network namespace without the other nodes.
+Final training never runs on this executor.
+GPU jobs have run on it only through the Koala launcher; the `local` and `ssh` launchers are tested with CPU nodes on one machine and untested on bare-metal GPU machines.
+
+The Koala adapter (`gym/koala`) is a launcher of this executor. It publishes a code bundle, submits a Koala job,
+reads node 0's output from the Koala log and stops the job.
+Its pods build the environment, meet on shared storage and fetch object-store inputs, then run the Gym's node.
+Its multi-node final runs still adapt the official pipeline in-process, outside this interface.
 
 ## Budget, checkpoints and failures
 
