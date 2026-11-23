@@ -1,0 +1,96 @@
+{
+ "schema": "run-audit-v1",
+ "run": "hydra",
+ "method": "hydra",
+ "date": "2026-11-23",
+ "scope": "Read-only cumulative audit of the run directory against the reference protocol.",
+ "checks": [
+  "run_status.json: training_complete at the final update with final_status matched",
+  "ledger (run_status.json, budget.json): protocol updates and input tokens, protocol validation/CORE steps, charged == theory FLOPs",
+  "cumulative theory FLOPs within 2% of input tokens x SSSL anchor; budget_anomaly events counted",
+  "train events: strictly increasing steps, input_tokens == step x global batch, finite loss and gradient norm, final cumulative FLOPs equal the ledger",
+  "189 validation events at the protocol steps with the protocol token count, equal to the val_*.json files",
+  "6 CORE events, each the full 22-task evaluation with reproduced centering and aggregate, equal to the core_*.json files",
+  "one independent final BPB event equal to bpb_final.json; latest.json names the final checkpoint",
+  "every segment: identical fingerprints, parameter count, configuration, cost proof and source hashes; formal mode; non-smoke; registered batch layout"
+ ],
+ "ok": true,
+ "problems": [],
+ "final_status": "matched",
+ "optimizer_steps": 46875,
+ "input_tokens": 49152000000,
+ "theory_flops": 231127899325113187500,
+ "dense_flops_per_token": 4672398325.44785,
+ "flops_per_token": 4702309149.680851,
+ "proof_relative_error": 0.006401599810121894,
+ "cumulative_relative_error": 0.006401599810121894,
+ "train_event_relative_error": {
+  "min": 0.006401599810121894,
+  "max": 0.006401599810121894
+ },
+ "budget_anomalies": 0,
+ "train_events": 4689,
+ "validation_events": 189,
+ "core_events": 6,
+ "final_bpb": {
+  "train": 0.6570997018699621,
+  "val": 0.6549927073429226,
+  "tokens_per_split": 20971520
+ },
+ "periodic_final_val_bpb": 0.6577459809196158,
+ "core": {
+  "8000": 0.24704970979695604,
+  "16000": 0.24571749291762932,
+  "24000": 0.2852456305693906,
+  "32000": 0.3097889865179073,
+  "40000": 0.34771086539919205,
+  "46875": 0.37039048097230687
+ },
+ "core_final": 0.37039048097230687,
+ "last_loss": 2.1615502387285233,
+ "grad_norm_max_after_500": 5.2574076652526855,
+ "evaluation_forward_flops": 12429558555767815600,
+ "segments": [
+  {
+   "file": "provenance.json",
+   "step": 0,
+   "world": 32,
+   "micro": 16,
+   "accumulation": 1
+  },
+  {
+   "file": "resume_00041500.json",
+   "step": 41500,
+   "world": 32,
+   "micro": 16,
+   "accumulation": 1
+  }
+ ],
+ "fingerprints": {
+  "model_hash": "c4fd39b25c87ce111c9ad1a459b271f7a297264c664bb0d7344a7015456ac2a4",
+  "protocol_hash": "f8cd1b56fe75a6cf1fcc76aaa9ddd15c0ed054268071b67739a677476fd291dc",
+  "data_manifest_sha256": "69fa9df6810b6c5e89f41c53b5134353e7ddfb676b4af3d694d9aa8a34358cc2",
+  "tokenizer_sha256": "06258dc0044b6198c6fa8ba75c5b3bbaeaeab44f4804b464d9ce5f5e3797ec54",
+  "reference_source_hash": "3351cf27b779621e27b85a385a81a64e696321fe7e4d47979d88ca151ba970dc",
+  "science_hash": "526665f29884790a864af16385b25ede583334737f923c96a66a270a12920eff"
+ },
+ "parameters": 1780828720,
+ "software": {
+  "torch": "2.9.1+cu128",
+  "cuda": "12.8",
+  "nccl": "2.27.5"
+ },
+ "periodic_val_bpb": {
+  "0": 3.1688565068940524,
+  "8000": 0.7706936257920765,
+  "16000": 0.7564096098450341,
+  "24000": 0.7316803832245378,
+  "32000": 0.7056139256158863,
+  "40000": 0.6782509849596905,
+  "46875": 0.6577459809196158
+ },
+ "periodic_val_bpb_minimum": {
+  "val_bpb": 0.6577459809196158,
+  "step": 46875
+ }
+}

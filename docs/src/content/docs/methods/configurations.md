@@ -45,6 +45,7 @@ GFLOPs per input token and the deviation from the SSSL anchor (4.67239832544785)
 | others | `dense` (SSSL) | 24 | 6,144 | 1,384,122,122 | 4.672398 | +0.000% | joint |
 | others | `gated_attention` | 21 | 6,272 | 1,306,658,420 | 4.641914 | -0.652% | joint |
 | others | `gated_attention_headwise` | 23 | 6,144 | 1,356,234,504 | 4.677384 | +0.107% | joint |
+| others | `hydra` | 27 | 4,608 | 1,780,828,720 | 4.702309 | +0.640% | joint |
 | others | `inkling_rel` | 22 | 6,272 | 1,293,026,934 | 4.629593 | -0.916% | joint |
 | others | `sconv_dynamic_out` | 23 | 6,144 | 1,359,767,304 | 4.700459 | +0.601% | joint |
 | others | `sconv_out` | 23 | 6,144 | 1,356,375,816 | 4.678336 | +0.127% | joint |

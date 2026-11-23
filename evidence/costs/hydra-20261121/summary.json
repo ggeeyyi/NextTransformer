@@ -1,0 +1,19 @@
+{
+  "created_at": "2026-11-21T06:54:14.805343+00:00",
+  "source_hash": "526665f29884790a864af16385b25ede583334737f923c96a66a270a12920eff",
+  "formula_version": "reference-aten-math-v2",
+  "torch": "2.9.1+cu128",
+  "rows": [
+    {
+      "method": "hydra",
+      "status": "theoretical_preflight_passed",
+      "parameters": 1780828720,
+      "ffn": 4608,
+      "physical_layers": 27,
+      "core_layers": 9,
+      "flops_per_token": 4702309149.680851,
+      "relative_error": 0.006401599810121894,
+      "elapsed_seconds": 1153.3445772081614
+    }
+  ]
+}

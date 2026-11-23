@@ -1,0 +1,77 @@
+{
+ "id": "hydra",
+ "name": "Hydra",
+ "methodId": "hydra",
+ "runIds": [
+  "hydra"
+ ],
+ "arenaProtocol": "arena-v1",
+ "status": "complete",
+ "statusNote": "",
+ "submitted": "2026-11-21",
+ "verification": "self-reported",
+ "researcher": {
+  "people": [
+   {
+    "name": "ggeeyyi",
+    "handle": "ggeeyyi",
+    "role": "Operator: started the research session with the gym's task and its compute budget, then asked for the submitted candidate to be preregistered and trained; chose no candidate and wrote no method code"
+   }
+  ],
+  "llms": [
+   {
+    "name": "Claude Opus",
+    "version": "claude-opus-5-5, effort xhigh (Claude Code 2.1.327 in NextT-Gym)",
+    "role": "Researcher: in one NextT-Gym session without human intervention, proposed, wrote and trained every candidate, selected one on the dev split and submitted it"
+   },
+   {
+    "name": "Claude Fable",
+    "version": "claude-fable-5-2 (Claude Code 2.1.329 and 2.1.330)",
+    "role": "Operator's agent, in a separate Claude Code session with no part in the research: packaged the frozen candidate as the method plugin (Python source unchanged; the method.json shell set to the submitted 27 layers and FFN 4608), calibrated it, wrote the tests and the preregistration, ran the pre-launch checks and launched the formal run"
+   },
+   {
+    "name": "Claude Opus",
+    "version": "claude-opus-5-5 (Claude Code 2.1.330)",
+    "role": "Operator's agent in the same session after a model switch: monitored the formal run, audited and exported it, and wrote the run notes, the model card and this card"
+   }
+  ],
+  "framework": {
+   "name": "NextT-Gym",
+   "version": "c8e3177",
+   "url": "https://github.com/ggeeyyi/NextTransformer/tree/c8e3177645468134e26793d6577befd303e21925",
+   "note": "The research gym in gym/ and nextt_gym/ of fork commit c8e3177 (not in upstream main). The agent ran in a container with one CPU and network access and drove the gym only through its MCP tools; the gym trained and calibrated candidates on up to 32 GPUs and returned dev-split values. Besides the repository's method sources, the gym offered the published run records in results/runs/ as history. The candidates' code ran in the gym's training processes without process isolation; the agent received dev-split values only."
+  },
+  "involvement": "L0",
+  "involvementNote": "Fully autonomous research: the person started the session with the gym's task instruction, a budget of 1.96e20 training FLOPs and 32 GPUs, and did not intervene until the agent submitted. The person chose no candidate and gave no directional hint. After the submission the person asked for this session's submission and those of two other sessions (proposal issues #70 and #72) to be preregistered and trained under the protocol, and approved the formal launches. Packaging the frozen candidate with its Python source unchanged, calibration, the pre-launch checks, the launches and the audit were done by the operator's agent and involved no research decision."
+ },
+ "research": {
+  "start": "2026-11-19",
+  "end": "2026-11-21",
+  "baseCommit": "c8e3177645468134e26793d6577befd303e21925",
+  "candidatesTrained": 7,
+  "formalAttempts": 2,
+  "formalNote": "Two launches of the preregistered configuration (fork commit e5d2851, code bundle SHA-256 b6f95982…), each on 32 H20 GPUs (4 nodes × 8), 32 ranks, micro-batch 16, no accumulation; neither failed. The first was a planned 44-hour segment: it logged updates up to 41,750 and stopped at its planned timeout; its newest complete checkpoint was 41,500. The second resumed from that checkpoint, re-ran updates 41,501–41,750 (the replayed events are archived and not counted) and finished at 46,875. Preregistration: proposal issue #71, filed on 2026-11-21 at 07:00 UTC, before the first launch at 08:04 UTC.",
+  "gpuHours": 2859.39,
+  "hardware": "Up to 32 H20 (4 nodes × 8) for the research; 32 H20 (4 nodes × 8) for the formal run",
+  "computeNote": "Research: 1,259.02 GPU-hours and 1.09e20 training FLOPs (55.4% of the session budget of 1.96e20), metered by NextT-Gym over 12 jobs (10 training jobs, one cancelled, and 2 validations, one cancelled): platform GPU-hours, pod time × GPUs (queueing excluded). Seven designs were trained to 2,000 updates, including the agent's reproduction of AttnRes-Canon, and two of them on to 6,000; the submitted candidate is the selected 27-layer design registered again for the submission. Formal: 1,600.37 GPU-hours, pod time × 32 GPUs of the two segments as the cluster recorded it (158,424 s and 21,618 s). Not included: two bounded pre-launch checks on 32 GPUs, a four-node resume check on the dev split (1,344 s) and a two-update smoke run of the CORE evaluation path (255 s), 14.22 GPU-hours together. LLM tokens in the research session: 7.19e7 input (7.15e7 cached) and 1.8e5 output. The agent used no web search or web page.",
+  "internet": false,
+  "selectionSignal": [
+   "dev-bpb"
+  ]
+ },
+ "novelty": {
+  "closestPrior": [
+   "AttnRes-Canon (attnres_full_canon_abcd)",
+   "Over-encoding (Over-Tokenized Transformer)",
+   "Engram (hashed n-gram memory)"
+  ],
+  "statement": "A hashed bigram and trigram memory read as one more source of the Full AttnRes depth attention, so every sublayer and the final readout weight it per token, on a deeper and narrower AttnRes-Canon trunk (27 layers, FFN 4608). The cited n-gram memories add their embeddings to the token input or the hidden state; here the memory is never added to the input and competes with the block outputs in each depth read."
+ },
+ "artifacts": {
+  "checkpointUrl": "https://huggingface.co/GY2233/nextt-arena-hydra/blob/main/model.pt",
+  "logsUrl": "https://huggingface.co/GY2233/nextt-arena-hydra/tree/main/logs",
+  "traceUrl": null,
+  "historyUrl": null,
+  "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/tree/main/nexttransformer/methods/hydra"
+ }
+}

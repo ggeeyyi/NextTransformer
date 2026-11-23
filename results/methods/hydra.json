@@ -1,0 +1,36 @@
+{
+ "id": "hydra",
+ "name": "Hydra",
+ "family": "others",
+ "tagline": "A deeper, narrower AttnRes-Canon trunk that reads a hashed bigram and trigram memory as one more depth source.",
+ "description": "The AttnRes-Canon trunk (Full AttnRes, one group per block, with 4-tap Canon layers A–D) at 27 layers and FFN 4608 instead of 23 and 6144, with a hashed n-gram memory. Each position hashes its trailing bigram and trigram, with two hashes each, into four embedding tables of 256 columns whose row counts are distinct primes just below 327,680; the four lookups are concatenated, RMS-normalized and projected to the model width by one zero-initialized matrix. The projected vector is not added to the input: it is one more source of the depth attention, so every sublayer's pseudo-query and the final readout weight it per token. The tables hold 335,525,888 of the 1,780,828,720 parameters, the projection 1,572,864 and the 162 Canon layers 1,327,104; calibrated to +0.640% of the shared budget.",
+ "paperTitle": "Over-Tokenized Transformer: Vocabulary is Generally Worth Scaling",
+ "paperUrl": "https://arxiv.org/abs/2501.16975",
+ "mechanism": [
+  "AttnRes-Canon trunk at 27 layers and FFN 4608: zero-initialized pseudo-queries over the embedding and every block output, 4-tap Canon-A/B/C/D",
+  "Hashed n-gram memory: trailing bigram and trigram, two hashes each, four 256-column tables with distinct prime row counts, concatenated, RMS-normalized and projected by a zero-initialized matrix",
+  "The projected memory is one more depth source: each sublayer and the final readout weight it per token; it is never added to the input"
+ ],
+ "limitations": "Found by an LLM agent (Claude Opus 5.5) with NextT-Gym in arena v1 (involvement L0) and selected on the dev split at a 6,000-update prefix with one seed: 0.77636 dev BPB, level with its 23-layer sibling (0.77634); the agent's reproduction of AttnRes-Canon was trained to 2,000 updates only (0.80791, against 0.80610 for this model). At 46,875 updates the formal run measured −0.00277 periodic validation BPB and +1.05 CORE ×100 against AttnRes-Canon, and +0.29 CORE ×100 against MSAR. These are single-seed observations. The lookup tables hold about a fifth of the parameters but add no matrix arithmetic, so the parameter count is not comparable with methods that spend the same FLOPs on dense weights. The Canon layers are eager PyTorch depthwise convolutions without fused kernels. Parameters, memory and speed are outcomes, not controls.",
+ "diagram": "custom",
+ "architecture": {
+  "kind": "custom",
+  "nodes": [
+   "Hashed 2/3-gram memory",
+   "Earlier blocks",
+   "Depth softmax",
+   "Attn / FFN + Canon A–D"
+  ],
+  "loop": false
+ },
+ "blocks": 27,
+ "ffn": 4608,
+ "params": 1780828720,
+ "flops": 4.702309,
+ "error": 0.64,
+ "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/hydra/__init__.py",
+ "cohort": "reference-v1",
+ "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#others",
+ "costModel": "reference-aten-math-v2",
+ "order": 55
+}

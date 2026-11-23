@@ -1,0 +1,31 @@
+{
+ "name": "hydra",
+ "family": "others",
+ "title": "Hydra",
+ "options": {
+  "moe_experts": 0,
+  "moe_topk": 2,
+  "shared_width": 3072,
+  "expert_width": 1536,
+  "moe_capacity": 1.0,
+  "moe_aux": 0.01,
+  "router_init": 0.02,
+  "ngram_orders": [2, 3],
+  "ngram_rows": 327680,
+  "ngram_dim": 512,
+  "ngram_inject": "source",
+  "ngram_init": 0.8,
+  "ngram_heads": 2,
+  "value_embeds": "shell"
+ },
+ "debug_options": {
+  "ngram_rows": 997,
+  "ngram_dim": 16
+ },
+ "shell": {
+  "layers": 27,
+  "mlp_width": 4608,
+  "window_pattern": "L"
+ },
+ "layer_multiple": 1
+}

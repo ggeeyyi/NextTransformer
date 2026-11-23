@@ -11,6 +11,7 @@ description: 同一参考协议下完成的正式训练，以及各方法与 Den
 | 模型 | 模型族 | 验证 BPB ↓ | Δ BPB | CORE ↑ | Δ CORE | 训练 GFLOPs/token |
 |---|---|---:|---:|---:|---:|---:|
 | **[Dense Baseline](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/dense_full.json)** | 基线 | 0.6672 | — | 33.10 | — | 4.675 |
+| [Hydra](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/hydra.json) | 其他 | 0.6577 | -0.0094 | 37.04 | +3.94 | 4.702 |
 | [MSAR](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/msar.json) | 残差 | 0.6610 | -0.0061 | 36.75 | +3.65 | 4.716 |
 | [AttnRes-Canon](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/attnres_full_canon_abcd.json) | 残差 | 0.6605 | -0.0067 | 35.99 | +2.90 | 4.695 |
 | [Canon depth mixing research](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/canon_depth_lab.json) | 其他 | 0.6607 | -0.0065 | 35.92 | +2.82 | 4.698 |
