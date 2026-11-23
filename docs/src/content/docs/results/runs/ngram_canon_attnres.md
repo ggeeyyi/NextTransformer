@@ -7,7 +7,7 @@ Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D (`ngram_canon_attnres`) is t
 layers at more sites and with wider kernels, and a hashed bigram memory added to the token embedding. It is an
 [arena v1 entry](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/ngram-canon-attnres.json):
 Claude Fable 5.2 designed and selected it in one NextT-Gym research session that ran without human intervention
-(involvement L1). At 46,875 updates (49.152B tokens) and seed 42, it reached **35.5114 CORE ×100**. The gym offered the
+(involvement L0). At 46,875 updates (49.152B tokens) and seed 42, it reached **35.5114 CORE ×100**. The gym offered the
 agent the published results in `results/runs/` as history; the agent selected with dev-split values only, and never
 used the validation shard or CORE-22.
 

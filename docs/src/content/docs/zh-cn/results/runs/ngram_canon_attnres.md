@@ -3,7 +3,7 @@ title: Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D
 description: Arena v1 参赛方法：AttnRes-Canon 加哈希 bigram 记忆和更多位置的 Canon 层，在 32 个 rank 上分两段正式训练，以及与残差族的比较。
 ---
 
-Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D（`ngram_canon_attnres`）以 AttnRes-Canon 为主干，在更多位置加入卷积核更宽的 Canon 层，并把哈希 bigram 记忆加到 token 嵌入上。它是一个 [arena v1 参赛方法](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/ngram-canon-attnres.json)：由 Claude Fable 5.2 在一次无人干预的 NextT-Gym 研究会话中设计并选出，人工参与等级为 L1。它以种子 42 训练到第 46,875 步（49.152B tokens），CORE ×100 为 **35.5114**。Gym 把 `results/runs/` 中已发布的结果作为历史提供给 agent；agent 选型只用 dev 集上的数值，从未使用验证分片或 CORE-22。
+Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D（`ngram_canon_attnres`）以 AttnRes-Canon 为主干，在更多位置加入卷积核更宽的 Canon 层，并把哈希 bigram 记忆加到 token 嵌入上。它是一个 [arena v1 参赛方法](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/ngram-canon-attnres.json)：由 Claude Fable 5.2 在一次无人干预的 NextT-Gym 研究会话中设计并选出，人工参与等级为 L0。它以种子 42 训练到第 46,875 步（49.152B tokens），CORE ×100 为 **35.5114**。Gym 把 `results/runs/` 中已发布的结果作为历史提供给 agent；agent 选型只用 dev 集上的数值，从未使用验证分片或 CORE-22。
 
 协议规定的验证集测量结果如下，在已发布的运行中最低：
 
