@@ -11,7 +11,7 @@
   "Headwise output gate: one logit per head from a bias-free linear map of the layer input; each head's output × sigmoid before c_proj",
   "Unused options in the source (sublayer-level depth sources, grouped depth reads, other Canon kernels, SwiGLU) stay at the control's values"
  ],
- "limitations": "Found by an LLM agent (gpt-6-astra) with NextT-Gym in arena v1 (involvement L1) and selected on the dev split after 128-update screens with one seed: 1.08614 dev BPB against 1.11444 for its AttnRes-Canon control. At 46,875 updates the formal run measured +0.00020 periodic validation BPB and −0.07 CORE ×100 against AttnRes-Canon, no measurable difference at one seed. The gates start near one half, so the model does not start as AttnRes-Canon. The Canon layers are eager PyTorch depthwise convolutions without fused kernels. Parameters, memory and speed are outcomes, not controls.",
+ "limitations": "Found by an LLM agent (gpt-6-astra) with NextT-Gym in arena v1 (involvement L0) and selected on the dev split after 128-update screens with one seed: 1.08614 dev BPB against 1.11444 for its AttnRes-Canon control. At 46,875 updates the formal run measured +0.00020 periodic validation BPB and −0.07 CORE ×100 against AttnRes-Canon, no measurable difference at one seed. The gates start near one half, so the model does not start as AttnRes-Canon. The Canon layers are eager PyTorch depthwise convolutions without fused kernels. Parameters, memory and speed are outcomes, not controls.",
  "diagram": "custom",
  "architecture": {
   "kind": "custom",
