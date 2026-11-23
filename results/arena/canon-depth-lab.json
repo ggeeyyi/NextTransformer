@@ -1,0 +1,76 @@
+{
+ "id": "canon-depth-lab",
+ "name": "Canon depth mixing research",
+ "methodId": "canon_depth_lab",
+ "runIds": [
+  "canon_depth_lab"
+ ],
+ "arenaProtocol": "arena-v1",
+ "status": "complete",
+ "statusNote": "",
+ "submitted": "2026-11-21",
+ "verification": "self-reported",
+ "researcher": {
+  "people": [
+   {
+    "name": "ggeeyyi",
+    "handle": "ggeeyyi",
+    "role": "Operator: started the research session with the gym's task and its compute budget, then asked for the submitted candidate to be preregistered and trained; chose no candidate and wrote no method code"
+   }
+  ],
+  "llms": [
+   {
+    "name": "gpt-6-astra",
+    "version": "gpt-6-astra, reasoning effort max (Codex CLI 0.167.0)",
+    "role": "Researcher: in one NextT-Gym session without human intervention, proposed, wrote and trained every candidate, selected one on the dev split and submitted it"
+   },
+   {
+    "name": "Claude Fable",
+    "version": "claude-fable-5-2 (Claude Code 2.1.329 and 2.1.330)",
+    "role": "Operator's agent, in a separate Claude Code session with no part in the research: packaged the frozen candidate as the method plugin (Python source unchanged; the head_gate default set to the submitted value), calibrated it, wrote the tests and the preregistration, ran the pre-launch checks and launched the formal run"
+   },
+   {
+    "name": "Claude Opus",
+    "version": "claude-opus-5-5 (Claude Code 2.1.330)",
+    "role": "Operator's agent in the same session after a model switch: monitored the formal run, audited and exported it, and wrote the run notes, the model card and this card"
+   }
+  ],
+  "framework": {
+   "name": "NextT-Gym",
+   "version": "c8e3177",
+   "url": "https://github.com/ggeeyyi/NextTransformer/tree/c8e3177645468134e26793d6577befd303e21925",
+   "note": "The research gym in gym/ and nextt_gym/ of fork commit c8e3177 (not in upstream main). The agent ran in a container with one CPU and network access and drove the gym only through its MCP tools; the gym trained and calibrated candidates on up to 8 GPUs and returned dev-split values. Besides the repository's method sources, the gym offered the published run records in results/runs/ as history. The candidates' code ran in the gym's training processes under a Landlock file-system sandbox; the agent received dev-split values only."
+  },
+  "involvement": "L1",
+  "involvementNote": "The research session ran without human intervention: the person started it with the gym's task instruction, a budget of 1.96e20 training FLOPs and 8 GPUs, and did not intervene until the agent submitted. The person chose no candidate and gave no directional hint. Afterwards the person asked for this session's submission and those of two other sessions (proposal issues #70 and #71) to be preregistered and trained, and approved the formal launches. Packaging the frozen candidate, calibration, the pre-launch checks, the launches and the audit were operations done by the operator's agent."
+ },
+ "research": {
+  "start": "2026-11-19",
+  "end": "2026-11-19",
+  "baseCommit": "c8e3177645468134e26793d6577befd303e21925",
+  "candidatesTrained": 6,
+  "formalAttempts": 2,
+  "formalNote": "Two launches of the preregistered configuration (fork commit 0035b59, code bundle SHA-256 596f5a53…), each on 32 H20 GPUs (4 nodes × 8), 32 ranks, micro-batch 16, no accumulation; neither failed. The first was a planned 40-hour segment: it logged updates up to 43,210 and stopped at its planned timeout; its newest complete checkpoint was 43,000. The second resumed from that checkpoint, re-ran updates 43,001–43,210 (the replayed events are archived and not counted) and finished at 46,875. Preregistration: proposal issue #72, filed on 2026-11-21 at 07:00 UTC, before the first launch at 12:26 UTC.",
+  "gpuHours": 1426.83,
+  "hardware": "8 H200 for the research; 32 H20 (4 nodes × 8) for the formal run",
+  "computeNote": "Research: 21.25 GPU-hours and 2.76e18 training FLOPs (1.4% of the session budget of 1.96e20), metered by NextT-Gym over 19 jobs (1 calibration, 1 validation and 17 training jobs, 9 of which the agent cancelled before they started): platform GPU-hours, pod time × GPUs (queueing excluded). Six designs were trained beyond smoke tests, for 64 or 128 updates, including the agent's AttnRes-Canon control. Formal: 1,405.58 GPU-hours, pod time × 32 GPUs of the two segments as the cluster recorded it (144,086 s and 14,042 s). Not included: two bounded pre-launch checks on 32 GPUs, a four-node resume check on the dev split (1,105 s) and a two-update smoke run of the CORE evaluation path (277 s), 12.28 GPU-hours together. LLM tokens in the research session: 3.86e7 input (3.84e7 cached) and 6.9e4 output. The agent ran one web search (the Canon layers paper) and opened three pages (the Gated Attention paper, arXiv 2505.06708, and the PyTorch RMSNorm documentation).",
+  "internet": true,
+  "selectionSignal": [
+   "dev-bpb"
+  ]
+ },
+ "novelty": {
+  "closestPrior": [
+   "AttnRes-Canon (attnres_full_canon_abcd)",
+   "Gated Attention, headwise (gated_attention_headwise)"
+  ],
+  "statement": "Adds the headwise sigmoid output gate of Gated Attention to every attention layer of the AttnRes-Canon trunk, whose sublayers read their input over depth with Full AttnRes and Canon layers. The registered gated_attention_headwise applies the same gate in the Dense shell."
+ },
+ "artifacts": {
+  "checkpointUrl": "https://huggingface.co/GY2233/nextt-arena-canon-depth-lab/blob/main/model.pt",
+  "logsUrl": "https://huggingface.co/GY2233/nextt-arena-canon-depth-lab/tree/main/logs",
+  "traceUrl": null,
+  "historyUrl": null,
+  "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/tree/main/nexttransformer/methods/canon_depth_lab"
+ }
+}

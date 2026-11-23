@@ -41,6 +41,7 @@ GFLOPs per input token and the deviation from the SSSL anchor (4.67239832544785)
 | hybrid | `kda_hybrid` | 24 | 6,016 | 793,542,986 | 4.692309 | +0.426% | joint |
 | hybrid | `moba_hybrid` | 25 | 6,016 | 1,452,935,068 | 4.659989 | -0.266% | joint |
 | hybrid | `qsa_hybrid` | 24 | 5,760 | 1,405,174,202 | 4.691637 | +0.412% | burnin, joint |
+| others | `canon_depth_lab` | 23 | 6,144 | 1,357,578,504 | 4.697832 | +0.544% | joint |
 | others | `dense` (SSSL) | 24 | 6,144 | 1,384,122,122 | 4.672398 | +0.000% | joint |
 | others | `gated_attention` | 21 | 6,272 | 1,306,658,420 | 4.641914 | -0.652% | joint |
 | others | `gated_attention_headwise` | 23 | 6,144 | 1,356,234,504 | 4.677384 | +0.107% | joint |

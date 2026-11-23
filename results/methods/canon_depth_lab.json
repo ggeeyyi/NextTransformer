@@ -1,0 +1,36 @@
+{
+ "id": "canon_depth_lab",
+ "name": "Canon depth mixing research",
+ "family": "others",
+ "tagline": "AttnRes-Canon with a headwise sigmoid gate on every attention output.",
+ "description": "The AttnRes-Canon trunk (Full AttnRes, one group per block, with 4-tap Canon layers A–D) with a headwise output gate in every attention layer: a bias-free linear map from the layer input gives one logit per head, and each head's attention output is multiplied by the sigmoid of its logit before the output projection. The map is initialized uniformly in ±sqrt(3/width), so the gates start near one half, and trains in the auxiliary AdamW group. Without the gate the plugin computes exactly AttnRes-Canon. The 23 gates add 423,936 parameters; calibrated to +0.544% of the shared budget at 23 layers / FFN 6144.",
+ "paperTitle": "Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free",
+ "paperUrl": "https://arxiv.org/abs/2505.06708",
+ "mechanism": [
+  "AttnRes-Canon trunk: 23 depth groups of one block, zero-initialized pseudo-queries over the embedding and every block output, 4-tap Canon-A/B/C/D",
+  "Headwise output gate: one logit per head from a bias-free linear map of the layer input; each head's output × sigmoid before c_proj",
+  "Unused options in the source (sublayer-level depth sources, grouped depth reads, other Canon kernels, SwiGLU) stay at the control's values"
+ ],
+ "limitations": "Found by an LLM agent (gpt-6-astra) with NextT-Gym in arena v1 (involvement L1) and selected on the dev split after 128-update screens with one seed: 1.08614 dev BPB against 1.11444 for its AttnRes-Canon control. At 46,875 updates the formal run measured +0.00020 periodic validation BPB and −0.07 CORE ×100 against AttnRes-Canon, no measurable difference at one seed. The gates start near one half, so the model does not start as AttnRes-Canon. The Canon layers are eager PyTorch depthwise convolutions without fused kernels. Parameters, memory and speed are outcomes, not controls.",
+ "diagram": "custom",
+ "architecture": {
+  "kind": "custom",
+  "nodes": [
+   "Depth softmax",
+   "Canon A/C",
+   "q · k · v + Canon B → SDPA",
+   "× σ(X W) per head"
+  ],
+  "loop": false
+ },
+ "blocks": 23,
+ "ffn": 6144,
+ "params": 1357578504,
+ "flops": 4.697832,
+ "error": 0.544,
+ "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/canon_depth_lab/__init__.py",
+ "cohort": "reference-v1",
+ "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#others",
+ "costModel": "reference-aten-math-v2",
+ "order": 54
+}
