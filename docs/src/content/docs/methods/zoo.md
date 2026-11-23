@@ -3,7 +3,7 @@ title: Model zoo
 description: Every method in NextTransformer, by family.
 ---
 
-NextTransformer has 46 model cards in seven families. Every method runs in the same shell and is calibrated to
+NextTransformer has 47 model cards in seven families. Every method runs in the same shell and is calibrated to
 the same training compute. Open a method in the [observatory](https://interactive-active-ai.github.io/NextTransformer/#atlas) for its architecture diagram, curves and
 model card; "registered" methods have a card and a configuration but no published run.
 
@@ -37,6 +37,7 @@ model card; "registered" methods have a card and a configuration but no publishe
 | Residual | MSAR (`msar`) | [Multi-Stream Attention Residuals](https://arxiv.org/abs/2610.13630) | published |
 | Residual | AttnRes-Canon (`attnres_full_canon_abcd`) | [Physics of Language Models: Part 4.1, Architecture Design and the Magic of Canon Layers](https://arxiv.org/abs/2512.17351) | published |
 | Residual | SimpleHC (`simplehc`) | [On the Design of Hyper-Connections: Simplification, Stability, and Scalability](https://arxiv.org/abs/2611.05984) | published |
+| Residual | Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D (`ngram_canon_attnres`) | [Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models](https://arxiv.org/abs/2601.07372) | published |
 | Hybrid | Hybrid GDN + MHA 3:1 (`gdn_hybrid`) | [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) | published |
 | Hybrid | Hybrid GDN + MHA 1:1 (`gdn_hybrid_swa`) | [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) | published |
 | Hybrid | Hybrid GDN + SWA (`gdn_hybrid_swa512`) | [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) | published |

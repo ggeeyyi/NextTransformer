@@ -1,0 +1,36 @@
+{
+ "id": "ngram_canon_attnres",
+ "name": "Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D",
+ "family": "residual",
+ "tagline": "AttnRes-Canon with Canon layers at more sites and wider kernels, and a hashed bigram memory added to the token embedding.",
+ "description": "The AttnRes-Canon trunk (Full AttnRes, one group per block, with Canon layers A–D) with Canon layers at more sites and with wider kernels, and a hashed bigram memory. Each position looks up its (previous, current) token pair with two signed multiplicative hashes in two zero-initialized tables of 320,000 rows × 768; the concatenated lookups, scaled by 0.1, are added to the token embedding. New Canon layers filter every block output before it becomes a depth source and the embedding source (kernel 12), and the final depth read (kernel 8); the four original sites use kernel 8. Every addition starts as the identity, so the model starts as Full AttnRes. The tables hold 491,520,000 of the 1,850,401,032 parameters and the 163 Canon layers 2,998,272; calibrated to +0.710% of the shared budget at 23 layers / FFN 6144.",
+ "paperTitle": "Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models",
+ "paperUrl": "https://arxiv.org/abs/2601.07372",
+ "mechanism": [
+  "AttnRes-Canon trunk: 23 depth groups of one block, zero-initialized pseudo-queries over the embedding and every block output, Canon-A/B/C/D",
+  "Hashed bigram memory: two signed hashes into two zero-initialized 320,000 × 768 tables, concatenated, scaled by 0.1 and added to the token embedding",
+  "Canon on every block output and on the embedding source before the depth read (kernel 12) and on the final read (kernel 8); kernel 8 at A–D, with Canon-B on v after the value embedding"
+ ],
+ "limitations": "Found by an LLM agent (Claude Fable 5.2) with NextT-Gym in arena v1 (involvement L1) and selected on the dev split at a 2,048-update prefix with one seed: 0.80152 dev BPB against 0.80851 for the agent's own reproduction of AttnRes-Canon. At 46,875 updates the formal run measured −0.00246 periodic validation BPB and −0.48 CORE ×100 against AttnRes-Canon. Both are single-seed observations. The two lookup tables hold about a quarter of the parameters but add no matrix arithmetic, so the parameter count is not comparable with methods that spend the same FLOPs on dense weights. The Canon layers are eager PyTorch depthwise convolutions without fused kernels. Parameters, memory and speed are outcomes, not controls.",
+ "diagram": "custom",
+ "architecture": {
+  "kind": "custom",
+  "nodes": [
+   "Token + hashed bigram",
+   "Canon on depth sources",
+   "Depth softmax",
+   "Attn / FFN + Canon A–D"
+  ],
+  "loop": false
+ },
+ "blocks": 23,
+ "ffn": 6144,
+ "params": 1850401032,
+ "flops": 4.705561,
+ "error": 0.71,
+ "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/ngram_canon_attnres/__init__.py",
+ "cohort": "reference-v1",
+ "sourceUrl": "https://interactive-active-ai.github.io/NextTransformer/docs/methods/sources/#full-attention-dense-and-residual-family",
+ "costModel": "reference-aten-math-v2",
+ "order": 53
+}

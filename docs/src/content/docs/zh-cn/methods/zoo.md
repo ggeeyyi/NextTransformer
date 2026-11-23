@@ -3,7 +3,7 @@ title: 模型库
 description: 按模型族浏览已注册的架构、论文和结果状态。
 ---
 
-当前共有 46 张模型卡。各方法在同一骨干上校准至相同训练算力。在[观测站](https://interactive-active-ai.github.io/NextTransformer/#atlas)选择模型可查看结构图、曲线和模型卡。“已注册”表示已有配置与模型卡，尚无公开运行结果。
+当前共有 47 张模型卡。各方法在同一骨干上校准至相同训练算力。在[观测站](https://interactive-active-ai.github.io/NextTransformer/#atlas)选择模型可查看结构图、曲线和模型卡。“已注册”表示已有配置与模型卡，尚无公开运行结果。
 
 | 模型族 | 方法 | 论文 | 结果 |
 |---|---|---|---|
@@ -35,6 +35,7 @@ description: 按模型族浏览已注册的架构、论文和结果状态。
 | 残差 | MSAR (`msar`) | [Multi-Stream Attention Residuals](https://arxiv.org/abs/2610.13630) | 已发布 |
 | 残差 | AttnRes-Canon (`attnres_full_canon_abcd`) | [Physics of Language Models: Part 4.1, Architecture Design and the Magic of Canon Layers](https://arxiv.org/abs/2512.17351) | 已发布 |
 | 残差 | SimpleHC (`simplehc`) | [On the Design of Hyper-Connections: Simplification, Stability, and Scalability](https://arxiv.org/abs/2611.05984) | 已发布 |
+| 残差 | Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D (`ngram_canon_attnres`) | [Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models](https://arxiv.org/abs/2601.07372) | 已发布 |
 | 混合 | Hybrid GDN + MHA 3:1 (`gdn_hybrid`) | [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) | 已发布 |
 | 混合 | Hybrid GDN + MHA 1:1 (`gdn_hybrid_swa`) | [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) | 已发布 |
 | 混合 | Hybrid GDN + SWA (`gdn_hybrid_swa512`) | [Gated Delta Networks: Improving Mamba2 with Delta Rule](https://arxiv.org/abs/2412.06464) | 已发布 |

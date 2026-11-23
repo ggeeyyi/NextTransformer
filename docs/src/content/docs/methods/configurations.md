@@ -32,6 +32,7 @@ GFLOPs per input token and the deviation from the SSSL anchor (4.67239832544785)
 | residual | `hc` | 23 | 6,144 | 1,356,235,700 | 4.698483 | +0.558% | joint |
 | residual | `mhc` | 23 | 6,016 | 1,353,550,818 | 4.674363 | +0.042% | joint |
 | residual | `msar` | 23 | 6,144 | 1,358,888,937 | 4.716253 | +0.939% | joint |
+| residual | `ngram_canon_attnres` | 23 | 6,144 | 1,850,401,032 | 4.705561 | +0.710% | joint |
 | residual | `residual_standard` | 23 | 6,144 | 1,355,810,568 | 4.674298 | +0.041% | joint |
 | residual | `simplehc` | 23 | 6,144 | 1,358,072,020 | 4.692986 | +0.441% | joint |
 | hybrid | `deltanet_hybrid` | 24 | 6,400 | 1,403,810,314 | 4.675326 | +0.063% | joint |
