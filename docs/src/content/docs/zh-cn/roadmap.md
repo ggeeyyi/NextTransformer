@@ -37,8 +37,7 @@ Arena v2 已上线。研究 gym 在 [`gym/`](https://github.com/Interactive-Acti
 
 ### Arena 结果展示
 
-先做一个[前端页面示例](../../../arena-example.html)：上方展示模型、harness、研究预算和状态；中间展示候选 dev 结果及相对基线的改善；下方展开结构改动、正式结果和证据说明。
-示例使用 Arena v1 历史研究数据，Opus、GLM、DeepSeek 标为待运行，正式成绩留空；后续再接真实运行记录。
+[Arena 页面](../../../arena-example.html)根据 `results/arena/sessions/` 中的记录展示研究会话：上方是模型、harness、已用算力、token 和最终提交；中间是每个会话的作业时间线、按训练步数的 dev 结果，以及同一步数下各候选的排名；下方是每个候选的改动和假设，以及提交方案的正式训练结果。
 
 ## 2K 规模扩展
 

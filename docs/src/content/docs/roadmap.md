@@ -41,10 +41,9 @@ Arena v2 is live. The research gym ships in [`gym/`](https://github.com/Interact
 - **Scheduling reference:** v1 search and transfer checks used `549.7 + 42.1 = 591.8` GPU-hours. With 20% headroom, allow **about 710 GPU-hours per model, or 89 hours on a comparable eight-GPU setup**. Actual time depends on the model's experiments and throughput; GPU-hours are not an additional hard cap.
 - **Goal:** compare the architectures each model discovers autonomously under equal research compute, then verify final submissions under the same formal training protocol.
 
-### Arena results example
+### Arena results
 
-Start with a [frontend example](../../arena-example.html): model, harness, research budget and status at the top; candidate dev results and baseline improvements in the middle; expandable architecture changes, formal results and evidence below.
-Use historical Arena v1 research data for the example. Mark Opus, GLM and DeepSeek as planned and leave formal scores empty until real run records are connected.
+The [Arena view](../../arena-example.html) shows the research sessions from their records in `results/arena/sessions/`: model, harness, compute used, tokens and the submission at the top; each session's jobs over time, dev results by update and the standing of candidates measured at the same update in the middle; each candidate's changes and hypothesis, and the formal runs of the submitted designs, below.
 
 ## 2K scaling
 

@@ -33,3 +33,29 @@ This page owns the stored fields. Follow [CONTRIBUTING.md](../../CONTRIBUTING.md
 
 `validation-bpb` and `core` are reserved signals: an `admitted` or `complete` entry cannot list them. A `legacy`
 entry lists what it actually used. Unknown values are `null`, never zero.
+
+## Research sessions
+
+`results/arena/sessions/<id>.json` records one autonomous research session in the research gym, exported read-only
+from the session's retained gym state and its agent's run summary. The Arena view's Research sessions section is
+built from these files. A session record describes the research; it is not a card and is not ranked. A session whose
+submission became an arena entry names that card in `submission.arenaEntry`.
+
+| Field | Meaning |
+|---|---|
+| `id`, `order` | Session id (the file name) and display order |
+| `agent` | Model `name` and `model` id, reasoning `effort`, and the `harness` with its `harnessVersion` |
+| `gym` | Gym `commit` and `url`, and the commit of the task `instruction` the agent received |
+| `hardware` | GPUs the gym's training jobs used |
+| `start`, `end`, `submittedAt` | Session start and end, and when the agent submitted, UTC |
+| `humanIntervention` | `none` when no person acted between the task and the submission |
+| `budget` | Research budget `limitFlops` and the gym's metered `spentFlops`, in training FLOPs |
+| `tokens` | The agent's own model calls: `input`, `cachedInput` (part of `input`) and `output` tokens |
+| `jobs` | Gym jobs by `operation:state` (training, calibration and validation) |
+| `candidatesRegistered`, `candidatesTrained` | Candidates the agent registered, and distinct designs with at least one dev result |
+| `submission` | The submitted `candidate`, the trained candidate with the same design (`selected`), its `method`, and `arenaEntry` (`null` if not formally trained) |
+| `candidates` | Each candidate the agent queued for training: id, `method`, `title`, shape, `parameters`, `anchorRatio` (training FLOPs per token against the anchor), roles (`control` as the agent used it, `selected`, `submitted`), `basis` (the settings and code that differ from the closest candidate queued before it, derived at export, not declared by the agent) and the agent's `hypothesis` |
+| `runs` | Each training job: `candidate`, updates `from` and `to`, `state`, `queuedAt`, `startedAt` (first metered compute), `endedAt`, `trainingFlops`, `devBpb` (dev split, `null` without a result) and a sampled `trainingLoss` curve |
+| `spend` | Cumulative metered training FLOPs over time, sampled |
+
+Research selects on training loss and the dev split; no session record contains validation BPB or CORE.
