@@ -5,13 +5,18 @@ repository, follow these rules in addition to the user's request.
 
 ## The contract
 
-All methods train under one fixed protocol: the same data, data order, tokenizer, 2,048-token context,
+Dense methods train under one fixed protocol: the same data, data order, tokenizer, 2,048-token context,
 49.152B input tokens, 1,048,576 tokens per update, 46,875 updates, seed 42, Muon + AdamW schedule, 189 validation
 events and six full CORE-22 events. Training FLOPs per input token must stay within 1% of the SSSL anchor at
 admission and within 2% cumulatively. Never change any of these to help one method. The full contract is in the
 [protocol documentation](https://interactive-active-ai.github.io/NextTransformer/docs/protocol/overview/).
 
-## Adding a method
+MoE has its own [4K protocol](moe/PROTOCOL.md). Its main 240 TPP budgets are `d768-240tpp` and `d1024-240tpp`.
+Use `moe/methods/`, `moe/configs/<track>/`, the matching cost proof and run audit under `moe/evidence/`,
+and a formal export under `moe/results/<track>/`. Run `python -m moe.audit --check`. The observatory reads these
+artifacts directly. Each Dense or MoE budget has its own metric definitions and comparison baseline.
+
+## Adding a Dense method
 
 - Add it as a plugin under `nexttransformer/methods/<method>/` ([plugin guide](https://interactive-active-ai.github.io/NextTransformer/docs/guides/plugins/)).
   Do not edit shared model files, the trainer, evaluation, data pipeline, cost ledger, `nexttransformer/models/backbone.py`
@@ -23,7 +28,7 @@ admission and within 2% cumulatively. Never change any of these to help one meth
 
 ## Running things
 
-- `python -m nexttransformer.train` runs in research mode by default; leaderboard runs need `--formal` and an
+- Dense uses `python -m nexttransformer.train` and MoE uses `python -m moe.train`. Both default to research mode; leaderboard runs need `--formal` and an
   admitted configuration. Research runs are never published.
 - Bounded checks only, unless the user explicitly asks for a full training run. Check GPU occupancy first and do not
   disturb other jobs, data, checkpoints or caches.

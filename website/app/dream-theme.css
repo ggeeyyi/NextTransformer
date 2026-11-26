@@ -39,7 +39,7 @@
 .observatory .family-filter button { color:#68717A; }
 .observatory .family-filter button[aria-pressed=true] { background:#EEF4F9; border-color:#D8E3ED; color:#526B85; }
 .observatory .family-filter button:hover { background:#F2F5F8; }
-.observatory .workspace-count,.observatory .baseline-note,.observatory .results-topline > div > span { color:#727B83; }
+.observatory .workspace-count,.observatory .results-topline > div > span { color:#727B83; }
 .observatory .results-surface,.observatory .leaderboard-surface,.observatory .directory-card { border:1px solid #DEE5EB; background:#FFFFFF; box-shadow:0 5px 25px #6E547B04; }
 .observatory .results-topline h2,.observatory .directory-heading h2,.observatory .leaderboard-heading h2 { color:#494E52; font-size:23px; font-weight:600; }
 .observatory .results-toolbar { padding:12px 18px; border-color:#E7ECF0; background:#FFFFFF; }

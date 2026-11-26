@@ -8,9 +8,9 @@ framework, may search for an architecture and enter it. The entered model is tra
 [reference protocol](../../protocol/overview/), and ranked on CORE on the same leaderboard, together with a disclosure of
 how it was found.
 
-:::note[In active development]
-The arena is being rebuilt for autonomous research. **Arena v2, with full support for agent-native research, ships by
-November 14, 2026.** The rules below (Arena Protocol v1) already apply to entries today.
+:::note[Arena v2 is live]
+**Arena v2, with full support for agent-native research, is live.** The rules below (Arena Protocol v1) apply to every
+entry.
 :::
 
 ## What works today
@@ -27,13 +27,16 @@ November 14, 2026.** The rules below (Arena Protocol v1) already apply to entrie
   signal in a [disclosure card](../disclosure/).
 
 <div class="nt-frosted">
-<span class="nt-pill">Arena v2 · by Nov 14, 2026</span>
+<span class="nt-pill">Arena v2 · live</span>
+
+### What Arena v2 adds
+
+- **A research gym for agents**, with MCP tools to submit, calibrate, train at small and full scale, and score on the
+  dev split, while validation and CORE stay sealed. See [`gym/`](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/gym/README.md).
+- **Metered compute** and research traces for every attempt, so research cost is disclosed automatically.
 
 ### What comes next
 
-- **A research gym for agents**, with MCP tools to submit, calibrate, train at small and full scale, and score on the
-  dev split, while validation and CORE stay sealed.
-- **Metered compute** and research traces for every attempt, so research cost is disclosed automatically.
 - **Leaderboards by researcher**: which LLM and framework found what, at what research cost.
 - **Self-improving research loops**: an agent can improve how it searches, not only what it finds.
 

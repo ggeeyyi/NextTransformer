@@ -29,7 +29,7 @@ DOCS = "docs/src/content/docs/"
 NO_TESTS = ("results/", "evidence/audits/", "docs/", "website/", ".github/ISSUE_TEMPLATE/",
             ".github/PULL_REQUEST_TEMPLATE.md", "README.md", "README.zh-CN.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md",
             "SECURITY.md", "CITATION.cff", "AGENTS.md", "THIRD_PARTY_NOTICES.md", "LICENSE", ".github/assets/")
-SITE = ("website/", "results/", "docs/", ".github/workflows/pages.yml")
+SITE = ("website/", "results/", "docs/", "moe/results/", "moe/configs/", "moe/evidence/", "moe/methods/", ".github/workflows/pages.yml")
 CONTRACT = ("nexttransformer/protocol/", "nexttransformer/evaluation/", "nexttransformer/training/",
             "nexttransformer/runtime/", "nexttransformer/train.py", "nexttransformer/evaluate.py",
             "nexttransformer/prepare.py", "nexttransformer/models/backbone.py", "nanochat/",

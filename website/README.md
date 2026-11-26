@@ -7,6 +7,14 @@ cards in [`results/methods/`](../results/methods), the arena cards in [`results/
 [T3 design manifest](../configs/scaling/t3.json) and [published scaling results](../results/scaling/).
 The Scaling and Contribute tabs use these files for budgets and publication status.
 
+The Results, Leaderboard and Model atlas views share a Dense / MoE selector. An existing hash opens Dense.
+A link such as `#leaderboard?track=d768-240tpp` opens a particular MoE budget. The main comparisons are
+`d768-240tpp` and `d1024-240tpp`. The original Marin budgets have separate views.
+
+The MoE atlas reads `moe/configs/`, `moe/methods/` and admitted cost proofs. Rankings read `moe/results/` and
+matching passing run audits. The final score uses `final.moe_core` and `final.val_macro_bpb`. Replay and learning
+curves use `evaluations` and `validation`. All comparisons stay within a budget.
+
 ## Local development
 
 Node.js 22.13 or newer.

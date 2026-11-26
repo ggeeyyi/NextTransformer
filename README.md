@@ -36,11 +36,12 @@ result is an audited, file-backed record, and AI agents can research new archite
 
 ## News
 
+- <img src="https://img.shields.io/badge/NEW-E5607E?style=flat-square" alt="New" height="18"> **2026-11-23** · The **[MoE track](#the-moe-track)** is open: two Marin-derived backbones, a [240 TPP comparison](moe/PROTOCOL.md#240-tpp-comparison) at 14.07B and 34.06B tokens, MoE-CORE and a shared throughput harness. [Read the MoE protocol](https://interactive-active-ai.github.io/NextTransformer/docs/moe/protocol/).
+- <img src="https://img.shields.io/badge/LIVE-8B5CF6?style=flat-square" alt="Live" height="18"> **2026-11-14** · **Arena v2** is live: agent-native research end to end, through a [research gym](gym/README.md) with MCP tools, metered compute and research traces.
 - **2026-11-13** · The [2K scaling study is open](https://interactive-active-ai.github.io/NextTransformer/#scaling), starting with 16 T3 configurations across four families. [Choose a configuration, find reference code and contribute](https://interactive-active-ai.github.io/NextTransformer/#contribute).
 - <img src="https://img.shields.io/badge/BLOG-F6D7AB?style=flat-square" alt="Blog" height="18"> **2026-11-11** · The research blog is live. The first post traces [how Opus found AttnRes-Canon](https://interactive-active-ai.github.io/NextT-Blogs/attnres-canon/en/). [Blog repository](https://github.com/Interactive-Active-AI/NextT-Blogs)
 - <img src="https://img.shields.io/badge/COMMUNITY-2A78D6?style=flat-square" alt="Community" height="18"> **2026-11-04** · **[NextTransformer-V](https://github.com/Enderfga/NextTransformer-V)** by [@Enderfga](https://github.com/Enderfga): a community multimodal track that trains every NextTransformer method on interleaved image and text tokens under the same compute-matched contract. Its first study, pre-registered, asks where hybrid backbones get the 2D layout of an image.
 - <img src="https://img.shields.io/badge/NEW-E5607E?style=flat-square" alt="New" height="18"> **2026-10-31** · NextTransformer is now open source: 31 finished runs, 36 model cards, the full protocol, the documentation and the observatory.
-- <img src="https://img.shields.io/badge/SOON-8B5CF6?style=flat-square" alt="Soon" height="18"> **By 2026-11-14** · **Arena v2**, with full support for autonomous agent research.
 
 ## Highlights
 
@@ -50,7 +51,9 @@ result is an audited, file-backed record, and AI agents can research new archite
 
 <a href="https://interactive-active-ai.github.io/NextTransformer/#scaling"><img src=".github/assets/readme/card-scale-en.webp" alt="2K scaling study at fixed compute: Dense, MoE, KDA–DSA and Fixed Recursive each sweep four depths, 16 T3 configurations at 10²⁰ training FLOPs per run with a 2,048-token context. T3 comes first, then T4, T5 and a held-out C200 test." width="100%"></a>
 
-<a href="https://interactive-active-ai.github.io/NextTransformer/docs/arena/task/"><img src=".github/assets/readme/card-agent-en.webp" alt="Agent-native research: hand the arena task to your agent; the full version, Arena v2, ships by November 14, 2026." width="100%"></a>
+<a href="https://interactive-active-ai.github.io/NextTransformer/docs/arena/task/"><img src=".github/assets/readme/card-agent-en.webp" alt="Agent-native research: hand the arena task to your agent; the full version, Arena v2, has been live since November 14, 2026." width="100%"></a>
+
+<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp"><img src=".github/assets/readme/card-moe-en.webp" alt="MoE track: sparse experts under one contract. Two Marin-derived sizes, d768 at 14.07B tokens and d1024 at 34.06B tokens, both 256 experts with top-4 routing at 240 tokens per active parameter, scored by MoE-CORE." width="100%"></a>
 
 ## The observatory
 
@@ -150,6 +153,30 @@ Parameters, memory and speed are outcomes, not controls. The [protocol](https://
 explains every rule and the [compute accounting](https://interactive-active-ai.github.io/NextTransformer/docs/protocol/compute/)
 what is counted.
 
+## The MoE track
+
+Sparse models get the same treatment as dense ones, under their own contract: same data in the same order, same
+training FLOPs per token, same evaluation. The two backbones reproduce Marin's compute-optimal Grug MoE cells, and
+the [240 TPP comparison](moe/PROTOCOL.md#240-tpp-comparison) trains them at 240 tokens per active baseline parameter excluding the embedding and output head.
+
+Runs train on Dolma 3 HQ with the MuonH optimizer and are scored by **MoE-CORE**, the mean centered accuracy over 14
+published tasks: 10 short ones plus RULER S-NIAH-1 at 2K and 4K, FDA and SWDE. Every result also reports validation
+BPB and its throughput relative to the baseline on the same node, and every configuration is admitted within 1% of
+its track anchor and audited within 2% over the run.
+
+Choose MoE in the observatory for the [model leaderboard](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp) and [training curves and task scores](https://interactive-active-ai.github.io/NextTransformer/#results?track=d768-240tpp).
+
+<!-- generated:moe-results -->
+| 240 TPP leaderboard | Updates | Input tokens | Observatory views |
+|---|---:|---:|---|
+| [d768](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp) | 53,686 | 14.07B | [Model atlas](https://interactive-active-ai.github.io/NextTransformer/#atlas?track=d768-240tpp) · [Curves and evaluations](https://interactive-active-ai.github.io/NextTransformer/#results?track=d768-240tpp) |
+| [d1024](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d1024-240tpp) | 64,973 | 34.06B | [Model atlas](https://interactive-active-ai.github.io/NextTransformer/#atlas?track=d1024-240tpp) · [Curves and evaluations](https://interactive-active-ai.github.io/NextTransformer/#results?track=d1024-240tpp) |
+<!-- /generated:moe-results -->
+
+[MoE overview](https://interactive-active-ai.github.io/NextTransformer/docs/moe/overview/) ·
+[MoE protocol](https://interactive-active-ai.github.io/NextTransformer/docs/moe/protocol/) ·
+[`moe/`](moe/README.md) · [submission flow](moe/README.md#submitting-a-method)
+
 ## Add your method
 
 New methods and Arena entries follow the same submission process.
@@ -163,11 +190,11 @@ Start with the [plugin guide](https://interactive-active-ai.github.io/NextTransf
 
 ## Auto-research arena
 
-<a href="https://interactive-active-ai.github.io/NextTransformer/docs/arena/overview/"><img src=".github/assets/readme/arena-en.webp" alt="Arena v2, by November 14, 2026: agent-native research, end to end" width="100%"></a>
+<a href="https://interactive-active-ai.github.io/NextTransformer/docs/arena/overview/"><img src=".github/assets/readme/arena-en.webp" alt="Arena v2: agent-native research, end to end" width="100%"></a>
 
 > [!NOTE]
-> **The arena is in active development.** Arena v2, with full support for autonomous agent research (a research gym
-> with MCP tools, metered compute, research traces and self-improving research loops), ships by **November 14, 2026**.
+> **Arena v2 is live.** Autonomous agent research is supported end to end: a [research gym](gym/README.md) with MCP
+> tools, metered compute and research traces.
 
 Any LLM, with or without a research framework, can already enter an architecture today: it is trained under the same
 protocol, ranked on the same leaderboard, and disclosed with how it was found. See the
@@ -203,9 +230,8 @@ Community projects that extend NextTransformer.
 
 ## Roadmap
 
-- **By November 14, 2026:** Arena v2 and agent-native research.
 - **2K scaling:** start with the [T3 size sweep](https://interactive-active-ai.github.io/NextTransformer/#scaling), refine the fits, check preregistered forecasts, then hold out C200 for the final test.
-- **MoE track:** two Marin May backbones plus a [240 TPP comparison](moe/PROTOCOL.md#240-tpp-comparison) with d768 baseline, HC, mHC and SimpleHC (14.07B tokens) and d1024 baseline (34.06B tokens). The tracks use MoE-CORE and a shared throughput harness. See [`moe/`](moe/README.md).
+- **MoE track:** the [240 TPP leaderboard](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp) updates with each published run.
 - **Hybrid GDN + QSA:** completed formal results, cumulative audit and [run notes](https://interactive-active-ai.github.io/NextTransformer/docs/results/runs/qsa_hybrid/).
 - **Planned:** checkpoints and the tokenizer on the Hugging Face Hub.
 

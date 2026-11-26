@@ -75,7 +75,7 @@ width uses the same reference parameter count and the same prefix of the trainin
 | Peak LR, MuonH and AdamH / Adam | 0.005300844 / 0.001223272 | 0.005063817 / 0.001168573 |
 | MoE-CORE steps | 12,726 / 25,451 / 38,177 / 53,686 | 16,162 / 32,325 / 48,487 / 64,973 |
 | Eight-device layout, micro-batch × accumulation per device | 8 × 1 | 8 × 2 |
-| Admitted methods | baseline, HC, mHC, SimpleHC | baseline |
+| Admitted methods | baseline, HC, mHC, SimpleHC, iHC | baseline |
 
 Round `240 × active baseline parameters / tokens per update` to the nearest whole update, with halves rounded up.
 The d1024 target is exactly 64,972.5 updates. CORE events retain their fractions of the original track and

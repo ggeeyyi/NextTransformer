@@ -29,7 +29,7 @@
 .family-filter button[aria-pressed=true] { color:#494E52; background:#F0F4F8; border-color:#DCE5EE; font-weight:600; }
 .family-filter button:hover { background:#F5F7FA; }
 .family-filter i { width:6px; height:6px; border-radius:50%; }
-.baseline-note { color:#6E7480; font-size:13px; }
+
 .observatory .trajectories { margin:0; scroll-margin-top:76px; }
 .results-topline { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin:4px 0 16px; }
 .results-topline > div:first-child { display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
@@ -178,7 +178,7 @@
  .workspace-filters { align-items:flex-start; padding:12px 0; }
  .family-filter { gap:1px; }
  .family-filter button { padding:7px 9px; font-size:13px; }
- .baseline-note { display:none; }
+
  .results-topline { align-items:center; gap:8px; margin-bottom:12px; }
  .results-topline > div:first-child { gap:4px; display:block; }
  .results-topline h2,.directory-heading h2 { font-size:22px; }

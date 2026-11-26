@@ -29,7 +29,9 @@ def test_240tpp_budgets(name, steps, tokens, warmup, core):
 
 @pytest.mark.parametrize("track_name,method", [
     ("d768-240tpp", "baseline"), ("d768-240tpp", "hc"), ("d768-240tpp", "mhc"),
-    ("d768-240tpp", "simplehc"), ("d1024-240tpp", "baseline"),
+    ("d768-240tpp", "simplehc"), ("d768-240tpp", "ihc"),
+    ("d1024-240tpp", "baseline"), ("d1024-240tpp", "hc"), ("d1024-240tpp", "mhc"),
+    ("d1024-240tpp", "simplehc"), ("d1024-240tpp", "ihc"),
 ])
 def test_240tpp_config_is_admitted(track_name, method):
     track = spec.track(track_name)
@@ -42,13 +44,15 @@ def test_240tpp_config_is_admitted(track_name, method):
     assert abs(calibration["relative_gap"]) <= spec.PROTOCOL.preflight_tolerance
 
 
+@pytest.mark.parametrize("track_name", ["d768-240tpp", "d1024-240tpp"])
 @pytest.mark.parametrize("method,parameter", [
     ("hc", "attn_connection.dynamic_alpha"),
     ("mhc", "attn_connection.projection"),
     ("simplehc", "gates.projection"),
+    ("ihc", "attn_mapping.projection"),
 ])
-def test_residual_plugins_train(method, parameter):
-    config = plugins.config_for(method, "d768-240tpp", debug=True)
+def test_residual_plugins_train(track_name, method, parameter):
+    config = plugins.config_for(method, track_name, debug=True)
     model = build_model(config, "cpu")
     tokens = torch.randint(0, config.vocab_size, (config.qb_group_rows, 16))
     loss = model(tokens, tokens.roll(-1, dims=1))
@@ -75,6 +79,30 @@ def test_audit_preserves_the_initial_d768_run_identity(tmp_path):
     other = spec.track("d1024-240tpp")
     (tmp_path / "run.json").write_text(json.dumps(dict(run, track=other.name, track_hash=other.fingerprint)))
     assert any("protocol fingerprint" in p for p in audit.audit(tmp_path)[0])
+
+
+def test_published_moe_result_requires_matching_audit_and_complete_final_scores(tmp_path, monkeypatch):
+    track_file = "d768-240tpp/baseline.json"
+    for section in ("configs", "evidence/costs", "evidence/audits", "results"):
+        source = audit.HERE / section / track_file
+        target = tmp_path / section / track_file
+        target.parent.mkdir(parents=True)
+        target.write_bytes(source.read_bytes())
+    monkeypatch.setattr(audit, "HERE", tmp_path)
+    monkeypatch.setattr(audit, "AUDITS", tmp_path / "evidence/audits")
+    result = tmp_path / "results" / track_file
+    assert audit.check_record(result) == []
+
+    evidence = audit.AUDITS / track_file
+    original_audit = evidence.read_text()
+    evidence.write_text(json.dumps({**json.loads(original_audit), "method": "hc"}))
+    assert "no matching passing audit for the complete budget" in audit.check_record(result)
+
+    evidence.write_text(original_audit)
+    data = json.loads(result.read_text())
+    data["final"]["centered"].pop(next(iter(data["final"]["centered"])))
+    result.write_text(json.dumps(data))
+    assert "invalid final MoE-CORE or full macro BPB" in audit.check_record(result)
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="checks pinned host storage and CUDA streams")

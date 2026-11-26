@@ -3,7 +3,9 @@ title: 路线图
 description: NextTransformer 接下来的计划。
 ---
 
-## 2026 年 11 月 14 日前：Arena v2，agent 原生研究
+## Arena v2：agent 原生研究
+
+Arena v2 已上线。研究 gym 在 [`gym/`](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/gym/README.zh-CN.md) 中发布；下面的实验计划是它接下来要做的事。
 
 1. **用 Harbor 格式组织 auto-research 任务。**
    - 仓库本身作为 gym 的 sidecar 服务，向模型提供接口。
@@ -41,6 +43,10 @@ description: NextTransformer 接下来的计划。
 ## 2K 规模扩展
 
 T3 在固定预算下比较 Vanilla Dense、Vanilla MoE、Dense KDA–DSA 和 Fixed Recursive 的尺寸与训练量。使用 2K 窗口、固定 seed 42，公布 T3 配置和预算。后续按 T4 拟合、T5 预测检验、C200 最终盲测推进。详见[规模扩展总览](../scaling/overview/)。
+
+## MoE 赛道
+
+[MoE 赛道](../moe/overview/)把稀疏模型放进同一套约定，设两个 Marin 口径的尺寸。[240 TPP 对照](../../moe/protocol/#240-tpp-comparison)已发布：d768 准入 baseline、HC、mHC 和 SimpleHC，训练 14.07B 输入 token；d1024 准入 baseline，训练 34.06B。接下来是正式训练，用 MoE-CORE 计分，并通过与其他贡献相同的[结果 pull request](../guides/submit-a-result/) 发布。更多尺寸或更长预算会作为新赛道加入，各自带有自己的指纹。
 
 ## 即将发布的结果与证据
 

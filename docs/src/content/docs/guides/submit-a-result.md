@@ -3,6 +3,8 @@ title: Submit a result
 description: Audit a finished formal run, export it, and open a pull request.
 ---
 
+This guide covers Dense. For MoE, follow the [MoE admission and export guide](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/moe/README.md#submitting-a-method) for the [MoE leaderboard](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp).
+
 A result is a finished **formal** run of an admitted configuration: 46,875 updates, all 189 validation events, all six
 CORE-22 events, every segment trained with `--formal`. For a new method, submit these artifacts in the same pull request as the implementation.
 

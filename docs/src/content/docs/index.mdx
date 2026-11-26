@@ -37,12 +37,15 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
     operator-level ledger and audited over the whole run.
   </Card>
   <Card title="49B tokens of pretraining" icon="rocket">
-    Train a ~1.4B-parameter model on 49B tokens on one 8-GPU node in 2–4 days. Recipes for 400B tokens and larger models
-    arrive in November 2026.
+    Train a ~1.4B-parameter model on 49B tokens on one 8-GPU node in 2–4 days.
   </Card>
   <Card title="Agent-native research" icon="star">
-    Hand the arena task to your agent and let it research the next architecture. The full agent-native version ships by
-    November 14, 2026.
+    Hand the arena task to your agent and let it research the next architecture. Arena v2, the full agent-native
+    version, is live.
+  </Card>
+  <Card title="Dense and sparse" icon="random">
+    The MoE track applies the same contract to Mixture-of-Experts models: two Marin-derived sizes at 240 tokens per
+    active parameter, scored by MoE-CORE.
   </Card>
 </CardGrid>
 
@@ -52,5 +55,6 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
   <LinkCard title="Quick start" description="Install, prepare data, and train on one node or many." href="getting-started/quick-start/" />
   <LinkCard title="Protocol" description="What is fixed, what is matched, and how runs are audited." href="protocol/overview/" />
   <LinkCard title="Add a method" description="Write a plugin, calibrate it, and get it admitted." href="guides/plugins/" />
+  <LinkCard title="MoE track" description="Sparse experts under the same contract, at two Marin-derived sizes." href="moe/overview/" />
   <LinkCard title="Leaderboard" description="Every finished run against the Dense Baseline." href="results/leaderboard/" />
 </CardGrid>

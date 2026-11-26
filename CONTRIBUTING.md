@@ -1,6 +1,6 @@
 # Contributing
 
-Choose a track from the [Contribute page](https://interactive-active-ai.github.io/NextTransformer/#contribute). The 49B benchmark and 2K scaling study have separate protocols.
+Choose a track from the [Contribute page](https://interactive-active-ai.github.io/NextTransformer/#contribute). The Dense 49B benchmark, [4K MoE comparison](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp) and 2K scaling study each have their own protocol.
 
 ## Join the 2K scaling study
 
@@ -23,8 +23,9 @@ By contributing you agree that your contribution is licensed under the [MIT Lice
 | Contribution | Files | Guide |
 |---|---|---|
 | A T3 scaling contribution | The selected cell ID, implementation or cost proof, or a reviewed result under `results/scaling/runs/` | [T3 contribution guide](https://interactive-active-ai.github.io/NextTransformer/docs/scaling/contribute/) |
-| A new result for an existing method | `results/runs/<method>.json` from `export_run`, its audit `evidence/audits/<method>.json` from `audit_run`, a run-notes page, and the tables refreshed by `docs/scripts/generate.py` | [Submit a result](https://interactive-active-ai.github.io/NextTransformer/docs/guides/submit-a-result/) |
-| A new method | A plugin `nexttransformer/methods/<method>/`, a calibrated `configs/<family>/<method>.json` and its cost proof under `evidence/costs/`, tests, a model card `results/methods/<method>.json`, a source-notes entry, and the formal run artifacts from the row above | [Method plugins](https://interactive-active-ai.github.io/NextTransformer/docs/guides/plugins/) |
+| A MoE method or result | An admitted configuration and cost proof under `moe/`, the formal record under `moe/results/<track>/` and its matching run audit | [MoE submission flow](moe/README.md#submitting-a-method) |
+| A new Dense result for an existing method | `results/runs/<method>.json` from `export_run`, its audit `evidence/audits/<method>.json` from `audit_run`, a run-notes page, and the tables refreshed by `docs/scripts/generate.py` | [Submit a result](https://interactive-active-ai.github.io/NextTransformer/docs/guides/submit-a-result/) |
+| A new Dense method | A plugin `nexttransformer/methods/<method>/`, a calibrated `configs/<family>/<method>.json` and its cost proof under `evidence/costs/`, tests, a model card `results/methods/<method>.json`, a source-notes entry, and the formal run artifacts from the row above | [Method plugins](https://interactive-active-ai.github.io/NextTransformer/docs/guides/plugins/) |
 | Documentation or the website | Pages under `docs/`, code under `website/` | [Documentation README](docs/README.md), [website README](website/README.md) |
 | A change to shared code | Agreed in an issue first; see the guide for the audit it needs | [Changing shared code](https://interactive-active-ai.github.io/NextTransformer/docs/guides/changing-shared-code/) |
 | An arena entry | The method and audited formal result in one PR linked to the preregistration issue, plus the completed disclosure card with checkpoint and training log links | [Arena rules](https://interactive-active-ai.github.io/NextTransformer/docs/arena/rules/) |

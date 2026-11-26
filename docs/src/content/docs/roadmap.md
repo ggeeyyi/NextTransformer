@@ -3,7 +3,9 @@ title: Roadmap
 description: What is coming next to NextTransformer.
 ---
 
-## By November 14, 2026: Arena v2, agent-native research
+## Arena v2: agent-native research
+
+Arena v2 is live. The research gym ships in [`gym/`](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/gym/README.md); the experiment plan below is what it is used for next.
 
 1. **Auto-research tasks in Harbor format.**
    - The repository runs as the gym's sidecar service and exposes its interfaces to the model.
@@ -47,6 +49,14 @@ Use historical Arena v1 research data for the example. Mark Opus, GLM and DeepSe
 ## 2K scaling
 
 The T3 sweep compares model size and tokens for Vanilla Dense, Vanilla MoE, Dense KDA–DSA and Fixed Recursive at a fixed training budget, with a 2K window and seed 42. The T3 configurations and budgets are public. T4 refines the fit, T5 checks forecasts, and C200 is the final blind test. See the [scaling overview](../scaling/overview/).
+
+## MoE track
+
+The [MoE track](../moe/overview/) puts sparse models under the same contract, at two Marin-derived sizes. The
+[240 TPP comparison](../moe/protocol/#240-tpp-comparison) is published: d768 admits baseline, HC, mHC and SimpleHC
+over 14.07B input tokens, and d1024 admits the baseline over 34.06B. Formal runs come next, scored by MoE-CORE and
+published through the same [result pull request](../guides/submit-a-result/) as any other contribution. Further sizes
+or longer budgets enter as new tracks, each with its own fingerprint.
 
 ## Upcoming results and evidence
 

@@ -1,5 +1,7 @@
 # NextTransformer-MoE
 
+[240 TPP 模型榜单](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp) · [训练曲线与任务分数](https://interactive-active-ai.github.io/NextTransformer/#results?track=d768-240tpp)
+
 面向 **Mixture-of-Experts** 语言模型的算力受控对比平台。沿用 NextTransformer 的契约：数据相同、顺序相同、每 token 训练
 FLOPs 相同、评测相同；参数量和速度是结果，不是约束。平台设两个固定赛道，形状与预算复现 Marin 的 compute-optimal
 Grug MoE：
@@ -9,7 +11,7 @@ Grug MoE：
 | **d768** | 8 层 × 768，GQA 6/1，256 个宽 384 的专家选 4，另有宽 768 的共享专家 | 4,096 | 4.42B（16,875 × 262,144） | 9.369 × 10⁸ | 4.14 × 10¹⁸ | 2.00B / 213M |
 | **d1024** | 11 层 × 1024，GQA 8/2，256 个宽 512 的专家选 4，另有宽 1024 的共享专家 | 4,096 | 8.43B（16,080 × 524,288） | 1.695 × 10⁹ | 1.43 × 10¹⁹ | 4.71B / 347M |
 
-[NextTransformer 240 TPP](PROTOCOL.md#240-tpp-comparison) · d768 baseline / HC / mHC / SimpleHC (14.07B tokens) · d1024 baseline (34.06B tokens).
+[NextTransformer 240 TPP](PROTOCOL.md#240-tpp-comparison) · d768 baseline / HC / mHC / SimpleHC / iHC (14.07B tokens) · d1024 baseline (34.06B tokens).
 
 - **模型与训练**：按 Marin 跑出这两个结果时的 commit 逐行移植。
   - 组件：GatedNorm、XSA、head 门控、half-RoPE + PKO、文档掩码、QB 路由。

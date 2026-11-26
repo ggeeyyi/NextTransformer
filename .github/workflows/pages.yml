@@ -7,6 +7,11 @@ on:
       - "website/**"
       - "docs/**"
       - "results/**"
+      - "moe/results/**"
+      - "moe/configs/**"
+      - "moe/methods/*/method.json"
+      - "moe/evidence/costs/**"
+      - "moe/evidence/audits/**"
       - "nexttransformer/evaluation/core-lengths.json"
       - "configs/scaling/t3.json"
       - "nexttransformer/scaling/reference_blocks.py"
@@ -35,6 +40,11 @@ jobs:
           cache-dependency-path: |
             website/package-lock.json
             docs/package-lock.json
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Verify published MoE records
+        run: uv run --frozen --extra cpu python -m moe.audit --check
       - name: Website
         working-directory: website
         env:

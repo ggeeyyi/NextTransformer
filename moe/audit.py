@@ -12,6 +12,7 @@ the final full validation BPB and MoE-CORE, the ledger (all updates, all tokens,
 """
 import argparse
 import json
+import math
 from pathlib import Path
 import sys
 
@@ -21,7 +22,7 @@ from moe.evaluation.recall import DATASETS as RECALL
 from moe.evaluation.ruler import SCORED_LENGTHS
 from moe.evaluation.score import ENTRIES
 from moe.evaluation.short import TASKS as SHORT
-from moe.spec import PROTOCOL, TRACKS
+from moe.spec import PROTOCOL, TRACKS, VALIDATION_SOURCES
 
 HERE = Path(__file__).resolve().parent
 AUDITS = HERE / "evidence" / "audits"
@@ -156,20 +157,71 @@ def export(run_dir, name, throughput_file=None, note=None):
     return path
 
 
+def numeric(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def published_scores(event):
+    centered = event.get("centered", {})
+    if set(centered) != set(ENTRIES) or not all(numeric(v) for v in centered.values()):
+        return False
+    groups = {"moe_core": ENTRIES, "short": SHORT, "long": [k for k in ENTRIES if k not in SHORT]}
+    return all(numeric(event.get(key)) and math.isclose(event[key], sum(centered[k] for k in tasks) / len(tasks),
+                                                        rel_tol=1e-6, abs_tol=1e-6)
+               for key, tasks in groups.items())
+
+
+def check_record(path):
+    """Validate published evidence without changing the serialized protocol of early formal runs."""
+    r = json.loads(path.read_text())
+    method, track_name = path.stem, path.parent.name
+    track = TRACKS.get(track_name)
+    if track is None or (r.get("track"), r.get("method")) != (track_name, method):
+        return ["file name disagrees with track/method"]
+    problems = []
+    protocol = run_protocol(track_name, r.get("protocol_hash"))
+    if (r.get("protocol"), r.get("protocol_hash")) != (protocol.version, protocol.fingerprint):
+        problems.append("protocol fingerprint differs")
+    suffix = Path(track_name) / path.name
+    config = json.loads((HERE / "configs" / suffix).read_text())
+    cost = json.loads((HERE / "evidence/costs" / suffix).read_text())
+    expected_cost = (Path("moe/evidence/costs") / suffix).as_posix()
+    if (config["calibration"]["status"] != "admitted" or config["calibration"]["cost_record"] != expected_cost
+            or cost.get("admitted") is not True or (cost.get("track"), cost.get("method")) != (track_name, method)
+            or config["track_hash"] != track.fingerprint or config["model_hash"] != r.get("model_hash")
+            or cost["model_hash"] != config["model_hash"] or config["model"] != r.get("model")):
+        problems.append("record disagrees with the admitted configuration or cost proof")
+    expected_audit = (Path("moe/evidence/audits") / suffix).as_posix()
+    audit = json.loads((AUDITS / suffix).read_text())
+    if (r.get("audit") != expected_audit or audit.get("passed") is not True or audit.get("problems") != []
+            or any(audit.get(key) != r.get(key) for key in ("track", "method", "model_hash", "protocol_hash"))
+            or audit.get("track_hash") != track.fingerprint or audit.get("updates") != track.updates
+            or audit.get("input_tokens") != track.total_tokens or r.get("tokens") != track.total_tokens):
+        problems.append("no matching passing audit for the complete budget")
+    evaluations = r.get("evaluations", [])
+    if [e.get("step") for e in evaluations] != list(track.core_steps) or not all(published_scores(e) for e in evaluations):
+        problems.append("scheduled MoE-CORE evaluations differ")
+    validation = r.get("validation", [])
+    if [s for s, _ in validation] != list(track.validation_steps) or not all(numeric(v) for _, v in validation):
+        problems.append("periodic validation schedule or scores differ")
+    final = r.get("final", {})
+    sources = final.get("val_sources", {})
+    if (not published_scores(final) or set(sources) != set(VALIDATION_SOURCES)
+            or not all(numeric(v.get("bpb")) for v in sources.values()) or not numeric(final.get("val_macro_bpb"))
+            or not math.isclose(final["val_macro_bpb"], sum(v["bpb"] for v in sources.values())/len(VALIDATION_SOURCES),
+                                rel_tol=1e-6, abs_tol=1e-6)):
+        problems.append("invalid final MoE-CORE or full macro BPB")
+    return problems
+
+
 def check():
     problems = []
     for path in sorted(RESULTS.glob("*/*.json")):
-        r = json.loads(path.read_text())
-        where = str(path.relative_to(HERE.parent))
-        if r.get("protocol_hash") != run_protocol(r.get("track"), r.get("protocol_hash")).fingerprint:
-            problems.append(f"{where}: protocol fingerprint differs")
-        if r.get("track") != path.parent.name or r.get("method") != path.stem:
-            problems.append(f"{where}: file name disagrees with track/method")
-        if [e["step"] for e in r.get("evaluations", [])] != list(TRACKS[r["track"]].core_steps):
-            problems.append(f"{where}: evaluation schedule differs")
-        audit_path = HERE.parent / r.get("audit", "")
-        if not audit_path.is_file() or not json.loads(audit_path.read_text()).get("passed"):
-            problems.append(f"{where}: no passing audit")
+        try:
+            errors = check_record(path)
+        except (OSError, TypeError, ValueError, KeyError, AttributeError) as error:
+            errors = [str(error)]
+        problems.extend(f"{path.relative_to(HERE.parent)}: {error}" for error in errors)
     return problems
 
 
