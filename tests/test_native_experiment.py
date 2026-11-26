@@ -139,7 +139,7 @@ def test_training_core_schedule_has_one_full_final(tmp_path,monkeypatch,steps,op
     monkeypatch.setattr(train,'start_tracker',lambda *a:nullcontext(SimpleNamespace(log=events.append)))
     def bpb(model,tokenizer,data_dir,resources,tokens,batch,rank,world,device,split='val'):
         return {'val_bpb' if split=='val' else 'train_bpb':1.,'forward_flops_estimate':0.,'seconds':0.}
-    def core(model,tokenizer,resources,device,max_per_task=-1):
+    def core(model,tokenizer,resources,device,max_per_task=-1,*,core_max_tokens=None):
         calls.append(max_per_task)
         return {'core_metric':.1,'full_core':max_per_task<=0,'entries':22,'seconds':0.}
     monkeypatch.setattr(train,'evaluate_bpb',bpb)

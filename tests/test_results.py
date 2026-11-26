@@ -5,11 +5,13 @@ import shutil
 import pytest
 
 from nexttransformer.export_run import P, RESULTS, check, record
+from nexttransformer.evaluation.context import core_context
 
 
 def raw_from_record(path):
     r = json.loads(path.read_text()); p = r["proof"]
-    core = [(e["step"], dict(core_metric=c["value"], results=e["raw"], centered=e["centered"], full_core=True))
+    core = [(e["step"], dict(core_metric=c["value"], results=e["raw"], centered=e["centered"], full_core=True,
+                             coreContext=core_context(2048, 2048, 2048)))
             for e, c in zip(r["taskEvaluations"], r["core"])]
     return dict(run_dir=r["id"], val=[(x["step"], x["value"]) for x in r["val"]], core=core, final_bpb=dict(val_bpb=r["finalBpb"]),
                 last=dict(step=P.steps, input_tokens=P.total_tokens, theory_flops=r["trainingCompute"]["trainingFlopsEstimate"]),
@@ -166,3 +168,21 @@ def test_export_cannot_remove_baseline_acceptance(export_cli):
     with pytest.raises(SystemExit, match="already exists"):
         run()
     assert path.read_bytes() == original
+
+def test_export_requires_one_declared_length_policy_across_checkpoints():
+    raw = raw_from_record(RESULTS/"runs/dense_full.json")
+    for _, event in raw["core"]:
+        del event["coreContext"]
+    with pytest.raises(ValueError, match="missing CORE context"):
+        record(raw, "gqa", "GQA", commit="a"*40)
+    historical, _ = record(raw, "gqa", "GQA", commit="a"*40, legacy_core_2048=True)
+    assert historical["coreContext"] == core_context(2048, 2048, 2048)
+    for _, event in raw["core"]:
+        event["coreContext"] = core_context(2048, None, 5835)
+    full, _ = record(raw, "gqa", "GQA", commit="a"*40)
+    assert full["coreContext"] == core_context(2048, None, 5835)
+    with pytest.raises(ValueError, match="differs from the measured event"):
+        record(raw, "gqa", "GQA", commit="a"*40, legacy_core_2048=True)
+    raw["core"][-1][1]["coreContext"] = core_context(2048, 2048, 2048)
+    with pytest.raises(ValueError, match="differs between evaluation events"):
+        record(raw, "gqa", "GQA", commit="a"*40)

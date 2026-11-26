@@ -18,8 +18,9 @@ def new_id():
 
 
 class GymError(Exception):
-    def __init__(self, code, hint, phase="control", retryable=False):
+    def __init__(self, code, hint, phase="control", retryable=False, details=None):
         self.code, self.hint, self.phase, self.retryable = code, hint, phase, retryable
+        self.details = dict(details or {})
         super().__init__(hint)
 
     def wire(self):
@@ -30,7 +31,7 @@ class GymError(Exception):
                 "hint": self.hint,
                 "phase": self.phase,
                 "retryable": self.retryable,
-                "details": {},
+                "details": self.details,
             },
         }
 
@@ -40,15 +41,25 @@ def require(condition, code, hint):
         raise GymError(code, hint)
 
 
-def integer(value, minimum=0, maximum=None):
-    require(
+def integer(value, minimum=0, maximum=None, name=None):
+    """Return an integer within bounds; a named field reports its name and bounds."""
+    if (
         type(value) is int
         and value >= minimum
-        and (maximum is None or value <= maximum),
+        and (maximum is None or value <= maximum)
+    ):
+        return value
+    if name is None:
+        raise GymError("invalid_request", "Integer outside the supported range.")
+    if maximum is None:
+        bounds = f"of at least {minimum}"
+    else:
+        bounds = f"from {minimum} to {maximum}"
+    raise GymError(
         "invalid_request",
-        "Integer outside the supported range.",
+        f"{name} must be an integer {bounds}.",
+        details={"field": name, "minimum": minimum, "maximum": maximum},
     )
-    return value
 
 
 def file_hash(path):

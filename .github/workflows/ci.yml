@@ -46,6 +46,7 @@ jobs:
       - name: Run records and arena cards
         run: |
           uv run python -m nexttransformer.export_run --check
+          uv run python -m moe.audit --check
           uv run python -m nexttransformer.arena --check
           uv run python docs/scripts/generate.py --check
       - name: Arena and plugin scope

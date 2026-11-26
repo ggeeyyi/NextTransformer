@@ -1,6 +1,12 @@
 ## What this changes
 
-<!-- A result, a new method, documentation, or a fix. Link the issue it closes or was agreed in. -->
+<!-- A result, a new method, documentation, or a fix. -->
+
+Closes #<!-- The issue this pull request completes: a T3 claim, a method proposal or a bug report. GitHub closes it on merge only when the line reads "Closes #N". If the issue covers work this pull request does not deliver, such as other cells in a multi-cell claim, write "Part of #N" instead. -->
+
+<!-- For a leaderboard result, fill in the CORE settings from the exported run record. -->
+CORE truncation (none / left):
+CORE token limit (none / number):
 
 ## Checklist
 

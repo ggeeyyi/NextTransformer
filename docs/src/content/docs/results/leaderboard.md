@@ -20,12 +20,14 @@ ordered by CORE. Arena entries (auto-research) rank on CORE only; their validati
 | [Manifold-Constrained Hyper-Connections · mHC](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/mhc.json) | residual | 0.6617 | -0.0055 | 35.33 | +2.23 | 4.674 |
 | [SimpleHC](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/simplehc.json) | residual | 0.6628 | -0.0043 | 35.11 | +2.02 | 4.693 |
 | [Hyper-Connections · HC](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/hc.json) | residual | 0.6644 | -0.0028 | 35.09 | +2.00 | 4.698 |
+| [Static ShortConv · MLP output](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/sconv_out.json) | others | 0.6650 | -0.0022 | 34.53 | +1.43 | 4.678 |
 | [Gated Attention · headwise](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gated_attention_headwise.json) | others | 0.6674 | +0.0002 | 34.27 | +1.18 | 4.677 |
 | [Block Attention Residuals · AttnRes](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/attnres.json) | residual | 0.6630 | -0.0042 | 34.00 | +0.90 | 4.680 |
 | [SSSL](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/sssl.json) | others | 0.6671 | ±0.0000 | 33.78 | +0.69 | 4.775¹ |
 | [Native Sparse Attention · NSA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/nsa.json) | sparse | 0.6678 | +0.0006 | 33.78 | +0.69 | 4.639 |
 | [Hybrid GDN + MHA 1:1](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gdn_hybrid_swa.json) | hybrid | 0.6656 | -0.0015 | 33.66 | +0.57 | 4.647 |
 | [Gated Attention · elementwise](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gated_attention.json) | others | 0.6695 | +0.0023 | 33.58 | +0.49 | 4.642 |
+| [Dynamic-KV ShortConv · MLP output](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/sconv_dynamic_out.json) | others | 0.6676 | +0.0004 | 33.39 | +0.29 | 4.700 |
 | [Hybrid GDN + MHA 3:1](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gdn_hybrid.json) | hybrid | 0.6647 | -0.0025 | 33.37 | +0.28 | 4.704 |
 | [Inkling REL](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/inkling_rel.json) | others | 0.6684 | +0.0012 | 33.17 | +0.08 | 4.630 |
 | [Hybrid GDN + SWA](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/gdn_hybrid_swa512.json) | hybrid | 0.6665 | -0.0007 | 33.09 | -0.01 | 4.686 |

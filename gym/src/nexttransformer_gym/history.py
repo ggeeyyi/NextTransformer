@@ -7,7 +7,7 @@ from .common import file_hash, integer, require
 
 def page(items, cursor="", limit=50):
     require(isinstance(cursor, str), "invalid_request", "Invalid cursor.")
-    limit = integer(limit, 1, 100)
+    limit = integer(limit, 1, 100, "limit")
     remaining = [
         item for item in sorted(items, key=lambda x: x["id"]) if item["id"] > cursor
     ]

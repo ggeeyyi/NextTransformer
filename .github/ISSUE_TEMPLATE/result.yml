@@ -19,6 +19,23 @@ body:
         - Failed or stopped (to be recorded)
     validations:
       required: true
+  - type: dropdown
+    id: core-truncation
+    attributes:
+      label: CORE input truncation
+      options:
+        - No truncation (full prompts)
+        - Left truncation with a token limit
+    validations:
+      required: true
+  - type: input
+    id: core-max-tokens
+    attributes:
+      label: CORE token limit
+      description: Enter none for full prompts or the exact positive integer passed to --core-max-tokens.
+      placeholder: none or 2048
+    validations:
+      required: true
   - type: textarea
     id: notes
     attributes:

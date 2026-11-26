@@ -2,7 +2,7 @@ import names from '../../data/method-labels.json' with {type:'json'};
 import type {Method} from './types';
 
 const methodNames: Record<string, string> = names;
-export function methodLabel(method?: Method): string {
+export function methodLabel(method?: Pick<Method, 'id' | 'name'>): string {
  return method ? methodNames[method.id] ?? method.name : '';
 }
 

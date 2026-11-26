@@ -22,9 +22,11 @@ import json
 import math
 import os
 import re
+from functools import lru_cache
 from pathlib import Path
 
 from nexttransformer.protocol.spec import Protocol, TOKENIZER_SHA256
+from nexttransformer.evaluation.context import core_context, validate_submission
 
 REPO = Path(__file__).resolve().parents[1]
 REPO_URL = "https://github.com/Interactive-Active-AI/NextTransformer"
@@ -50,7 +52,7 @@ def read_run(path):
         if e["event"] == "validation": val[e["step"]] = e["val_bpb"]
         elif e["event"] == "core":
             core[e["step"]] = dict(core_metric=e["core_metric"], results=e.get("results"), centered=e.get("centered_results"),
-                                   full_core=e.get("full_core"))
+                                   full_core=e.get("full_core"), coreContext=e.get("coreContext"))
         elif e["event"] == "final_bpb": final = {k: v for k, v in e.items() if k != "event"}
         elif e["event"] == "train": last = e
     segments = ["provenance.json", *sorted(f.name for f in run.glob("resume_*.json"))]
@@ -79,20 +81,33 @@ def check_core(name, step, raw, centered, aggregate, tasks):
 
 
 def record(raw, method, name, audit=None, commit=None, cohort="reference-v1", accept_baseline=False, file=None,
-           note=None):
+           note=None, legacy_core_2048=False):
     tasks = core_baselines(); p = raw["provenance"][0]; last = raw["last"]
     val = [dict(step=int(s), value=v) for s, v in raw["val"]]
     if [x["step"] for x in val] != VAL_STEPS: raise ValueError(f"{method}: incomplete validation schedule")
     for point in val:
         check_metric(point["value"], f"{method}: validation BPB at {point['step']}")
     check_metric(raw["final_bpb"]["val_bpb"], f"{method}: final BPB")
-    core, evaluations = [], []
+    core, evaluations, contexts = [], [], []
     for step, c in raw["core"]:
         if not c["full_core"]: raise ValueError(f"{method}: CORE at {step} is a smoke evaluation")
         check_core(method, step, c["results"], c["centered"], c["core_metric"], tasks)
+        context = c.get("coreContext")
+        if legacy_core_2048:
+            legacy = core_context(P.sequence_len, P.sequence_len, P.sequence_len)
+            if context is not None and context != legacy:
+                raise ValueError("the declared legacy CORE limit differs from the measured event")
+            context = legacy
+        if context is None:
+            raise ValueError("missing CORE context in evaluation event; for verified historical 2048-token "
+                             "left truncation, declare --legacy-core-2048")
+        validate_submission(context)
+        contexts.append(context)
         core.append(dict(step=int(step), value=c["core_metric"]))
         evaluations.append(dict(step=int(step), raw=c["results"], centered=c["centered"]))
     if [x["step"] for x in core] != CORE_STEPS: raise ValueError(f"{method}: incomplete CORE schedule")
+    if any(ctx != contexts[0] for ctx in contexts):
+        raise ValueError("CORE length policy differs between evaluation events")
     if raw["status"] != "matched" or last["step"] != P.steps or last["input_tokens"] != P.total_tokens:
         raise ValueError(f"{method}: run is not complete with a matched cumulative audit")
     if any(segment.get("admission", {}).get("mode", "formal") != "formal" for segment in raw["provenance"]):
@@ -118,7 +133,7 @@ def record(raw, method, name, audit=None, commit=None, cohort="reference-v1", ac
                           code_snapshot=p["software"].get("code_snapshot"),
                           **({"speedups": p["software"]["speedups"]} if p["software"].get("speedups") else {})),
                reportedAudit=raw["status"], lastRecordedAt=raw["core_final_mtime"], finalBpb=raw["final_bpb"]["val_bpb"],
-               taskEvaluations=evaluations, complete=True,
+               taskEvaluations=evaluations, coreContext=contexts[0], complete=True,
                trainingCompute=dict(averageGflopsPerInputToken=last["theory_flops"]/P.total_tokens/1e9,
                                     trainingFlopsEstimate=last["theory_flops"], inputTokens=P.total_tokens, step=P.steps, final=True,
                                     accounting="reference-aten-math-v2",
@@ -130,19 +145,43 @@ def record(raw, method, name, audit=None, commit=None, cohort="reference-v1", ac
     return run, path
 
 
+@lru_cache(maxsize=1)
+def legacy_inventory():
+    return json.loads((RESULTS / "core-context.json").read_text())
+
+
+def published_run(path):
+    """Read an existing record and annotate the exact archived 2048-token runs."""
+    content = path.read_bytes()
+    run = json.loads(content)
+    if "coreContext" not in run:
+        inventory = legacy_inventory()
+        if inventory["legacyRunSha256"].get(run.get("id")) == hashlib.sha256(content).hexdigest():
+            cap = inventory["legacyMaxTokens"]
+            run["coreContext"] = core_context(P.sequence_len, cap, cap)
+    return run
+
+
 def check(root=RESULTS):
     """Validate every record under results/: fields, unique ids, model cards, and complete formal runs."""
     tasks = core_baselines(); problems = []; seen = set(); accepted = []
     cards = {json.loads(p.read_text())["id"] for p in (root/"methods").glob("*.json")}
     problems += [f"{p.relative_to(root).as_posix()}: results/runs/ is flat, one file per run" for p in (root/"runs").iterdir() if p.is_dir()]
     for path in sorted((root/"runs").glob("*.json")):
-        r = json.loads(path.read_text()); name = path.relative_to(root).as_posix()
+        r = published_run(path); name = path.relative_to(root).as_posix()
         missing = [k for k in REQUIRED if k not in r]
         if missing: problems.append(f"{name}: missing {missing}"); continue
         if r["id"] in seen: problems.append(f"{name}: duplicate run id {r['id']}")
         seen.add(r["id"])
         if CARD_ALIASES.get(r["methodId"], r["methodId"]) not in cards: problems.append(f"{name}: no model card results/methods/{r['methodId']}.json")
         if any(k in r for k in ("entity", "project", "trackingState")): problems.append(f"{name}: tracking-service fields")
+        if "coreContext" in r:
+            try:
+                validate_submission(r["coreContext"])
+            except ValueError as error:
+                problems.append(f"{name}: {error}")
+        else:
+            problems.append(f"{name}: a new result must declare coreContext")
         proof = r.get("proof") or {}
         if proof.get("tokenizer_sha256") not in (None, TOKENIZER_SHA256): problems.append(f"{name}: tokenizer differs from the pinned one")
         try:
@@ -231,6 +270,8 @@ def main(argv=None):
     ap.add_argument("--check", action="store_true", help="validate every record under results/ and exit")
     ap.add_argument("--summary", action="store_true", help="print the README table of finished runs and exit")
     ap.add_argument("--method"); ap.add_argument("--name")
+    ap.add_argument("--legacy-core-2048", action="store_true",
+                    help="declare the original 2048-token left crop for old logs lacking CORE context")
     ap.add_argument("--audit", help="repository path of the run's cumulative audit, e.g. evidence/audits/<method>.json")
     ap.add_argument("--commit", help="source commit of the training code (default: provenance git_commit)")
     ap.add_argument("--cohort", default="reference-v1")
@@ -248,13 +289,13 @@ def main(argv=None):
     if not (args.run_dir and args.method and args.name):
         ap.error("RUN_DIR, --method and --name are required to export a run")
     run, path = record(read_run(args.run_dir), args.method, args.name, args.audit, args.commit, args.cohort,
-                       args.accept_baseline, args.file, args.note)
+                       args.accept_baseline, args.file, args.note, args.legacy_core_2048)
     payload = json.dumps(run, indent=1, ensure_ascii=False, allow_nan=False)+"\n"
     try:
         with path.open("x") as out:
             out.write(payload)
     except FileExistsError:
-        if json.loads(path.read_text()) == run:
+        if published_run(path) == run:
             print(f"unchanged {path.relative_to(REPO)}")
             return
         raise SystemExit(f"{path.relative_to(REPO)} already exists; pass a new --file to publish another run")

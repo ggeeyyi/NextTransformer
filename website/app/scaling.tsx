@@ -45,6 +45,7 @@ function Scaling() {
   const total=t3.families.reduce((a,f)=>a+perRun(f)*counts(f),0);
   const quantity=(v:number)=>number(v,unit==='days'?1:0);
   const unitText=unit==='days'?'node-days':'GPU-hours';
+  const measured=publishedT3.get(cell.id);
   const tokens=cell.estimatedTokens===null?'Pending proof':number(cell.estimatedTokens/1e9,2)+'B';
   const note=cell.estimatedTokens===null?'The dense burn-in and sparse phase need separate cost proofs.':'Token and update counts use the planning ledger, rounded to whole updates.';
   const shape=cell.preLayers!==undefined?cell.preLayers+' + '+cell.coreLayers+' × 2 + '+cell.postLayers:cell.kdaLayers!==undefined?cell.kdaLayers+' KDA + '+cell.dsaLayers+' DSA':cell.expertWidth!==undefined?'256 / 8 / 1':'4 × width';
@@ -84,10 +85,12 @@ function Scaling() {
           <Tradeoff family={family} cell={cell} onPick={setDepth}/>
           <dl className="ts-values">{[['Width / heads',number(cell.width)+' / '+cell.heads],[shapeLabel,shape],['Training tokens',tokens],['Updates',cell.estimatedUpdates===null?'Pending proof':number(cell.estimatedUpdates)]].map(([k,v])=><div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
           <p className="ts-note">{note}</p>
+          {measured&&<div className="ts-measured"><small>Measured at the endpoint</small>
+            <dl className="ts-values">{[['Final validation BPB',number(measured.finalBpb!.val,4)],['CORE-22',number(measured.finalCore!.value,4)]].map(([k,v])=><div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl></div>}
           <div className="ts-cell-status"><span>{publishedT3.has(cell.id)
             ? <a href={REPO_FILE+'results/scaling/runs/'+cell.id+'.json'}>Published result ↗</a>
             : 'Formal result pending'}</span>
-            <a href={'#contribute?cell='+encodeURIComponent(cell.id)}>Contribute to {cell.id} <ArrowUpRight size={12}/></a></div>
+            <a href={measured?'#contribute':'#contribute?cell='+encodeURIComponent(cell.id)}>{measured?'Contribute to an open cell':'Contribute to '+cell.id} <ArrowUpRight size={12}/></a></div>
         </aside>
       </div>
     </section>

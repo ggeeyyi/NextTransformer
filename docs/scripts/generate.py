@@ -3,11 +3,11 @@
     python docs/scripts/generate.py           # rewrite the generated files
     python docs/scripts/generate.py --check   # exit 1 when a generated file is out of date (CI)
 
-Writes docs/src/content/docs/methods/zoo.md and methods/configurations.md, the results charts in
-.github/assets/readme/, and the blocks between the `<!-- generated:leaderboard -->` markers in results/leaderboard.md,
-README.md and README.zh-CN.md.
+Writes docs/src/content/docs/methods/zoo.md, methods/configurations.md and moe/results.md, the results charts in
+.github/assets/readme/, and the blocks between the `<!-- generated:leaderboard -->` and `<!-- generated:moe-results -->`
+markers in results/leaderboard.md, README.md and README.zh-CN.md.
 """
-import argparse, html, json, math, re, sys
+import argparse, html, json, math, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -22,8 +22,8 @@ TITLE = {"baseline": "Baseline", "looped": "Looped", "sparse": "Sparse", "linear
          "hybrid": "Hybrid", "others": "Others"}
 ASSETS = ROOT/".github/assets/readme"
 START, END = "<!-- generated:leaderboard -->", "<!-- /generated:leaderboard -->"
-
-
+MOE = ROOT/"moe"
+MOE_START, MOE_END = "<!-- generated:moe-results -->", "<!-- /generated:moe-results -->"
 def load(path): return json.loads(path.read_text())
 
 
@@ -297,6 +297,55 @@ def snapshot(chinese):
             f"[Full leaderboard]({SITE}docs/results/leaderboard/) · [Training replay]({SITE}#leaderboard)")
 
 
+def moe_tracks():
+    """Budget facts come from the admitted baseline even when a different method leads."""
+    tracks = []
+    for baseline_path in sorted((MOE / "configs").glob("*/baseline.json")):
+        cfg = load(baseline_path)
+        name = cfg["track"]["name"]
+        track = cfg["track"]
+        tracks.append(dict(name=name, width=track["width"], updates=track["updates"],
+                           tokens=track["updates"] * track["rows_per_update"] * cfg["protocol"]["sequence_len"],
+                           main=name.endswith("-240tpp")))
+    return sorted(tracks, key=lambda t: (not t["main"], t["width"]))
+
+
+def moe_results(chinese=False):
+    """Preserve the documentation address and track anchors as entry points into the observatory."""
+    title = "MoE 结果" if chinese else "MoE results"
+    intro = ("在观测站的 Leaderboard、Results 和 Model atlas 中可以切换 Dense 与 MoE。"
+             "MoE 主榜按 240 TPP 的两个档位分别排名。" if chinese else
+             "Choose Dense or MoE in the observatory’s Leaderboard, Results and Model atlas. "
+             "The main MoE comparison ranks each 240 TPP budget independently.")
+    out = ["---", f"title: {title}", "---", "", intro]
+    for t in moe_tracks():
+        name = t["name"]
+        heading = f"d{t['width']} · 240 TPP" if t["main"] else name
+        budget = ("Marin 原始参考预算" if chinese else "Original Marin reference budget") if not t["main"] else "240 TPP"
+        labels = ("榜单", "曲线与任务分数", "模型配置") if chinese else ("Leaderboard", "Curves and task scores", "Model atlas")
+        links = " · ".join(f"[{label}]({SITE}#{view}?track={name})"
+                           for label, view in zip(labels, ("leaderboard", "results", "atlas")))
+        out.extend(["", f"## {heading}", "", f"{budget} · {t['updates']:,} updates · {t['tokens']/1e9:.2f}B tokens", "", links])
+    out += ["", ("榜单取最后一次完整评测的 MoE-CORE 和六源宏平均验证 BPB。训练曲线展示计划内评测和抽样验证。"
+                 "原始记录与审计可从模型卡打开。" if chinese else
+                 "Rankings use the separate final MoE-CORE evaluation and full six-source macro BPB. "
+                 "Curves use scheduled task evaluations and sampled validation. Model cards link to the run and audit.")]
+    return "\n".join(out) + "\n"
+
+
+def moe_snapshot(chinese):
+    out = ["| 240 TPP 榜单 | 更新步数 | 输入 tokens | 观测站入口 |" if chinese else
+           "| 240 TPP leaderboard | Updates | Input tokens | Observatory views |",
+           "|---|---:|---:|---|"]
+    atlas, results = ("模型配置", "曲线与评测") if chinese else ("Model atlas", "Curves and evaluations")
+    for t in moe_tracks():
+        if t["main"]:
+            name = t["name"]
+            out.append(f"| [d{t['width']}]({SITE}#leaderboard?track={name}) | {t['updates']:,} | "
+                       f"{t['tokens']/1e9:.2f}B | [{atlas}]({SITE}#atlas?track={name}) · [{results}]({SITE}#results?track={name}) |")
+    return "\n".join(out)
+
+
 def splice(text, block, start=START, end=END):
     before, rest = text.split(start, 1)
     return before + start + "\n" + block + "\n" + end + rest.split(end, 1)[1]
@@ -314,7 +363,8 @@ def readme_sections(path, chinese):
                  for card in cards if card["family"] == family]
         table.append(f"| {badge} | {' · '.join(names)} |")
     text = splice(path.read_text(), snapshot(chinese))
-    return splice(text, "\n".join(table), "<!-- generated:model-zoo -->", "<!-- /generated:model-zoo -->")
+    text = splice(text, "\n".join(table), "<!-- generated:model-zoo -->", "<!-- /generated:model-zoo -->")
+    return splice(text, moe_snapshot(chinese), MOE_START, MOE_END)
 
 
 def chinese_leaderboard(table):
@@ -335,6 +385,7 @@ def outputs():
     zh_leaderboard = zh / "results/leaderboard.md"
     return {DOCS/"methods/zoo.md": zoo(), DOCS/"methods/configurations.md": configurations(),
             zh/"methods/zoo.md": zoo(True), zh/"methods/configurations.md": configurations(True),
+            DOCS/"moe/results.md": moe_results(), zh/"moe/results.md": moe_results(True),
             zh_leaderboard: splice(zh_leaderboard.read_text(), chinese_leaderboard(docs_table)),
             leaderboard: splice(leaderboard.read_text(), docs_table),
             readme: readme_sections(readme, False),

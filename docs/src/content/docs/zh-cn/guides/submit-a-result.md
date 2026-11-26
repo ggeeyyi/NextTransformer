@@ -3,6 +3,8 @@ title: 提交结果
 description: 审计完成的正式运行、导出记录，并提交 pull request。
 ---
 
+Dense 的流程如下。MoE 使用[独立的准入与审计流程](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/moe/README.md#submitting-a-method)，结果进入[对应档位的观测站榜单](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp)。
+
 一个结果是已准入配置的一次完成的**正式**运行：46,875 次更新、全部 189 次验证事件、全部 6 次 CORE-22 事件，每个分段都用 `--formal` 训练。
 贡献新方法时，将下列结果材料与方法实现放在同一个 PR 中提交。
 

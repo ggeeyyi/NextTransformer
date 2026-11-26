@@ -1,0 +1,8 @@
+{
+  "name": "softmax_aux",
+  "title": "Softmax router with a Switch-style load-balancing loss (test plugin)",
+  "paper": {"title": "Switch Transformers", "url": "https://arxiv.org/abs/2101.03961"},
+  "options": {"aux_coeff": 0.01},
+  "debug_options": {"aux_coeff": 0.1},
+  "calibrate": "none"
+}

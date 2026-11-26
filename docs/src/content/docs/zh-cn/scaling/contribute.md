@@ -7,7 +7,7 @@ description: 选择计划点、核对实现与成本，并提交可复核的记�
 
 ## 四个家族的参考代码
 
-在[网站的 Contribute 入口](../../../../#contribute)选择任一 T3 配置，即可查看参考代码、待接入的工作和协作 issue。建议先用 `dense-T3-L20` 验证各家族共用的训练与评测流程。
+[网站的 Contribute 入口](../../../../#contribute)列出仍开放的 T3 配置，可查看参考代码、待接入的工作和协作 issue。已发布结果的配置即告关闭，不再列出；已有协作 issue 的配置表示已被认领，安排算力前请先查看。已发布的 Dense 记录已完整跑通共用的训练与评测流程，剩余的 Dense 配置只需配置文件和正式训练，无需新代码。
 
 | 家族 | 可复用的代码 | T3 还需要的贡献 |
 | --- | --- | --- |
@@ -31,5 +31,6 @@ NANOCHAT_DTYPE=float32 OMP_NUM_THREADS=1 python -m nexttransformer.scaling.refer
 1. 在 [T3 协作 issue](https://github.com/Interactive-Active-AI/NextTransformer/issues/new?template=scaling_cell.yml) 标注配置编号、想参与的工作及可用资源。安排算力前，与维护者确认实现和证明。
 2. 按 [2K 协议](../protocol/)核对各家族的内核、数据前缀、显存、恢复行为与阶段成本，区分规划吞吐和实测吞吐。
 3. 正式运行锁定经核对的实现、配置、证明与数据指纹，固定 seed 42，完整保留计划中的评测。记录独立最终 BPB、完整 CORE-22、实际 tokens 与累计 FLOPs，并附检查点和来源链接。
+4. 在 PR 正文用 `Closes #N` 指向对应的协作 issue，记录合并后认领即自动关闭。若该 issue 还认领了本 PR 未交付的配置，改写 `Part of #N`，保留 issue 给其余部分。
 
 也可参与拟合分析、审计和已发布模型的额外评测。后续各档随配置公布而开放。

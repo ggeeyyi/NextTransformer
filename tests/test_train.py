@@ -44,7 +44,7 @@ def fake_bpb(model, tokenizer, data_dir, resources, *, batch, rank, world, devic
     return dict(bpb=1.0, input_tokens=tokens, split=split, seconds=0.0, smoke=smoke)
 
 
-def fake_core(model, tokenizer, resources, device, *, smoke_max_per_task=None):
+def fake_core(model, tokenizer, resources, device, *, smoke_max_per_task=None, core_max_tokens=None):
     return dict(core_metric=0.0, results={}, full_core=smoke_max_per_task is None)
 
 

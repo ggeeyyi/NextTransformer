@@ -18,6 +18,9 @@
 .ts-progress span,.ts-progress a,.ts-cell-status a,.ts-join a { display:inline-flex; align-items:center; gap:5px; }
 .ts-progress a,.ts-cell-status a,.ts-join a:not(.primary) { color:#526b85; text-decoration:underline; text-underline-offset:3px; }
 .ts-cell-status { justify-content:space-between; margin-top:12px; padding-top:9px; border-top:1px solid #dde4eb; font-size:12px; color:#647382; }
+.ts-measured { margin-top:12px; padding-top:10px; border-top:1px solid #dde4eb; }
+.ts-measured>small { font:600 11px var(--font-sans); color:#4c6681; }
+.ts-measured .ts-values { margin-top:6px; }
 .ts-join { scroll-margin-top:12px; margin:0 0 26px; padding:18px 20px; border:1px solid #dce3ea; border-radius:9px; background:#fff; color:#344456; }
 .ts-join p { font-size:13px; line-height:1.6; color:#586877; }
 .ts-join-select { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:14px 0 10px; font-size:13px; }

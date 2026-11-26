@@ -20,6 +20,7 @@ import torch
 import torch.distributed as dist
 
 from nanochat.tokenizer import RustBPETokenizer
+from nexttransformer.evaluation.context import add_core_max_tokens
 from nexttransformer.models import load_model
 from nexttransformer.runtime.data import verify_resources
 from nexttransformer.runtime.files import atomic_json
@@ -30,6 +31,7 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, allow_abbrev=False,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     add_runtime_arguments(p)
+    add_core_max_tokens(p)
     p.add_argument("--checkpoint", type=Path, required=True, help="a complete checkpoint_<step>/ directory")
     p.add_argument("--output", type=Path, required=True, help="result JSON")
     p.add_argument("--eval", default="bpb,core", help="bpb, core, or both")
@@ -74,7 +76,8 @@ def main(argv=None):
             result["bpb"] = {split: evaluate_bpb(model, tokenizer, data_dir, args.resources, args.split_tokens,
                                                  batch, rank, world, device, split) for split in ("train", "val")}
         if "core" in modes:
-            result["core"] = evaluate_core(model, tokenizer, args.resources, device, args.max_per_task)
+            result["core"] = evaluate_core(model, tokenizer, args.resources, device, args.max_per_task,
+                                           core_max_tokens=args.core_max_tokens)
     else:
         from nexttransformer.evaluation.formal import evaluate_bpb, evaluate_core
         from nexttransformer.protocol.spec import Protocol
@@ -87,7 +90,8 @@ def main(argv=None):
         if "core" in modes:
             model.set_sparse_backend(args.sparse_core)
             result["core"] = evaluate_core(model, tokenizer, args.resources, device,
-                                           smoke_max_per_task=None if args.max_per_task < 0 else args.max_per_task)
+                                           smoke_max_per_task=None if args.max_per_task < 0 else args.max_per_task,
+                                           core_max_tokens=args.core_max_tokens)
     if rank == 0: atomic_json(args.output, result)
     if world > 1: dist.destroy_process_group()
 

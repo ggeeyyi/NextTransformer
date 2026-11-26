@@ -1,0 +1,38 @@
+{
+ "id": "sconv_dynamic_out",
+ "name": "Dynamic-KV ShortConv · MLP output",
+ "family": "others",
+ "tagline": "Head-shared, input-conditioned K/V taps with static attention and MLP output convolutions.",
+ "description": "Full-attention Dense with independent bias-free K/V generators from the normalized attention input. Dynamic taps share within each head; static taps remain per channel. Attention and MLP output convolutions retain Static ShortConv placement and arithmetic. All taps and generators start at zero.",
+ "paperTitle": "Inkling 2 Small",
+ "paperUrl": "https://thinkingmachines.ai/news/inkling-2-small/",
+ "mechanism": [
+  "K/V: z[t] + sum_lag (static[channel,lag] + P(x[t])[head,lag]) * z[t-lag]",
+  "K before RoPE/QK norm; V before value embeddings; static convolutions after attention output and MLP down projections",
+  "Kernel four; zero initialization without extra RNG draws; static taps use AdamW, generator matrices use shared Muon"
+ ],
+ "limitations": "Adaptation of the cached Inkling 2 dynamic mechanism to the Static ShortConv comparison, not a complete released-model reproduction. No reference convolution scaling or BOS masking. Packed rows reset state. Separate FP32 dynamic accumulation retains the static arithmetic path. Full-sequence training/evaluation only; no incremental KV-cache. Single formal run at seed 42.",
+ "diagram": "custom",
+ "architecture": {
+  "kind": "custom",
+  "nodes": [
+   "Embedding",
+   "Dynamic K/V SConv",
+   "Causal MHA",
+   "Static attention output SConv",
+   "Static MLP output SConv",
+   "LM head"
+  ],
+  "loop": false
+ },
+ "blocks": 23,
+ "ffn": 6144,
+ "params": 1359767304,
+ "flops": 4.700459139729808,
+ "error": 0.600565541022613,
+ "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/sconv_dynamic_out/__init__.py",
+ "cohort": "reference-v1",
+ "sourceUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/sconv_dynamic_out/README.md",
+ "costModel": "reference-aten-math-v2",
+ "order": 52
+}

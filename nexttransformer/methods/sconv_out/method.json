@@ -1,0 +1,12 @@
+{
+  "name": "sconv_out",
+  "family": "others",
+  "title": "Static SConv on K/V and attention/MLP outputs",
+  "paper": {
+    "title": "Introducing Inkling",
+    "url": "https://thinkingmachines.ai/news/introducing-inkling/"
+  },
+  "options": {"kernel_size": 4},
+  "shell": {"layers": 24, "mlp_width": 6144, "window_pattern": "L"},
+  "layer_multiple": 1
+}

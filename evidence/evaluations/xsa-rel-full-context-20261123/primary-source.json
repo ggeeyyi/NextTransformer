@@ -1,0 +1,6 @@
+{
+  "source": "https://github.com/huggingface/transformers/blob/42efcfde46e668067a74bbd439d33f107b4a7c6c/src/transformers/models/inkling/modeling_inkling.py",
+  "sha256": "293e7c5946939d125d4d72688f89f1f982e871e9949d4fdea8c79ba39a7af94a",
+  "definition": "InklingRelativeLogits.forward masks bias to zero for distance < 0 or distance >= rel_extent",
+  "cached_original_sha256": "54f984ddf4a0ea1154012406adb6078327b94a4c6e58d3eff089b25573698725"
+}

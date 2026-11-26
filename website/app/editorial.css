@@ -46,7 +46,7 @@
 
 /* Type: nothing smaller than 12px, secondary text dark enough to read. */
 .observatory .axis-text,.observatory .plot-wide .axis-text { fill:var(--muted-ink); }
-.observatory .workspace-count,.observatory .baseline-note { font-size:13px; color:var(--muted-ink); }
+.observatory .workspace-count { font-size:13px; color:var(--muted-ink); }
 .observatory .directory-meta,.observatory .multiples-caption { font-size:13px; color:var(--muted-ink); }
 .observatory .directory-open p { color:var(--ink-soft); }
 .compute-value > small { font-size:12px; }

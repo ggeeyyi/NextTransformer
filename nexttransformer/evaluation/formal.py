@@ -5,7 +5,7 @@ import time
 
 import torch
 
-from nanochat.base_eval import evaluate_core as upstream_core
+from nexttransformer.evaluation.core import score_core
 from nanochat.loss_eval import evaluate_bpb as upstream_bpb
 from nexttransformer.evaluation.metrics import verify_core
 from nexttransformer.protocol.admission import data_layout, share_batches
@@ -51,7 +51,7 @@ def evaluate_bpb(model,tokenizer,data_dir,resources,*,batch,rank,world,device,
 
 
 @torch.no_grad()
-def evaluate_core(model,tokenizer,resources,device,*,smoke_max_per_task=None):
+def evaluate_core(model,tokenizer,resources,device,*,smoke_max_per_task=None,core_max_tokens=None):
     if smoke_max_per_task is None and model.config.scale!="formal":
         raise ValueError("debug architecture requires an explicitly labelled CORE smoke limit")
     verify_core(resources)
@@ -59,8 +59,9 @@ def evaluate_core(model,tokenizer,resources,device,*,smoke_max_per_task=None):
         raise ValueError("NANOCHAT_BASE_DIR must identify the verified CORE resources")
     was_training=model.training;offset=model.row_offset;model.eval()
     try:
-        result=upstream_core(EvalRows(model),tokenizer,device,
-                             max_per_task=-1 if smoke_max_per_task is None else smoke_max_per_task)
+        result=score_core(model, EvalRows, tokenizer, device,
+                          max_per_task=-1 if smoke_max_per_task is None else smoke_max_per_task,
+                          max_tokens=core_max_tokens)
         return dict(**result,full_core=smoke_max_per_task is None,expected_tasks=22,
                     protocol_hash=Protocol().fingerprint)
     finally:model.train(was_training);model.set_row_offset(offset)

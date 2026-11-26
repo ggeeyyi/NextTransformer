@@ -242,7 +242,9 @@ class Service:
                 "Checkpoint identity or complete state differs.",
             )
             start = checkpoint["step"]
-        target = integer(p.get("target_update", 1), start + 1, profile["max_updates"])
+        target = integer(
+            p.get("target_update", 1), start + 1, profile["max_updates"], "target_update"
+        )
         span = profile.get("max_updates_per_job")
         require(
             operation != "train" or span is None or target - start <= span,
@@ -513,7 +515,8 @@ class Service:
             s.put(db, sid, "package", {"id": candidate["id"], "files": files})
             return candidate
         if op == "list_candidates":
-            limit, cursor = integer(p.get("limit", 50), 1, 100), p.get("cursor", "")
+            limit = integer(p.get("limit", 50), 1, 100, "limit")
+            cursor = p.get("cursor", "")
             require(isinstance(cursor, str), "invalid_request", "Invalid cursor.")
             items = [c for c in s.all(db, sid, "candidate") if c["id"] > cursor]
             page = items[:limit]
@@ -612,8 +615,8 @@ class Service:
             return s.update(db, sid, "job", job)
         if op == "read_events":
             cursor, limit = (
-                integer(p.get("cursor", 0)),
-                integer(p.get("limit", 50), 1, 100),
+                integer(p.get("cursor", 0), name="cursor"),
+                integer(p.get("limit", 50), 1, 100, "limit"),
             )
             rows = db.execute(
                 "SELECT id,value FROM events WHERE owner=? AND id>? ORDER BY id LIMIT ?",

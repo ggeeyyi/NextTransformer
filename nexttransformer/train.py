@@ -74,6 +74,7 @@ from nexttransformer.models.native.config import NativeTrainConfig
 from nexttransformer.runtime.data import BestFitStream, verify_resources
 from nexttransformer.native.optimizer import set_schedule
 from nanochat.tokenizer import RustBPETokenizer
+from nexttransformer.evaluation.context import add_core_max_tokens, check_full_context, resume_core_limit
 
 from nexttransformer.protocol.calibrate import science_hash
 from nexttransformer.protocol.fingerprint import method_source
@@ -228,6 +229,7 @@ def parse(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     add_runtime_arguments(parser)
+    add_core_max_tokens(parser)
     parser.add_argument("--config", required=True, type=Path, help="configs/<family>/<method>.json")
     parser.add_argument("--formal", action="store_true",
                         help="refuse stale or out-of-budget cost evidence; required for results (default: research mode)")
@@ -378,6 +380,10 @@ def main(argv=None):
         if stream.rows*stream_world*config.sequence_len != state["input_tokens"]:
             raise ValueError("checkpoint token count differs from the exact data cursor")
         del saved
+        args.core_max_tokens = resume_core_limit(state, args.core_max_tokens, config.sequence_len)
+    state["core_max_tokens"] = args.core_max_tokens
+    if not smoke:
+        check_full_context(config, args.core_max_tokens)
     # Formal and full-batch smoke updates go through BudgetState; evaluation
     # events are recorded there only for formal runs (smoke uses its own list).
     budget = BudgetState.from_state_dict(state["budget"])
@@ -390,7 +396,7 @@ def main(argv=None):
         name = "provenance.json" if resume is None else f"resume_{state['step']:08d}.json"
         atomic_json(args.output/name, dict(
             config=str(args.config), model=asdict(config), model_hash=config.fingerprint, protocol_hash=p.fingerprint,
-            protocol=asdict(p), train=asdict(train_config), cost=dict(
+            core_max_tokens=args.core_max_tokens, protocol=asdict(p), train=asdict(train_config), cost=dict(
                 formula_version=proof["formula_version"], flops_per_token=proof["flops_per_token"],
                 dense_flops_per_token=dense_per_token, relative_error=proof["flops_per_token"]/dense_per_token-1,
                 total_training_flops=proof["total_training_flops"]),
@@ -429,7 +435,8 @@ def main(argv=None):
             model.set_sparse_backend("reference")
             try:
                 result = evaluate_core(model, tokenizer, args.resources, device,
-                                       smoke_max_per_task=args.smoke_core_per_task if smoke else None)
+                                       smoke_max_per_task=args.smoke_core_per_task if smoke else None,
+                                       core_max_tokens=args.core_max_tokens)
             finally:
                 model.set_sparse_backend(args.sparse_backend)
             seconds = time.monotonic()-begin

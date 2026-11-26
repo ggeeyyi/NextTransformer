@@ -1,0 +1,40 @@
+{
+  "model": {
+    "architecture": "dense",
+    "vocab_size": 32768,
+    "sequence_len": 2048,
+    "width": 1280,
+    "heads": 10,
+    "mlp_width": 5120,
+    "dense_layers": 20,
+    "value_embeddings": false,
+    "pre_layers": 3,
+    "core_layers": 9,
+    "post_layers": 3,
+    "recursions": 1,
+    "window_pattern": "L"
+  },
+  "train": {
+    "protocol": "nextt-scale-2k-v1",
+    "seed": 42,
+    "total_tokens": 30862737408,
+    "global_batch_tokens": 1048576,
+    "val_every": 1000,
+    "val_tokens": 41943040,
+    "final_bpb_tokens": 20971520,
+    "core_every": 20000,
+    "core_max_per_task": -1,
+    "checkpoint_every": 1000,
+    "milestone_every": 10000,
+    "warmup_steps": 40,
+    "warmdown_ratio": 0.65,
+    "final_lr_fraction": 0.05,
+    "muon_lr": 0.02,
+    "adamw_lr": 0.0006,
+    "embedding_lr": 0.3,
+    "unembedding_lr": 0.008,
+    "scalar_lr": 0.5,
+    "weight_decay": 0.28,
+    "grad_clip": 0.0
+  }
+}

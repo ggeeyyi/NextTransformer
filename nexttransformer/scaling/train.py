@@ -32,6 +32,7 @@ from torch.utils.checkpoint import checkpoint
 
 from nanochat.flash_attention import USE_FA3
 from nanochat.tokenizer import RustBPETokenizer
+from nexttransformer.evaluation.context import add_core_max_tokens, check_full_context, resume_core_limit
 from nexttransformer.evaluation.native import evaluate_bpb, evaluate_core
 from nexttransformer.models.native.model import NativeExperiment, build_model, theoretical_training_flops
 from nexttransformer.native.optimizer import set_schedule
@@ -102,6 +103,7 @@ def archive_records(output):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     add_runtime_arguments(parser)
+    add_core_max_tokens(parser)
     parser.add_argument('--config', required=True, type=Path)
     parser.add_argument('--output', type=Path)
     parser.add_argument('--world-size', type=int, default=32, help='dry-run planning only; runtime uses torchrun WORLD_SIZE')
@@ -219,6 +221,10 @@ def main(argv=None):
         if state['source_sha256'] != source['sha256'] and not args.allow_source_change:
             raise ValueError('resume source files differ from checkpoint; preserve them or pass --allow-source-change')
         del saved
+        args.core_max_tokens = resume_core_limit(state, args.core_max_tokens, mc.sequence_len)
+    state['core_max_tokens'] = args.core_max_tokens
+    if not smoke:
+        check_full_context(mc, args.core_max_tokens)
     previous_source = state.get('source_sha256')
     state['source_sha256'], state['smoke'] = source['sha256'], smoke
     if not benchmark and local_rank == 0:
@@ -227,7 +233,7 @@ def main(argv=None):
             rewind_events(output, state['step'])
         atomic_json(output/('provenance.json' if resumed is None else f'resume_{state["step"]:08d}.json'), {
             'model': asdict(mc), 'train': asdict(tc), **identity, 'source': source, 'previous_source_sha256': previous_source,
-            'command': sys.argv, 'world_size': world, 'nodes': hosts,
+            'core_max_tokens': args.core_max_tokens, 'command': sys.argv, 'world_size': world, 'nodes': hosts,
             'device': torch.cuda.get_device_name(device) if device.type == 'cuda' else str(device),
             'micro_batch': args.micro_batch, 'gradient_accumulation': accumulation, 'compile': args.compile,
             'recompute_layers': recompute, 'bucket_view': args.bucket_view, 'bf16_grad_reduce': args.bf16_grad_reduce,
@@ -313,7 +319,8 @@ def main(argv=None):
                         'gpu_hours': world*state['training_seconds']/3600, 'peak_memory_bytes': memory})
             if state['step'] % tc.val_every == 0 or state['step'] == stop_step: validation(state['step'])
             if not smoke and state['step'] < tc.steps and state['step'] in core_steps:
-                result = evaluate_core(model, tokenizer, args.resources, device, tc.core_max_per_task)
+                result = evaluate_core(model, tokenizer, args.resources, device, tc.core_max_per_task,
+                                       core_max_tokens=args.core_max_tokens)
                 record({'event': 'core', 'step': state['step'], **result})
                 if rank == 0: atomic_json(output/f"core_{state['step']:08d}.json", {'event': 'core', 'step': state['step'], **result})
             requested = bool(stop_signal) or (rank == 0 and not benchmark and (output/'STOP').exists())
@@ -334,7 +341,7 @@ def main(argv=None):
             if rank == 0: atomic_json(output/'bpb_final.json', final_bpb)
             record({'event': 'final_bpb', 'step': state['step'],
                     **{split+'_bpb': result[split+'_bpb'] for split, result in final_bpb.items()}})
-            result = evaluate_core(model, tokenizer, args.resources, device)
+            result = evaluate_core(model, tokenizer, args.resources, device, core_max_tokens=args.core_max_tokens)
             if rank == 0: atomic_json(output/'core_final.json', result)
             record({'event': 'core', 'step': state['step'], **result})
         phase = phase or ('smoke_complete' if smoke else 'training_complete' if complete else 'stopped')

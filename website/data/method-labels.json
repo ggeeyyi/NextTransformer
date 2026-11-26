@@ -16,6 +16,8 @@
   "kda_hybrid": "KDA–MLA-NoPE",
   "loopformer": "LoopFormer",
   "mhc": "mHC",
+  "simplehc": "SimpleHC",
+  "ihc": "iHC",
   "mla_nope_qknorm": "MLA-NoPE-QK",
   "mla_qknorm": "MLA-QK",
   "moba": "MoBA",

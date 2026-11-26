@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {FINAL_STEP,leaderboardEntries,preferredRuns,rankingCheckpoint} from '../app/lib/leaderboard.ts';
+import {FINAL_STEP,coreLengthGroups,leaderboardEntries,preferredRuns,rankingCheckpoint} from '../app/lib/leaderboard.ts';
 
 const run=(id,core,val,extra={})=>({id,methodId:id,cohort:'external',name:id,step:FINAL_STEP,core,val,...extra});
 const a=run('a',[{step:8000,value:.9},{step:FINAL_STEP,value:.3}],[{step:8000,value:.8},{step:FINAL_STEP,value:.7}],{finalBpb:.01});
@@ -54,4 +54,15 @@ test('a core-only run ranks on CORE and is left out of the validation BPB rankin
  assert.deepEqual(val.map(e=>[e.run.id,e.rank]),[['b',1],['a',undefined]]);
  assert.equal(val[1].val,.7);
  assert.ok(val[1].coreOnly&&!val[0].coreOnly);
+});
+
+test('CORE length groups compare measured inputs with training length and list each method once',()=>{
+ const result=(name,trainingTokens,maxTokens,maxEvaluatedTokens)=>({
+  ...a,name,coreContext:{trainingTokens,maxTokens,maxEvaluatedTokens,truncation:maxTokens===null?'none':'left'}
+ });
+ const equal=result('A',2048,2048,2048), shorter=result('B',2048,1024,1024);
+ const longer=result('C',2048,4096,4096), full=result('D',2048,null,5835);
+ const fits=result('E',8192,null,5835), paddedCap=result('F',8192,16384,5835);
+ assert.deepEqual(coreLengthGroups([b,full,longer,equal,shorter,equal,fits,paddedCap,{...full,name:'Pending',core:[]}],r=>r.name),
+  {within:['A','B','E','F'],beyond:['C','D']});
 });

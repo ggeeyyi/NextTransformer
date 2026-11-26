@@ -7,7 +7,7 @@ Pick a family and depth in the [T3 explorer](../../../#scaling) and download its
 
 ## Model reference code
 
-The [Contribute tab](../../../#contribute) opens the reference links, implementation work and coordination issue for any of the 16 T3 designs. Start with `dense-T3-L20` for the shared training and evaluation checks.
+The [Contribute tab](../../../#contribute) lists each T3 design that is still open, with its reference links, implementation work and coordination issue. A design with a published result is closed and leaves the list. One with an open coordination issue is already claimed, so check there before booking compute. The published Dense records have already run the shared trainer and evaluation end to end, so a remaining Dense cell needs a configuration and a run rather than new code.
 
 | Family | Start in the repository | T3 work to contribute |
 | --- | --- | --- |
@@ -31,5 +31,6 @@ The command runs a forward and backward pass on synthetic inputs for the existin
 1. Open a [T3 coordination issue](https://github.com/Interactive-Active-AI/NextTransformer/issues/new?template=scaling_cell.yml) with the cell ID, intended contribution and availability. Verify the implementation and cost proof with the maintainers before booking compute.
 2. For implementation work, match the [2K protocol](../protocol/), check the kernels, data stream, memory, resume behavior and FLOPs for each training phase. Publish estimated and measured throughput separately.
 3. For a formal run, pin the approved implementation, configuration, cost proof and data hashes. Preserve seed 42 and report every scheduled evaluation. Keep the final validation BPB, full CORE-22, actual tokens and cumulative training FLOPs together with checkpoint and provenance links.
+4. Name the coordination issue in the pull request with `Closes #N`, so the claim closes when the record merges. If the issue also claims cells the pull request does not deliver, write `Part of #N` and leave it open for the rest.
 
 Analysis of the fits, audits and evaluations of released checkpoints are also welcome. Later phases open when their own specifications are published.

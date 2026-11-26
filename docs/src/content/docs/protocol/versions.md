@@ -15,6 +15,3 @@ carries; it therefore never changes for an existing protocol. The website and do
 A change to any controlled value defines a new protocol with a new identifier and fingerprint. Runs, proofs and
 arena cards keep the version they were made under and are never rewritten. Documentation can be reorganized without
 changing a protocol.
-
-The scaling recipes planned for November 2026 (400B input tokens and larger models) will be registered as new
-protocols next to this one; see the [roadmap](../../roadmap/).

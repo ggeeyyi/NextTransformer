@@ -1,0 +1,7 @@
+{
+  "name": "top1_wide",
+  "title": "Top-1 routing with wider experts (test plugin for calibration)",
+  "paper": {"title": "test", "url": "https://example.org"},
+  "options": {},
+  "calibrate": "expert_width"
+}

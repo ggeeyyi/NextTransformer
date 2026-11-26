@@ -53,6 +53,32 @@ def test_http_and_mcp_reject_malformed_parameters_before_dispatch(endpoint):
     anyio.run(check)
 
 
+def test_out_of_range_target_update_names_the_field_and_bounds(endpoint):
+    _, _, candidate, http, credential = endpoint
+    params = {
+        "candidate_id": candidate["id"],
+        "profile_id": "research-fixture",
+        "target_update": 9,
+    }
+    with pytest.raises(GymError) as error:
+        http.call("quote_experiment", **params)
+    assert error.value.code == "invalid_request"
+    assert error.value.hint == "target_update must be an integer from 1 to 8."
+    assert error.value.details == {
+        "field": "target_update",
+        "minimum": 1,
+        "maximum": 8,
+    }
+
+    async def check():
+        async with connection(credential) as mcp:
+            result = await mcp.call_tool("quote_experiment", params)
+            assert result.isError
+            assert payload(result) == error.value.wire()
+
+    anyio.run(check)
+
+
 def test_every_public_operation_in_http_research_lifecycle(endpoint):
     service, _, _, http, _ = endpoint
     used = set()

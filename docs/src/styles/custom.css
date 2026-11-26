@@ -79,7 +79,7 @@
 :root[data-theme='light'] .card .icon { filter: saturate(0.9); }
 .hero img { border-radius: 24px; box-shadow: 0 24px 60px rgba(116, 99, 140, 0.16); }
 
-/* Badges (sidebar "v2 · Nov 14") */
+/* Badges (sidebar "v2 · live") */
 :root[data-theme='light'] .sl-badge { background: #F4F1F8; border-color: #DDD5E8; color: #74638C; }
 
 /* Asides */

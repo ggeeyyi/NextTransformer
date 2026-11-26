@@ -3,7 +3,7 @@ title: Model zoo
 description: Every method in NextTransformer, by family.
 ---
 
-NextTransformer has 45 model cards in seven families. Every method runs in the same shell and is calibrated to
+NextTransformer has 47 model cards in seven families. Every method runs in the same shell and is calibrated to
 the same training compute. Open a method in the [observatory](https://interactive-active-ai.github.io/NextTransformer/#atlas) for its architecture diagram, curves and
 model card; "registered" methods have a card and a configuration but no published run.
 
@@ -54,5 +54,7 @@ model card; "registered" methods have a card and a configuration but no publishe
 | Others | Gated Attention · headwise (`gated_attention_headwise`) | [Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free](https://arxiv.org/abs/2505.06708) | published |
 | Others | XSA · Exclusive Self Attention (`xsa`) | [Exclusive Self Attention](https://arxiv.org/abs/2603.09078v1) | published |
 | Others | Inkling REL (`inkling_rel`) | [Inkling: content-dependent relative position logits](https://huggingface.co/thinkingmachines/Inkling) | published |
+| Others | Static ShortConv · MLP output (`sconv_out`) | [Introducing Inkling](https://thinkingmachines.ai/news/introducing-inkling/) | published |
+| Others | Dynamic-KV ShortConv · MLP output (`sconv_dynamic_out`) | [Inkling 2 Small](https://thinkingmachines.ai/news/inkling-2-small/) | published |
 
 See the [configuration reference](../configurations/) for training configurations. Add your own as a [plugin](../../guides/plugins/).

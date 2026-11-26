@@ -1,0 +1,8 @@
+{
+  "name": "mhc",
+  "title": "Manifold-Constrained Hyper-Connections",
+  "paper": {"title": "mHC: Manifold-Constrained Hyper-Connections", "url": "https://arxiv.org/abs/2512.24880"},
+  "options": {"streams": 4, "gate_init": 0.01, "init_std": 0.006, "sinkhorn_iterations": 20},
+  "debug_options": {"streams": 2},
+  "calibrate": "expert_width"
+}

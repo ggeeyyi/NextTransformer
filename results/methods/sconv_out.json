@@ -1,0 +1,38 @@
+{
+ "id": "sconv_out",
+ "name": "Static ShortConv · MLP output",
+ "family": "others",
+ "tagline": "Static local mixing on K/V and attention/MLP branch outputs, without AttnRes.",
+ "description": "Full-attention Dense with four identity-initialized causal depthwise convolutions per layer. K/V convolutions follow their projections; output convolutions follow the attention and MLP down projections. Retains ordinary residuals, RoPE, QK normalization, value embeddings, squared ReLU and the shared optimizer.",
+ "paperTitle": "Introducing Inkling",
+ "paperUrl": "https://thinkingmachines.ai/news/introducing-inkling/",
+ "mechanism": [
+  "Kernel-four static per-channel filters: S(x) = x + DWConv(x), with zero-initialized taps",
+  "K before RoPE/QK norm; V before value embeddings; branch convolutions after output projections",
+  "No AttnRes, dynamic filters, extra activation or added attention gate"
+ ],
+ "limitations": "Fixed-budget placement adaptation, not a reproduction of the complete Inkling or Marin recipe. Packed rows reset convolution state; BOS within a row does not. Full-sequence training/evaluation only; incremental KV-cache decoding is unsupported. Single formal run at seed 42.",
+ "diagram": "custom",
+ "architecture": {
+  "kind": "custom",
+  "nodes": [
+   "Embedding",
+   "K/V SConv",
+   "Causal MHA",
+   "Attention output SConv",
+   "MLP output SConv",
+   "LM head"
+  ],
+  "loop": false
+ },
+ "blocks": 23,
+ "ffn": 6144,
+ "params": 1356375816,
+ "flops": 4.678335813012512,
+ "error": 0.12707580028705756,
+ "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/sconv_out/__init__.py",
+ "cohort": "reference-v1",
+ "sourceUrl": "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/nexttransformer/methods/sconv_out/README.md",
+ "costModel": "reference-aten-math-v2",
+ "order": 51
+}

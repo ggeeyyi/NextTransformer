@@ -3,6 +3,8 @@ title: Submit a result
 description: Audit a finished formal run, export it, and open a pull request.
 ---
 
+This guide covers Dense. For MoE, follow the [MoE admission and export guide](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/moe/README.md#submitting-a-method) for the [MoE leaderboard](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp).
+
 A result is a finished **formal** run of an admitted configuration: 46,875 updates, all 189 validation events, all six
 CORE-22 events, every segment trained with `--formal`. For a new method, submit these artifacts in the same pull request as the implementation.
 
@@ -31,6 +33,13 @@ python -m nexttransformer.export_run --check
 not reproduce the aggregate, an unmatched cumulative audit, any research-mode segment, a different tokenizer or a
 different protocol. Add `--note "..."` when the run needs a provenance note (for example, trained from a frozen source
 revision).
+
+Declare the CORE truncation setting and exact token limit in the result announcement and pull request. Use
+`none` with no limit for full prompts, or `left` with the number supplied to `--core-max-tokens N`.
+The exporter reads the measurements from all six CORE events. It writes a `coreContext` object containing
+`trainingTokens`, `truncation`, `maxTokens` (null for full prompts), and `maxEvaluatedTokens`. For logs from the
+original evaluator, pass `--legacy-core-2048` only after verifying the original 2,048-token left crop.
+The leaderboard groups methods by the longest input actually scored.
 
 ## 3. Write run notes
 

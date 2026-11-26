@@ -43,6 +43,17 @@ A pilot can never supply pretrained weights to a run labelled "from scratch".
 over 22 tasks (scored on a 0–1 scale and shown ×100): higher is better. Leaderboard comparisons use the values
 measured at update 46,875; nothing is interpolated.
 
+CORE uses the full prompt by default. Pass `--core-max-tokens N` to left-truncate each overlong candidate to its
+last N tokens, including the scored answer. Full CORE requires N ≥ 225 to keep every answer and its preceding token.
+The original leaderboard results used a 2,048-token left crop. Full prompts
+retain their initial BOS and all few-shot examples. Training context, attention windows and BPB retain their usual
+settings. Models with a learned distance limit, such as the 2,048-token Inkling REL checkpoint, require an explicit
+compatible cap. A training run keeps the same CORE policy across checkpoints and resumed segments.
+
+With the pinned 2,048-token training context, only **3 of 22** tasks contain longer inputs. These are SQuAD
+(6,895 of 10,570 questions), BoolQ (185 of 3,270), and Language Identification (1,820 of 10,000). The longest
+candidate uses 5,835 tokens. A question counts once if any candidate exceeds the training length.
+
 ## Reserved signals
 
 The validation shard and the CORE-22 tasks belong to the formal run. Do not use them to choose among candidates,

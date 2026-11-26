@@ -19,6 +19,7 @@ from nanochat.loss_eval import evaluate_bpb as upstream_bpb
 from nexttransformer.models.config import METHODS, debug_config
 from nexttransformer.protocol.spec import Protocol
 from nexttransformer.models.lm import build_model
+from nexttransformer.evaluation.context import add_core_max_tokens
 from nexttransformer.evaluation.formal import evaluate_bpb, evaluate_core, EvalRows
 from nexttransformer.checks.validate import source_hash
 
@@ -29,6 +30,7 @@ def checksum(x,y):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
+    add_core_max_tokens(p)
     p.add_argument("--data-dir",type=Path,required=True)
     p.add_argument("--resources",type=Path,required=True)
     p.add_argument("--output",type=Path,required=True)
@@ -78,7 +80,9 @@ def main():
     save("running")
     for method in args.core_methods:
         c=replace(debug_config(method,sequence_len=2048),vocab_size=32768)
-        m=build_model(c,device).eval();result=evaluate_core(m,tok,args.resources,device,smoke_max_per_task=args.core_max_per_task)
+        m=build_model(c,device).eval()
+        result=evaluate_core(m,tok,args.resources,device,smoke_max_per_task=args.core_max_per_task,
+                             core_max_tokens=args.core_max_tokens)
         core.append(dict(method=method,status="passed",full_core=False,result=result))
         save("running")
         if rank==0:print(json.dumps(dict(method=method,status="core_smoke_passed",max_per_task=args.core_max_per_task)),flush=True)

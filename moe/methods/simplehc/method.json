@@ -1,0 +1,8 @@
+{
+  "name": "simplehc",
+  "title": "SimpleHC",
+  "paper": {"title": "On the Design of Hyper-Connections: Simplification, Stability, and Scalability", "url": "https://arxiv.org/abs/2611.05984"},
+  "options": {"streams": 4, "init_std": 0.006, "alpha_init": 0.01},
+  "debug_options": {"streams": 2},
+  "calibrate": "expert_width"
+}

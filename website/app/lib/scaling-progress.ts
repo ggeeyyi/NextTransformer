@@ -12,8 +12,9 @@ export type RunSummary = {
   finalCore?: { value: number; tasks: Record<string, number> };
 };
 
-export function publishedCells(records: RunSummary[]) {
-  const completed = new Set<string>();
+// The record behind each published cell, so a view can show the measured endpoint and not only that one exists.
+export function publishedRecords(records: RunSummary[]) {
+  const completed = new Map<string, RunSummary>();
   for (const run of records) {
     const cell = t3.cells.find(c => c.id === run.id && c.family === run.family);
     if (!cell || run.protocol !== t3.protocol || run.model?.sequenceLength !== t3.sequenceLength ||
@@ -23,8 +24,17 @@ export function publishedCells(records: RunSummary[]) {
     if (endpoint && run.training && Number.isInteger(run.training.steps) && run.training.steps > 0 &&
         endpoint.step === run.training.steps && Number.isFinite(final?.value) && endpoint.value === final?.value &&
         Number.isFinite(run.finalBpb?.val) && CORE_TASKS.every(task => Number.isFinite(final?.tasks?.[task.id]))) {
-      completed.add(cell.id);
+      completed.set(cell.id, run);
     }
   }
   return completed;
+}
+
+export function publishedCells(records: RunSummary[]) {
+  return new Set(publishedRecords(records).keys());
+}
+
+// Scaling records are immutable, so a cell that has one cannot receive a second run and is no longer open to claim.
+export function openCells(published: { has(id: string): boolean }) {
+  return t3.cells.filter(c => !published.has(c.id));
 }

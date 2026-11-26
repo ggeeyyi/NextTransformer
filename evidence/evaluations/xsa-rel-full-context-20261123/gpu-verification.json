@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "world": 32,
+  "checks": [
+    {
+      "length": 2048,
+      "relative_error": 0.002043947810307145
+    },
+    {
+      "length": 2049,
+      "relative_error": 0.001995138358324766
+    },
+    {
+      "length": 5835,
+      "relative_error": 0.0020711396355181932
+    }
+  ],
+  "reference": "Independent dense content scores and masked distance bias in FP32",
+  "maximum_relative_tolerance": 0.012,
+  "all_ranks_asserted": true
+}

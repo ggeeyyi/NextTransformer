@@ -1,0 +1,8 @@
+{
+  "name": "ihc",
+  "title": "Identity Hyper-Connections (Hy4)",
+  "paper": {"title": "Hy4 preview: Identity Hyper-Connections", "url": "https://github.com/Tencent-Hunyuan/Hy4-preview"},
+  "options": {"streams": 4, "gate_init": 0.01, "init_std": 0.006, "gate_eps": 1e-6},
+  "debug_options": {"streams": 2},
+  "calibrate": "expert_width"
+}

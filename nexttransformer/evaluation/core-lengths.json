@@ -1,0 +1,12 @@
+{
+  "trainingTokens": 2048,
+  "maxPromptTokens": 5835,
+  "longestAnswerTokens": 224,
+  "overTrainingContext": {
+    "SQuAD": 6895,
+    "BoolQ": 185,
+    "Language Identification": 1820
+  },
+  "taskCount": 22,
+  "questionCount": 91037
+}

@@ -1,0 +1,136 @@
+{
+ "id": "dense-T3-L28",
+ "name": "Dense · T3-L28 · 2K",
+ "family": "dense",
+ "protocol": "nextt-scale-2k-v1",
+ "config": "configs/scaling/t3_dense_l28.json",
+ "configSha256": "07dff102cab40e9e74d9f1be642e4cfea186b01bdf8cc88c5d9a9a50ff88ef45",
+ "model": {
+  "layers": 28,
+  "width": 1792,
+  "heads": 14,
+  "mlpWidth": 7168,
+  "sequenceLength": 2048,
+  "vocabSize": 32768
+ },
+ "parameters": {
+  "total": 1196425298,
+  "blocks": 1078984704,
+  "blocksAndHead": 1137704960
+ },
+ "training": {
+  "steps": 11833,
+  "inputTokens": 12407799808,
+  "globalBatchTokens": 1048576,
+  "worldSize": 8,
+  "microBatch": 8,
+  "gradientAccumulation": 8,
+  "theoreticalGflopsPerToken": 8.05935528,
+  "trainingFlopsEstimate": 9.999886689578779e+19,
+  "gpuHours": 59.61152704293296,
+  "medianMfu": 0.47905536969477763
+ },
+ "source": {
+  "sha256": "6e87db7723a3d681dacffb9a3c3c2ea5434a1b0734db82a8d254801294ed6390",
+  "nativeManifestSha256": "7f37aebc75cf8b451fd9c9a1b19d71a6012f7f94678bf5dfbcb23aa12f6c5474",
+  "dataSha256": "c694fefb96ebc78590c5b8d477ed8b8c64c5bbab56941e4eb4cc8ea24c24693a",
+  "torch": "2.9.1+cu128",
+  "cuda": "12.8",
+  "attention": "fa3"
+ },
+ "val": [
+  {
+   "step": 0,
+   "value": 3.1688912008549153
+  },
+  {
+   "step": 1000,
+   "value": 0.8393188624921456
+  },
+  {
+   "step": 2000,
+   "value": 0.79903032580618
+  },
+  {
+   "step": 3000,
+   "value": 0.782147289784301
+  },
+  {
+   "step": 4000,
+   "value": 0.7741879945448171
+  },
+  {
+   "step": 5000,
+   "value": 0.7561846230015195
+  },
+  {
+   "step": 6000,
+   "value": 0.7412159834408739
+  },
+  {
+   "step": 7000,
+   "value": 0.7284840565516923
+  },
+  {
+   "step": 8000,
+   "value": 0.7168611139719022
+  },
+  {
+   "step": 9000,
+   "value": 0.7062821918419014
+  },
+  {
+   "step": 10000,
+   "value": 0.6970990613118476
+  },
+  {
+   "step": 11000,
+   "value": 0.689520002569605
+  },
+  {
+   "step": 11833,
+   "value": 0.6850145027762823
+  }
+ ],
+ "core": [
+  {
+   "step": 11833,
+   "value": 0.2935205678075323
+  }
+ ],
+ "finalBpb": {
+  "val": 0.6823244237041273,
+  "train": 0.6841991893755759
+ },
+ "finalCore": {
+  "value": 0.2935205678075323,
+  "tasks": {
+   "hellaswag_zeroshot": 0.48111263910929364,
+   "jeopardy": 0.1440718024969101,
+   "bigbench_qa_wikidata": 0.5085379481315613,
+   "arc_easy": 0.6419753233591715,
+   "arc_challenge": 0.2559726635615031,
+   "copa": 0.3999999761581421,
+   "commonsense_qa": 0.17076166719198224,
+   "piqa": 0.5364526510238647,
+   "openbook_qa": 0.23200003306070963,
+   "lambada_openai": 0.4948573410511017,
+   "hellaswag": 0.49306241671244305,
+   "winograd": 0.41391944885253906,
+   "winogrande": 0.17284917831420898,
+   "bigbench_dyck_languages": 0.06800000369548798,
+   "agi_eval_lsat_ar": 0.07608695328235625,
+   "bigbench_cs_algorithms": 0.4371212124824524,
+   "bigbench_operators": 0.17142857611179352,
+   "bigbench_repeat_copy_logic": 0.03125,
+   "squad": 0.4887417256832123,
+   "coqa": 0.3627708852291107,
+   "boolq": -0.30371796457391037,
+   "bigbench_language_identification": 0.18019801083177622
+  }
+ },
+ "links": {
+  "wandb": null,
+  "checkpoint": "https://huggingface.co/HalstonCheng/nextt-scaling-dense-t3-l28-2k"
+ }
+}

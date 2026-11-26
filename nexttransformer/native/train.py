@@ -22,6 +22,7 @@ from nexttransformer.models.native.config import load_config
 from nexttransformer.runtime.files import atomic_json
 from nexttransformer.runtime.data import BestFitStream, verify_resources
 from nanochat.tokenizer import RustBPETokenizer
+from nexttransformer.evaluation.context import add_core_max_tokens, check_full_context, resume_core_limit
 from nexttransformer.evaluation.native import evaluate_bpb, evaluate_core
 from nexttransformer.models.native.model import NativeExperiment, build_model, theoretical_training_flops
 from nexttransformer.models.native.halter import feature_forward_ops
@@ -34,6 +35,7 @@ from nexttransformer.runtime.process import (initialize,autocast,synchronize,sou
 def main():
     parser=argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     add_runtime_arguments(parser)
+    add_core_max_tokens(parser)
     parser.add_argument('--config',required=True,type=Path)
     parser.add_argument('--output',type=Path)
     parser.add_argument('--world-size',type=int,default=8,help='dry-run planning only; runtime uses torchrun WORLD_SIZE')
@@ -107,6 +109,10 @@ def main():
         if train.rows*world*mc.sequence_len != state['input_tokens']:
             raise ValueError('exact rank-local data cursor differs from checkpoint token count')
         del saved
+        args.core_max_tokens = resume_core_limit(state, args.core_max_tokens, mc.sequence_len)
+    state['core_max_tokens'] = args.core_max_tokens
+    if not args.smoke_steps:
+        check_full_context(mc, args.core_max_tokens)
     source=source_manifest()
     if args.resume and state.get('source_sha256') != source['sha256']:
         raise ValueError('resume source files differ from checkpoint; preserve the original implementation')
@@ -123,7 +129,7 @@ def main():
             from nexttransformer.runtime.process import rewind_events
             rewind_events(args.output,state['step'])
         atomic_json(args.output/('provenance.json' if not args.resume else f'resume_{state["step"]:08d}.json'),{'model':asdict(mc),'train':asdict(tc),'source':source,
-            'command':sys.argv,'torch':torch.__version__,'cuda':torch.version.cuda,'world_size':world,
+            'core_max_tokens':args.core_max_tokens,'command':sys.argv,'torch':torch.__version__,'cuda':torch.version.cuda,'world_size':world,
             'device':torch.cuda.get_device_name(device) if device.type=='cuda' else str(device),
             'micro_batch':args.micro_batch,'gradient_accumulation':accumulation,
             'data_manifest_sha256':manifest_hash,'tokenizer_sha256':record['tokenizer_sha256'],
@@ -211,7 +217,8 @@ def main():
                 append_event(args.output,event); print(json.dumps(event),flush=True)
             if state['step']%tc.val_every==0 or state['step']==stop_step: validation(state['step'])
             if not args.smoke_steps and state['step'] < tc.steps and state['step'] in core_steps:
-                result=evaluate_core(model,tokenizer,args.resources,device,tc.core_max_per_task)
+                result=evaluate_core(model,tokenizer,args.resources,device,tc.core_max_per_task,
+                                     core_max_tokens=args.core_max_tokens)
                 if rank==0:
                     event={'event':'core','step':state['step'],**result}
                     atomic_json(args.output/f"core_{state['step']:08d}.json",event)
@@ -228,7 +235,7 @@ def main():
                 tracker.log(event)
                 append_event(args.output,event)
         if not args.smoke_steps and state['step']==tc.steps and not args.skip_final_core:
-            result=evaluate_core(model,tokenizer,args.resources,device)
+            result=evaluate_core(model,tokenizer,args.resources,device,core_max_tokens=args.core_max_tokens)
             if rank==0:
                 atomic_json(args.output/'core_final.json',result)
                 tracker.log({'event':'core','step':state['step'],**result})

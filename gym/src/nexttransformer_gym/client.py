@@ -36,7 +36,11 @@ class GymClient:
         if "error" in result:
             error = result["error"]
             raise GymError(
-                error["code"], error["hint"], error["phase"], error["retryable"]
+                error["code"],
+                error["hint"],
+                error["phase"],
+                error["retryable"],
+                error.get("details"),
             )
         return result["result"]
 

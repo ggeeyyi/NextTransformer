@@ -6,7 +6,7 @@ import json
 import math
 from pathlib import Path
 
-from nexttransformer.export_run import FROZEN_COHORT, P, REPO, RESULTS, record
+from nexttransformer.export_run import FROZEN_COHORT, P, REPO, RESULTS, published_run, record
 
 COHORT = FROZEN_COHORT
 ACCOUNTING = "reference-aten-math-v2-all-backends-replay"
@@ -52,7 +52,7 @@ def export(directory, audit_path):
         raise ValueError("periodic validation differs from the full protocol")
     raw = dict(run_dir=directory.name, val=[(e["step"], e["bpb"]) for e in val],
                core=[(e["step"], dict(core_metric=e["core_metric"], results=e["results"],
-                                      centered=e["centered_results"], full_core=e["full_core"])) for e in events if e["event"] == "core"],
+                                      centered=e["centered_results"], full_core=e["full_core"], coreContext=e.get("coreContext"))) for e in events if e["event"] == "core"],
                final_bpb=next(e for e in events if e["event"] == "final_bpb"),
                last=next(e for e in reversed(events) if e["event"] == "train"), status=status["budget_status"],
                core_final_mtime=datetime.fromisoformat(audit["verification"]["accepted_at"]).timestamp(),
@@ -61,7 +61,7 @@ def export(directory, audit_path):
                                 software=dict(science_hash=p["cost_proof"]["source_hash"]), cost=p["calibration"])])
     method = p["model"]["method"]
     name = json.loads((RESULTS/"methods"/f"{method}.json").read_text())["name"]
-    run, _ = record(raw, method, name, audit_path, BASE_COMMIT, COHORT)
+    run, _ = record(raw, method, name, audit_path, BASE_COMMIT, COHORT, legacy_core_2048=True)
     run.update(comparisonNote=NOTE, finalTrainBpb=raw["final_bpb"]["train_bpb"],
                auditSha256=hashlib.sha256(path.read_bytes()).hexdigest())
     run["trainingCompute"]["accounting"] = ACCOUNTING
@@ -80,6 +80,11 @@ def main():
     args = parser.parse_args()
     run = export(args.run_dir, args.audit)
     target = RESULTS / "runs" / f"{run['methodId']}.json"
+    if target.exists():
+        if published_run(target) != run:
+            raise SystemExit(f"{target}: published frozen record differs")
+        print(f"unchanged {target.relative_to(REPO)}")
+        return
     target.write_text(json.dumps(run, indent=1, ensure_ascii=False) + "\n")
     print(f"wrote {target.relative_to(REPO)}")
 

@@ -1,0 +1,18 @@
+{
+  "name": "sconv_dynamic_out",
+  "family": "others",
+  "title": "Dynamic K/V SConv with static branch-output convolutions",
+  "paper": {
+    "title": "Inkling 2 Small",
+    "url": "https://thinkingmachines.ai/news/inkling-2-small/"
+  },
+  "options": {
+    "kernel_size": 4
+  },
+  "shell": {
+    "layers": 24,
+    "mlp_width": 6144,
+    "window_pattern": "L"
+  },
+  "layer_multiple": 1
+}

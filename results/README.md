@@ -31,6 +31,7 @@ not select a separate leaderboard.
 | `id`, `methodId`, `cohort`, `name` | Run id, registered method (SSSL keeps `dense`), accounting group for the checks, display name |
 | `status`, `step`, `complete` | `finished` or `partial`; last update; whether the full protocol was met and accepted |
 | `val`, `core` | `{step, value}` points: validation BPB at every scheduled step; CORE on its 0–1 scale |
+| `coreContext` | Required for new records. Training length, truncation (`none` or `left`), configured cap (null or a token count), and longest evaluated input. The original records are identified by file hash in `core-context.json` and used a 2,048-token left crop. |
 | `taskEvaluations` | Per CORE event: `raw` accuracy and `centered` score for each of the 22 tasks |
 | `finalBpb` | Independent final validation BPB, reported separately from the curve |
 | `trainingCompute` | Cumulative training FLOPs, average GFLOPs per input token, and the accounting used |

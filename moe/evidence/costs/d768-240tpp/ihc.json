@@ -1,0 +1,36 @@
+{
+  "formula": "moe-matmul-measured-attention-rule-v1",
+  "method": "ihc",
+  "track": "d768-240tpp",
+  "model_hash": "e353fe32aae7ba78c01ebf9660f091cb550bbfa31136544bb2845043e7ae6ec5",
+  "torch": "2.9.1",
+  "source": {
+    "files": {
+      "moe/model.py": "e5facb8a024ebac4d5b30bd320a0f381c76041589d1fe0e8e284def1ebb575c6",
+      "moe/optim.py": "ffe1e09b6a7f690b7058237e30774d2bcb0ede1c8a788a4deaf64537ce3515e7",
+      "moe/plugins.py": "4c39c26509a07cb866dd797ae483fb7a0554d7b08bb786416e0ae810d68eb2d5",
+      "moe/compute.py": "b5a170481e8b30ed214f7a0ef95f9cbd543b2596c9feb5fa60239cc04fbeaf57",
+      "moe/spec.py": "918161de04dd30cd62354ebdee12cabf2d54146075a8156e2873dd3c2c5f0f6c",
+      "moe/methods/ihc/__init__.py": "300ccaef92a6af8b8f3633799ab8e29d4ce2b716812a61f81b696a4e452ced51"
+    },
+    "sha256": "5fa50d3a9a12eac07d24074a1242450c42c8faa8ef4ddc3505eb73a0379f7720"
+  },
+  "flops_per_token": 939631104.0,
+  "matmul_per_token": 816924672.0,
+  "attention_per_token": 122706432.0,
+  "per_block": null,
+  "training_flops": 1.3223863372832834e+19,
+  "parameters": {
+    "total": 1996813989,
+    "active": 213186213,
+    "embedding": 77070336,
+    "head": 77070336,
+    "active_non_embedding": 59045541,
+    "total_non_embedding": 1842673317
+  },
+  "anchor_flops_per_token": 936884736.0,
+  "relative_gap": 0.002931383012733768,
+  "admitted": true,
+  "knob": "expert_width",
+  "created": "2026-11-24"
+}

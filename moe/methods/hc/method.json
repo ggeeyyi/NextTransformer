@@ -1,0 +1,8 @@
+{
+  "name": "hc",
+  "title": "Hyper-Connections",
+  "paper": {"title": "Hyper-Connections", "url": "https://arxiv.org/abs/2409.19606"},
+  "options": {"streams": 4, "gate_init": 0.01, "init_std": 0.006},
+  "debug_options": {"streams": 2},
+  "calibrate": "expert_width"
+}

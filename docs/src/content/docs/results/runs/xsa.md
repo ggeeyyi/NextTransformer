@@ -24,3 +24,7 @@ Training best-fit rows begin with BOS, while CORE left truncation removes it fro
 The equally restored Dense diagnostic scores 53.6329%, versus its same-run original 50.0378% (four examples above the published 50.0000%). This evaluation-format sensitivity means the raw CORE ranking should not alone be read as an architecture-quality verdict. It does not explain every task: REL's bounded cropped BoolQ controls decline after restoration, Language ID evidence is inconclusive, and LSAT-AR does not truncate. No claim is made that an attention-sink circuit or kernel defect has been identified.
 
 [Full counts and controls](https://github.com/Interactive-Active-AI/NextTransformer/tree/main/evidence/diagnostics/xsa-rel-bos-20261116) · [Run record](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/xsa.json) · [Cumulative audit](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/evidence/audits/xsa.json)
+
+## Full-prompt supplementary evaluation
+
+The same final checkpoint was subsequently evaluated with full CORE prompts. See [the separate measurement and its context policy](../../xsa-rel-full-context/). The original results and audit above are unchanged.

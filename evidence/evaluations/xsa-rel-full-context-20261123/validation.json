@@ -1,0 +1,238 @@
+{
+  "xsa": {
+    "ok": true,
+    "originalCore": 0.31734610873656366,
+    "fullCore": 0.31807171429373465,
+    "cappedReproduction": "exact",
+    "tasks": {
+      "hellaswag_zeroshot": {
+        "previous": 0.6449910402297974,
+        "full": 0.6449910402297974,
+        "delta": 0.0
+      },
+      "jeopardy": {
+        "previous": 0.2328767031431198,
+        "full": 0.2328767031431198,
+        "delta": 0.0
+      },
+      "bigbench_qa_wikidata": {
+        "previous": 0.5510555505752563,
+        "full": 0.5510555505752563,
+        "delta": 0.0
+      },
+      "arc_easy": {
+        "previous": 0.7516834735870361,
+        "full": 0.7516834735870361,
+        "delta": 0.0
+      },
+      "arc_challenge": {
+        "previous": 0.45392489433288574,
+        "full": 0.45392489433288574,
+        "delta": 0.0
+      },
+      "copa": {
+        "previous": 0.699999988079071,
+        "full": 0.699999988079071,
+        "delta": 0.0
+      },
+      "commonsense_qa": {
+        "previous": 0.31122031807899475,
+        "full": 0.31122031807899475,
+        "delta": 0.0
+      },
+      "piqa": {
+        "previous": 0.7747551202774048,
+        "full": 0.7747551202774048,
+        "delta": 0.0
+      },
+      "openbook_qa": {
+        "previous": 0.45000001788139343,
+        "full": 0.45000001788139343,
+        "delta": 0.0
+      },
+      "lambada_openai": {
+        "previous": 0.5074713826179504,
+        "full": 0.5074713826179504,
+        "delta": 0.0
+      },
+      "hellaswag": {
+        "previous": 0.6509659290313721,
+        "full": 0.6509659290313721,
+        "delta": 0.0
+      },
+      "winograd": {
+        "previous": 0.7545787692070007,
+        "full": 0.7545787692070007,
+        "delta": 0.0
+      },
+      "winogrande": {
+        "previous": 0.6329913139343262,
+        "full": 0.6329913139343262,
+        "delta": 0.0
+      },
+      "bigbench_dyck_languages": {
+        "previous": 0.07900000363588333,
+        "full": 0.07900000363588333,
+        "delta": 0.0
+      },
+      "agi_eval_lsat_ar": {
+        "previous": 0.3217391073703766,
+        "full": 0.3217391073703766,
+        "delta": 0.0
+      },
+      "bigbench_cs_algorithms": {
+        "previous": 0.4363636374473572,
+        "full": 0.4363636374473572,
+        "delta": 0.0
+      },
+      "bigbench_operators": {
+        "previous": 0.20952381193637848,
+        "full": 0.20952381193637848,
+        "delta": 0.0
+      },
+      "bigbench_repeat_copy_logic": {
+        "previous": 0.0,
+        "full": 0.0,
+        "delta": 0.0
+      },
+      "squad": {
+        "previous": 0.1804162710905075,
+        "full": 0.18741720914840698,
+        "delta": 0.007000938057899475
+      },
+      "coqa": {
+        "previous": 0.38569459319114685,
+        "full": 0.38569459319114685,
+        "delta": 0.0
+      },
+      "boolq": {
+        "previous": 0.5963302850723267,
+        "full": 0.5996941924095154,
+        "delta": 0.0033639073371887207
+      },
+      "bigbench_language_identification": {
+        "previous": 0.251800000667572,
+        "full": 0.25189998745918274,
+        "delta": 9.998679161071777e-05
+      }
+    }
+  },
+  "inkling_rel": {
+    "ok": true,
+    "originalCore": 0.331733336163526,
+    "fullCore": 0.3333398460110703,
+    "cappedReproduction": "exact",
+    "tasks": {
+      "hellaswag_zeroshot": {
+        "previous": 0.6406094431877136,
+        "full": 0.6406094431877136,
+        "delta": 0.0
+      },
+      "jeopardy": {
+        "previous": 0.22390174865722656,
+        "full": 0.22390174865722656,
+        "delta": 0.0
+      },
+      "bigbench_qa_wikidata": {
+        "previous": 0.5536636710166931,
+        "full": 0.5536636710166931,
+        "delta": 0.0
+      },
+      "arc_easy": {
+        "previous": 0.7432659864425659,
+        "full": 0.7432659864425659,
+        "delta": 0.0
+      },
+      "arc_challenge": {
+        "previous": 0.463310569524765,
+        "full": 0.463310569524765,
+        "delta": 0.0
+      },
+      "copa": {
+        "previous": 0.7099999785423279,
+        "full": 0.7099999785423279,
+        "delta": 0.0
+      },
+      "commonsense_qa": {
+        "previous": 0.3734643757343292,
+        "full": 0.3734643757343292,
+        "delta": 0.0
+      },
+      "piqa": {
+        "previous": 0.7758432626724243,
+        "full": 0.7758432626724243,
+        "delta": 0.0
+      },
+      "openbook_qa": {
+        "previous": 0.43400001525878906,
+        "full": 0.43400001525878906,
+        "delta": 0.0
+      },
+      "lambada_openai": {
+        "previous": 0.5101882219314575,
+        "full": 0.5101882219314575,
+        "delta": 0.0
+      },
+      "hellaswag": {
+        "previous": 0.6491734385490417,
+        "full": 0.6491734385490417,
+        "delta": 0.0
+      },
+      "winograd": {
+        "previous": 0.7838827967643738,
+        "full": 0.7838827967643738,
+        "delta": 0.0
+      },
+      "winogrande": {
+        "previous": 0.5903709530830383,
+        "full": 0.5903709530830383,
+        "delta": 0.0
+      },
+      "bigbench_dyck_languages": {
+        "previous": 0.10100000351667404,
+        "full": 0.10100000351667404,
+        "delta": 0.0
+      },
+      "agi_eval_lsat_ar": {
+        "previous": 0.24782606959342957,
+        "full": 0.24782606959342957,
+        "delta": 0.0
+      },
+      "bigbench_cs_algorithms": {
+        "previous": 0.40454545617103577,
+        "full": 0.40454545617103577,
+        "delta": 0.0
+      },
+      "bigbench_operators": {
+        "previous": 0.21904762089252472,
+        "full": 0.21904762089252472,
+        "delta": 0.0
+      },
+      "bigbench_repeat_copy_logic": {
+        "previous": 0.09375,
+        "full": 0.09375,
+        "delta": 0.0
+      },
+      "squad": {
+        "previous": 0.4013245105743408,
+        "full": 0.45089876651763916,
+        "delta": 0.04957425594329834
+      },
+      "coqa": {
+        "previous": 0.38694727420806885,
+        "full": 0.38694727420806885,
+        "delta": 0.0
+      },
+      "boolq": {
+        "previous": 0.6162079572677612,
+        "full": 0.6110091805458069,
+        "delta": -0.005198776721954346
+      },
+      "bigbench_language_identification": {
+        "previous": 0.2513999938964844,
+        "full": 0.250900000333786,
+        "delta": -0.0004999935626983643
+      }
+    }
+  }
+}

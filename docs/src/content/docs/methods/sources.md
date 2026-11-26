@@ -111,6 +111,29 @@ All Residual methods share the full-MHA shell with `dense_full`; report their di
 separately from overall Dense differences. Published gains come from other scales and MoE backbones and do not predict
 results here.
 
+## Short convolutions in the Dense shell
+
+Both methods retain the full-attention Dense shell and place kernel-four causal
+convolutions on projected K/V, attention output, and MLP output after the down
+projection. They retain the shell's residuals, RoPE, QK normalization, value
+embeddings and ReLU² MLP. Their MLP placement is inspired by
+[Inkling](https://thinkingmachines.ai/news/introducing-inkling/) and
+[Marin's architecture report](https://marin.community/blog/2026/11/09/marin-535b-architecture/).
+
+| ID | Display name | Retained mechanism and adaptation |
+|---|---|---|
+| `sconv_out` | Static ShortConv · MLP output | Four independent per-channel filters, `x + DWConv(x)`, with zero-initialized taps and the shared non-matrix AdamW group. No Q convolution or AttnRes. |
+| `sconv_dynamic_out` | Dynamic-KV ShortConv · MLP output | Independent input-conditioned K/V tap generators, shared across channels within each head, added to the static per-channel filters. Generators use the normalized attention input and shared Muon; attention-output and MLP-output convolutions stay static. Adapted from the Transformers Inkling 2 implementation; cached source hashes are recorded in the plugin README. |
+
+Packed rows reset state; internal BOS tokens do not. Both omit the released
+convolution output scaling to keep identity initialization. The dynamic method
+accumulates its additional term in FP32 for BF16 input and retains the static
+arithmetic path. These are fixed-budget adaptations, not complete Inkling/Marin
+reproductions. Both completed one seed-42 formal run; the original 2,048-token
+left-cropped CORE policy is declared in each record. Incremental KV-cache
+decoding is unsupported. See the plugin READMEs for equations and the run notes
+for failed attempts and interventions.
+
 ## Hybrids
 
 Hybrids serialize their per-layer layout as `layer_mixers`, verified on load, and share one model builder, audit,

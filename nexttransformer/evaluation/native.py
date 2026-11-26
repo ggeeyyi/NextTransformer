@@ -5,7 +5,7 @@ from pathlib import Path
 import torch
 
 from nanochat.loss_eval import evaluate_bpb as upstream_bpb
-from nanochat.base_eval import evaluate_core as upstream_core
+from nexttransformer.evaluation.core import score_core
 from nexttransformer.evaluation.metrics import Metrics, verify_core
 from nexttransformer.runtime.process import synchronize
 from nexttransformer.runtime.data import BestFitStream
@@ -47,7 +47,7 @@ def evaluate_bpb(model, tokenizer, data_dir, resources, tokens, batch, rank, wor
 
 
 @torch.no_grad()
-def evaluate_core(model, tokenizer, resources, device, max_per_task=-1):
+def evaluate_core(model, tokenizer, resources, device, max_per_task=-1, *, core_max_tokens=None):
     verify_core(resources)
     if Path(os.environ['NANOCHAT_BASE_DIR']).resolve() != Path(resources).resolve():
         raise ValueError('NANOCHAT_BASE_DIR must identify the verified native resources')
@@ -55,7 +55,8 @@ def evaluate_core(model, tokenizer, resources, device, max_per_task=-1):
     was_training = model.training
     model.eval(); synchronize(device); start = time.perf_counter()
     try:
-        result = upstream_core(CountedModel(model, metrics), tokenizer, device, max_per_task=max_per_task)
+        result = score_core(model, lambda m: CountedModel(m, metrics), tokenizer, device,
+                            max_per_task=max_per_task, max_tokens=core_max_tokens)
         result.update(metrics.result(device))
         synchronize(device)
         return {**result, 'seconds':time.perf_counter()-start, 'full_core':max_per_task <= 0, 'entries':22}
