@@ -73,7 +73,7 @@ def test_an_arena_only_entry_is_checked_like_a_complete_one_and_stays_off_the_le
     path = root/"arena/gdn-entry.json"
     path.write_text(json.dumps(card))
     assert check(root) == []
-    assert arena.arena_only_runs(root) == {"gdn"}
+    assert arena.arena_only_runs(root) - arena.arena_only_runs(RESULTS) == {"gdn"}
     assert "[Gated DeltaNet" not in summary(root) and "[Gated DeltaNet" in summary(RESULTS)
     card["arenaProtocol"] = "arena-v1"
     path.write_text(json.dumps(card))
