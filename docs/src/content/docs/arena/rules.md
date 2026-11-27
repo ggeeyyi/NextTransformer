@@ -1,9 +1,9 @@
 ---
 title: Arena rules
-description: Arena Protocol v1, the rules for the research that precedes an entry's formal run and what it must disclose.
+description: Arena Protocol v2, the rules for the research that precedes an entry's formal run and what it must disclose.
 ---
 
-This is **Arena Protocol v1** (identifier `arena-v1`). The entered model is trained and evaluated under the unchanged
+This is **Arena Protocol v2** (identifier `arena-v2`). The entered model is trained and evaluated under the unchanged
 [reference protocol](../../protocol/overview/); these rules add only what governs the research before that run and what
 an entry must disclose. Machine-readable values live in `nexttransformer/arena.py`.
 
@@ -50,7 +50,7 @@ rules, and `python -m nexttransformer.protocol.fingerprint` confirms that every 
 
 1. Open a proposal issue describing the method and run plan. Before the formal run, post the fork commit SHA, calibrated configuration and cost proof (within ±1%) in that issue. This dated record freezes the method for scoring.
 2. Train the preregistered configuration on the fork with `--formal`. Audit the completed run and export its record.
-3. Once the cumulative audit is `matched`, open one PR to upstream `main`. Link the preregistration and include the plugin, configuration, proof set, tests, model card, run record, audit and run notes. Submit the disclosure card with `status: complete` and links to the final checkpoint and training logs. The entry joins the leaderboard after review and merge.
+3. Once the cumulative audit is `matched`, open one PR to upstream `main`. Link the preregistration and include the plugin, configuration, proof set, tests, model card, run record, audit and run notes. Submit the disclosure card with `status: complete` (or `arena-only`) and links to the final checkpoint and training logs. A `complete` entry joins the leaderboard after review and merge.
 
 The formal run uses the admitted configuration: its record's `model_hash` must equal the configuration's. Every formal
 launch counts toward `formalAttempts`, including launches that failed; failed launches are recorded in the run notes.
@@ -64,7 +64,7 @@ The card records, at minimum:
 - **Research:** the period, candidates trained, formal attempts, GPU-hours (`null` when not metered), whether the
   internet was used, and the selection signal.
 - **Novelty:** the closest prior methods and the difference.
-- **Artifacts:** the final checkpoint and the training logs (required for `complete`); the research trace is encouraged.
+- **Artifacts:** the final checkpoint and the training logs (required for `complete` and `arena-only`); the research trace is encouraged.
 
 Missing measurements are `null`, never zero.
 
@@ -81,6 +81,7 @@ Missing measurements are `null`, never zero.
 |---|---|
 | `admitted` | Configuration admitted on the fork; formal result pending |
 | `complete` | Formal run published, complete and matched; the entry ranks on the leaderboard |
+| `arena-only` | Formal run published, complete and matched, entered in the arena only: the arena shows its scores, and the run stays off the leaderboard and the result charts |
 | `legacy` | Predates this protocol or does not meet it; shown with full disclosure and a reason, never ranked as an arena entry |
 | `retracted` | Withdrawn or found invalid; kept visible with the reason, never ranked |
 
@@ -94,6 +95,10 @@ at update 46,875, nothing interpolated, incomplete runs unranked. Their validati
 ranked. The leaderboard marks each run's provenance and can filter by it. Research budgets are disclosed, not
 controlled, so comparisons between researchers are descriptive.
 
+An `arena-only` entry is not ranked. The arena shows its measured CORE and validation BPB; its run, run notes and
+evidence stay published, but the leaderboard, the result charts and the README leave it out. An entrant who trains
+several entries can use it to enter only one of them on the leaderboard.
+
 ## Checks
 
 - `python -m nexttransformer.arena --check` validates every card and the records it names; CI runs it.
@@ -103,5 +108,5 @@ controlled, so comparisons between researchers are descriptive.
 
 ## Versioning
 
-Changing any rule here makes `arena-v2`. Cards keep the version they were entered under, and existing entries are never
-rewritten.
+`arena-v2` adds the `arena-only` status to `arena-v1`; every other rule is unchanged. Changing any rule here makes
+`arena-v3`. Cards keep the version they were entered under, and existing entries are never rewritten.

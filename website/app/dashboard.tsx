@@ -24,7 +24,7 @@ import ScalingContribute from './scaling-contribute';
 import Constellation from './constellation';
 import {attachRipples} from './ripple';
 import {preferredRuns} from './lib/leaderboard';
-import {LEVELS,provenance} from './lib/arena';
+import {LEVELS,listed,provenance} from './lib/arena';
 import {arenaEntries} from './lib/results';
 import Chart, {SERIES_COLORS,chartName,seriesColor} from './learning-chart';
 import {fullDenseBaseline} from './lib/baseline';
@@ -72,8 +72,10 @@ export default function Dashboard({initial,initialMethods}:{initial:Dataset;init
  useEffect(()=>{if(!notice)return;const id=setTimeout(()=>setNotice(''),5000);return()=>clearTimeout(id);},[notice]);
  const dialogOpen=!!(model||protocol||inspect||benchmarks);
  useEffect(()=>{if(!dialogOpen)return;const previousOverflow=document.body.style.overflow;document.body.style.overflow='hidden';const close=(e:KeyboardEvent)=>{if(e.key==='Escape'){setModel(null);setProtocol(false);setInspect(null);setBenchmarks(false);}};window.addEventListener('keydown',close);return()=>{document.body.style.overflow=previousOverflow;window.removeEventListener('keydown',close);};},[dialogOpen]);
- const familyMethods=methods.filter(m=>!family||m.family===family||m.family==='baseline');
- const baseRuns=data.runs.filter(r=>familyMethods.some(m=>m.id===r.methodId));
+ // Arena-only entries stay out of the results, the leaderboard and the atlas; the arena and model cards still see every run.
+ const shown=listed(data.runs,methods,arenaEntries);
+ const familyMethods=shown.methods.filter(m=>!family||m.family===family||m.family==='baseline');
+ const baseRuns=shown.runs.filter(r=>familyMethods.some(m=>m.id===r.methodId));
  const preferred=preferredRuns(baseRuns,showAttempts);
  const baseline=fullDenseBaseline(data.runs);
  const availableRuns=baseline?[baseline,...preferred.filter(r=>r.id!==baseline.id&&(showAttempts||r.methodId!=='dense_full'))]:preferred;
@@ -86,7 +88,7 @@ export default function Dashboard({initial,initialMethods}:{initial:Dataset;init
  const pairedRuns=pair.map(r=>({...r,val:r.val.filter(p=>p.step<=pairEnd)}));
  const bpbRuns=bpbView==='delta'?bpbDifference(pairedRuns,denseRun):pairedRuns;
  const coreRuns=pair.map(r=>({...r,core:r.core.filter(p=>p.step<=pairEnd)}));
- const cards=methods.filter(m=>(!family||m.family===family||m.family==='baseline')&&(!query||(chartName(m)+' '+m.name+' '+m.description+' '+m.id).toLowerCase().includes(query.toLowerCase())));
+ const cards=shown.methods.filter(m=>(!family||m.family===family||m.family==='baseline')&&(!query||(chartName(m)+' '+m.name+' '+m.description+' '+m.id).toLowerCase().includes(query.toLowerCase())));
  const modelRun=model?preferredRuns(data.runs,false).find(r=>r.methodId===model.id):undefined;
  const modelCompute=getTrainingCompute(modelRun);
  const atlasSize=9,activeAtlasPage=Math.min(atlasPage,Math.max(0,Math.ceil(cards.length/atlasSize)-1));
@@ -101,9 +103,9 @@ export default function Dashboard({initial,initialMethods}:{initial:Dataset;init
   <header className="topbar"><div className="brand-cluster"><a className="brand" href="#" onClick={e=>{e.preventDefault();setTab('overview');}}><span className="brand-mark">N<span>↗</span></span><b>NextTransformer</b></a><a className="iaai-brand" href="https://github.com/Interactive-Active-AI" target="_blank" rel="noreferrer" aria-label="IAAI · Interactive & Active AI"><img src={asset('brand/iaai.png')} width="34" height="34" alt="IAAI logo"/><b>IAAI</b><span>Interactive <i>&amp;</i> Active AI</span></a></div><div className="header-actions"><a className="header-link" href={docs()}>Docs</a><a className="header-link" href={BLOG_URL}>Blog</a><RepoButton/><button className="header-link" onClick={()=>setCommunity(true)}>Community</button>{moeTrack?<a className="header-link subtle" href={docs('moe/protocol/')}>About the benchmark</a>:<button className="header-link subtle" onClick={()=>setProtocol(true)}>About the benchmark</button>}<button className="primary small" aria-label="Contribute" onClick={()=>setTab('contribute')}><Plus size={15}/><span className="contribute-label">Contribute</span></button></div></header>
   <div className="dream-sky" aria-hidden="true"><i/><i/><span>✦</span><span>✧</span><span>✦</span></div>
   <main>
-   <div className="workspace-navigation" id="workspace"><nav className="tabs" aria-label="Research views">{TABS.map(([id,label])=><button key={id} aria-pressed={tab===id} onClick={()=>setTab(id)} className={tab===id?'active':''}>{label}</button>)}</nav><span className="workspace-count">{moeTrack?`${moeTrack.runs.length} published · ${moeTrack.models.length} admitted`:`${data.runs.length} experiments · ${methods.length} models`}</span></div>
+   <div className="workspace-navigation" id="workspace"><nav className="tabs" aria-label="Research views">{TABS.map(([id,label])=><button key={id} aria-pressed={tab===id} onClick={()=>setTab(id)} className={tab===id?'active':''}>{label}</button>)}</nav><span className="workspace-count">{moeTrack?`${moeTrack.runs.length} published · ${moeTrack.models.length} admitted`:`${shown.runs.length} experiments · ${shown.methods.length} models`}</span></div>
    {trackView&&<TrackSelector track={moeTrack} onChange={id=>setTab(tab,id??null)}/>}
-   {tab==='overview'&&!moeTrack&&<section className="hero workbench-intro observatory-hero"><div className="hero-copy"><p className="eyebrow">THE TRANSFORMER OBSERVATORY</p><h1>Toward the Next Generation<em>of Transformers.</em></h1><p className="hero-description">{methods.length} architectures, one training budget. Follow how each one learns, and see where it lands.</p><div className="intro-facts"><span><b>49.152B</b> tokens</span><span><b>46,875</b> updates</span><span><b>22</b> benchmarks</span><button onClick={()=>setProtocol(true)}>Protocol <ArrowUpRight size={14}/></button></div><div className="hero-actions"><button className="primary" onClick={()=>setTab('leaderboard')}>Explore the leaderboard <ArrowRight size={15}/></button><button className="secondary" onClick={()=>setTab('arena')}>Enter the arena</button></div></div><Constellation runs={preferredRuns(data.runs)} methods={methods} baseline={baseline} onModel={setModel}/></section>}
+   {tab==='overview'&&!moeTrack&&<section className="hero workbench-intro observatory-hero"><div className="hero-copy"><p className="eyebrow">THE TRANSFORMER OBSERVATORY</p><h1>Toward the Next Generation<em>of Transformers.</em></h1><p className="hero-description">{methods.length} architectures, one training budget. Follow how each one learns, and see where it lands.</p><div className="intro-facts"><span><b>49.152B</b> tokens</span><span><b>46,875</b> updates</span><span><b>22</b> benchmarks</span><button onClick={()=>setProtocol(true)}>Protocol <ArrowUpRight size={14}/></button></div><div className="hero-actions"><button className="primary" onClick={()=>setTab('leaderboard')}>Explore the leaderboard <ArrowRight size={15}/></button><button className="secondary" onClick={()=>setTab('arena')}>Enter the arena</button></div></div><Constellation runs={preferredRuns(shown.runs)} methods={shown.methods} baseline={baseline} onModel={setModel}/></section>}
    {moeTrack&&<MoeObservatory key={moeTrack.id+':'+tab} track={moeTrack} view={tab} method={params.get('method')} navigate={(view,method)=>setTab(view,moeTrack.id,method)}/>}
    {trackView&&!moeTrack&&<div className="workspace-filters"><div className="family-filter" role="group" aria-label="Architecture family">{[['','All'],['looped','Looped'],['sparse','Sparse'],['linear','Linear'],['residual','Residual'],['hybrid','Hybrid'],['others','Others']].map(([id,label])=><button key={id} aria-pressed={family===id} onClick={()=>{setFamily(id);setSelected([]);}}>{id&&<i style={{background:FAMILY[id].color}}/>}{label}</button>)}</div></div>}
    {tab==='leaderboard'&&!moeTrack&&<Leaderboard runs={availableRuns} methods={methods} baseline={denseRun} cursor={cursor} playing={playing} onReplay={()=>{setCursor(8000);setPlaying(true);}} onPause={()=>setPlaying(false)} onCursor={step=>{setPlaying(false);setCursor(step);}} onModel={setModel} onDetails={setInspect} onCompare={compareRun}/>}

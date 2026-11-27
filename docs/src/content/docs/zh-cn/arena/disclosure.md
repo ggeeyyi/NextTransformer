@@ -9,9 +9,9 @@ description: 竞技场条目 results/arena/<entry>.json 的字段和填写要求
 |---|---|
 | `id`、`name` | 条目 ID（与文件名一致）及显示名称 |
 | `methodId` | 注册方法，对应模型卡 `results/methods/<methodId>.json` |
-| `runIds` | `results/runs/` 下该方法的运行记录，`status` 为 `complete` 时必填 |
-| `arenaProtocol` | `arena-v1` |
-| `status`、`statusNote` | `admitted`、`complete`、`legacy` 或 `retracted`；后两种须说明原因 |
+| `runIds` | `results/runs/` 下该方法的运行记录，`status` 为 `complete` 或 `arena-only` 时必填 |
+| `arenaProtocol` | 新参赛作品为 `arena-v2`；之前的卡片保留 `arena-v1` |
+| `status`、`statusNote` | `admitted`、`complete`、`arena-only`（自 `arena-v2` 起）、`legacy` 或 `retracted`；后两种须说明原因 |
 | `submitted` | 在提案 issue 中预注册 fork 提交和配置的日期，格式 `YYYY-MM-DD` |
 | `verification` | `self-reported`、`reproduced` 或 `maintainer` |
 | `researcher.people` | 人类参与者的 `name`、可选的 `handle`，以及 `role` |
@@ -26,6 +26,6 @@ description: 竞技场条目 results/arena/<entry>.json 的字段和填写要求
 | `research.internet` | 是否使用互联网或检索文献 |
 | `research.selectionSignal` | 筛选候选用到的信号：`train-loss`、`dev-bpb`、`validation-bpb`、`core` 或 `other` |
 | `novelty.closestPrior`、`novelty.statement` | 最接近的先前方法，以及本方法与它的区别 |
-| `artifacts` | HTTPS 链接：`checkpointUrl`、`logsUrl`（完成条目必填）、`traceUrl`、`historyUrl`、`codeUrl` |
+| `artifacts` | HTTPS 链接：`checkpointUrl`、`logsUrl`（`complete` 和 `arena-only` 条目必填）、`traceUrl`、`historyUrl`、`codeUrl` |
 
-`validation-bpb` 与 `core` 仅供历史条目如实披露。`admitted` 或 `complete` 条目不能使用这两项信号选择候选。
+`validation-bpb` 与 `core` 仅供历史条目如实披露。`admitted`、`complete` 或 `arena-only` 条目不能使用这两项信号选择候选。

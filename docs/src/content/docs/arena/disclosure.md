@@ -10,9 +10,9 @@ and CI runs it. Start from the [template](https://github.com/Interactive-Active-
 |---|---|
 | `id`, `name` | Entry id (the file name) and display name |
 | `methodId` | The registered method; its model card is `results/methods/<methodId>.json` |
-| `runIds` | Run records in `results/runs/` for this method; required once `status` is `complete` |
-| `arenaProtocol` | `arena-v1` |
-| `status`, `statusNote` | `admitted`, `complete`, `legacy` or `retracted`; `legacy` and `retracted` need a note |
+| `runIds` | Run records in `results/runs/` for this method; required once `status` is `complete` or `arena-only` |
+| `arenaProtocol` | `arena-v2` for new entries; earlier cards keep `arena-v1` |
+| `status`, `statusNote` | `admitted`, `complete`, `arena-only` (from `arena-v2`), `legacy` or `retracted`; `legacy` and `retracted` need a note |
 | `submitted` | Date the fork commit and configuration were preregistered in the proposal issue, `YYYY-MM-DD` |
 | `verification` | `self-reported`, `reproduced` or `maintainer` |
 | `researcher.people` | People involved: `name`, optional `handle`, and `role` |
@@ -27,7 +27,7 @@ and CI runs it. Start from the [template](https://github.com/Interactive-Active-
 | `research.internet` | Whether the internet or literature search was used |
 | `research.selectionSignal` | What chose among candidates: any of `train-loss`, `dev-bpb`, `validation-bpb`, `core`, `other` |
 | `novelty.closestPrior`, `novelty.statement` | Closest prior methods and the difference |
-| `artifacts` | `checkpointUrl`, `logsUrl` (both required for `complete`), `traceUrl`, `historyUrl`, `codeUrl`; HTTPS links |
+| `artifacts` | `checkpointUrl`, `logsUrl` (both required for `complete` and `arena-only`), `traceUrl`, `historyUrl`, `codeUrl`; HTTPS links |
 
-`validation-bpb` and `core` are allowed values only so that legacy entries can disclose them honestly; an `admitted` or
-`complete` entry may not have selected with them.
+`validation-bpb` and `core` are allowed values only so that legacy entries can disclose them honestly; an `admitted`,
+`complete` or `arena-only` entry may not have selected with them.

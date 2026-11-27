@@ -5,7 +5,8 @@ description: Every method in NextTransformer, by family.
 
 NextTransformer has 49 model cards in seven families. Every method runs in the same shell and is calibrated to
 the same training compute. Open a method in the [observatory](https://interactive-active-ai.github.io/NextTransformer/#atlas) for its architecture diagram, curves and
-model card; "registered" methods have a card and a configuration but no published run.
+model card; "registered" methods have a card and a configuration but no published run, and "arena only" results are
+shown in the [arena](https://interactive-active-ai.github.io/NextTransformer/#arena), not on the leaderboard.
 
 | Family | Method | Paper | Result |
 |---|---|---|---|

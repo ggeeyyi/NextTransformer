@@ -6,7 +6,7 @@ import subprocess
 from nexttransformer import arena
 
 from nexttransformer.arena import check, check_card, classify
-from nexttransformer.export_run import REPO, RESULTS
+from nexttransformer.export_run import REPO, RESULTS, summary
 
 TEMPLATE = REPO/"docs/public/arena/card.template.json"
 DOCS = "docs/src/content/docs/"
@@ -63,6 +63,30 @@ def test_a_complete_entry_is_the_admitted_matched_run(tmp_path):
     card.update(id="gdn-again")
     (root/"arena/gdn-again.json").write_text(json.dumps(card))
     assert any("another card already enters gdn" in p for p in check(root))
+
+
+def test_an_arena_only_entry_is_checked_like_a_complete_one_and_stays_off_the_leaderboard(tmp_path):
+    root = copy_results(tmp_path)
+    card = json.loads(TEMPLATE.read_text())
+    card.update(id="gdn-entry", methodId="gdn", runIds=["gdn"], status="arena-only")
+    card["artifacts"].update(checkpointUrl="https://example.org/checkpoint", logsUrl="https://example.org/logs")
+    path = root/"arena/gdn-entry.json"
+    path.write_text(json.dumps(card))
+    assert check(root) == []
+    assert arena.arena_only_runs(root) == {"gdn"}
+    assert "[Gated DeltaNet" not in summary(root) and "[Gated DeltaNet" in summary(RESULTS)
+    card["arenaProtocol"] = "arena-v1"
+    path.write_text(json.dumps(card))
+    assert any("arena-only status needs arena-v2" in p for p in check(root))
+    card.update(arenaProtocol="arena-v2", runIds=[])
+    card["artifacts"]["logsUrl"] = None
+    path.write_text(json.dumps(card))
+    problems = check(root)
+    assert any("an arena-only entry names its run" in p for p in problems)
+    assert any("final checkpoint and training logs" in p for p in problems)
+    card.update(arenaProtocol="arena-v3")
+    path.write_text(json.dumps(card))
+    assert any("arenaProtocol is not one of" in p for p in check(root))
 
 
 def test_scope_keeps_the_contract_and_published_evidence_fixed():
