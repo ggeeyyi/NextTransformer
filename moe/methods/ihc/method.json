@@ -1,7 +1,7 @@
 {
   "name": "ihc",
-  "title": "Identity Hyper-Connections (Hy4)",
-  "paper": {"title": "Hy4 preview: Identity Hyper-Connections", "url": "https://github.com/Tencent-Hunyuan/Hy4-preview"},
+  "title": "Identity Hyper-Connections",
+  "paper": {"title": "Your DeepSeek mHC May Not Need the “m” (original Zhihu post)", "url": "https://zhuanlan.zhihu.com/p/2010852389670908320"},
   "options": {"streams": 4, "gate_init": 0.01, "init_std": 0.006, "gate_eps": 1e-6},
   "debug_options": {"streams": 2},
   "calibrate": "expert_width"

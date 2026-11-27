@@ -11,7 +11,7 @@ Grug MoE：
 | **d768** | 8 层 × 768，GQA 6/1，256 个宽 384 的专家选 4，另有宽 768 的共享专家 | 4,096 | 4.42B（16,875 × 262,144） | 9.369 × 10⁸ | 4.14 × 10¹⁸ | 2.00B / 213M |
 | **d1024** | 11 层 × 1024，GQA 8/2，256 个宽 512 的专家选 4，另有宽 1024 的共享专家 | 4,096 | 8.43B（16,080 × 524,288） | 1.695 × 10⁹ | 1.43 × 10¹⁹ | 4.71B / 347M |
 
-[NextTransformer 240 TPP](PROTOCOL.md#240-tpp-comparison) · d768 baseline / HC / mHC / SimpleHC / iHC (14.07B tokens) · d1024 baseline (34.06B tokens).
+[NextTransformer 240 TPP](PROTOCOL.md#240-tpp-comparison) · d768 baseline / HC / mHC / SimpleHC / iHC（14.07B tokens，已全部发布）· d1024 baseline / HC / mHC / SimpleHC / iHC（34.06B tokens，Baseline 与 iHC 已发布）。
 
 - **模型与训练**：按 Marin 跑出这两个结果时的 commit 逐行移植。
   - 组件：GatedNorm、XSA、head 门控、half-RoPE + PKO、文档掩码、QB 路由。

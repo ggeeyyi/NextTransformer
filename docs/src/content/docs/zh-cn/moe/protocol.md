@@ -27,7 +27,7 @@ description: 两个 MoE 赛道（d768、d1024）的固定契约：Marin recipe�
 | 峰值学习率：MuonH / Adam | 0.008373 / 0.001932 | 0.008791 / 0.002029 |
 | MoE-CORE 评测步 | 4,000 / 8,000 / 12,000 / 16,875 | 4,000 / 8,000 / 12,000 / 16,080 |
 
-[NextTransformer 240 TPP](../../../moe/protocol/#240-tpp-comparison) · d768 baseline / HC / mHC / SimpleHC / iHC (14.07B tokens) · d1024 baseline (34.06B tokens).
+[NextTransformer 240 TPP](../../../moe/protocol/#240-tpp-comparison) · d768 baseline / HC / mHC / SimpleHC / iHC (14.07B tokens) · d1024 baseline / HC / mHC / SimpleHC / iHC (34.06B tokens).
 
 ## 模型与优化器（与 Marin 一致）
 

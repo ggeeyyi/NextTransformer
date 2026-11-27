@@ -1,0 +1,17 @@
+{
+  "method": "hc",
+  "track": "d768-240tpp",
+  "model_hash": "635faeee7e41b967a5fc182fa87ee3069e1b90f4475649ed0c42b7c4f0d54d79",
+  "protocol_hash": "c2d1a34d01c39433efcc5cc0cd8e9003854abe425920d91be218504ec286678e",
+  "track_hash": "9970ec00eab44ee4a90359b42cde7ed696636cb8e1ca0a3cdbec5d642d970c87",
+  "data_manifest_sha256": "b76f4a837b5c56f458f2cafbc39d09824c380af2694299ddfd4d781f9197f38a",
+  "segments": 1,
+  "world_sizes": [
+    8
+  ],
+  "cumulative_gap": 0.0034625732230950668,
+  "updates": 53686,
+  "input_tokens": 14073462784,
+  "problems": [],
+  "passed": true
+}

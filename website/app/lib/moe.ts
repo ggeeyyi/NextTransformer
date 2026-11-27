@@ -1,4 +1,5 @@
 import type {Run} from './types';
+import {computeFromSummary} from './training-compute.ts';
 import methodLabels from '../../data/method-labels.json' with {type:'json'};
 
 export type MoeConfig = {
@@ -12,7 +13,7 @@ export type MoeConfig = {
 type Parameters = {total: number; active: number; active_non_embedding: number};
 export type MoeCost = {
   admitted: boolean; method: string; track: string; model_hash: string;
-  parameters: Parameters; flops_per_token: number;
+  parameters: Parameters; flops_per_token: number; formula: string;
 };
 export type MoeAudit = {
   passed: boolean; method: string; track: string; protocol_hash: string; track_hash: string;
@@ -21,9 +22,8 @@ export type MoeAudit = {
 type Scores = {moe_core: number; short: number; long: number; centered: Record<string, number>};
 export type MoeRecord = {
   track: string; method: string; name: string; model_hash: string; protocol: string; protocol_hash: string; audit: string;
-  tokens: number; validation: [number, number][]; evaluations: (Scores & {step: number})[];
+  tokens: number; training_flops?: number; validation: [number, number][]; evaluations: (Scores & {step: number})[];
   final: Scores & {val_macro_bpb: number; val_sources: Record<string, {rows: number; bpb: number}>};
-  throughput: {harness?: {relative_throughput: number}};
 };
 type Plugin = {title: string; paper?: {title: string; url: string}};
 export type MoeModel = {
@@ -78,6 +78,10 @@ export function buildMoeTracks(files: MoeFiles): MoeTrack[] {
       model.run = {
         id: model.id, methodId: model.id, name: record.name, cohort: track, status: 'finished', complete: true,
         step: updates, source: recordPath, url: recordPath, protocol: record.protocol, proof: {total_steps: updates},
+        trainingCompute: computeFromSummary(
+          {training_flops_estimate: record.training_flops, input_tokens: record.tokens},
+          audit.updates, true, cost.formula, recordPath,
+        ),
         val: record.validation.map(([step, value]) => ({step, value})),
         core: record.evaluations.map(e => ({step: e.step, value: e.moe_core})),
         finalEvaluation: {core: record.final.moe_core, val: record.final.val_macro_bpb},

@@ -17,7 +17,7 @@ NextTransformer's [240 TPP budgets](PROTOCOL.md#240-tpp-comparison) keep these s
 | Admitted configurations | Updates | Input tokens |
 |---|---:|---:|
 | [d768 baseline, HC, mHC, SimpleHC and iHC](configs/d768-240tpp/) | 53,686 | 14,073,462,784 |
-| [d1024 baseline](configs/d1024-240tpp/baseline.json) | 64,973 | 34,064,564,224 |
+| [d1024 baseline, HC, mHC, SimpleHC and iHC](configs/d1024-240tpp/) | 64,973 | 34,064,564,224 |
 
 The single score is **MoE-CORE**: the mean centered accuracy over 14 published tasks, 10 short and 4 long.
 - **Short:** ARC-E/C, HellaSwag, PIQA, WinoGrande, CSQA, OBQA, LAMBADA, SQuAD, TriviaQA.
@@ -79,7 +79,7 @@ A prepared d1024-240tpp stream also covers d768-240tpp. Rows overlap by one toke
 needs at least one more token than the training budget.
 
 ```bash
-# Choose d768-240tpp with baseline, hc, mhc, simplehc or ihc, or d1024-240tpp with baseline.
+# Choose d768-240tpp or d1024-240tpp with baseline, hc, mhc, simplehc or ihc.
 track=d768-240tpp
 method=baseline
 python -m moe.data prepare --root "$RESOURCES" --track "$track"
@@ -147,12 +147,13 @@ The flow is the dense track's ([plugins](../docs/src/content/docs/guides/plugins
 - CPU tests: `tests/test_moe_track.py` and `tests/test_moe_240tpp.py`.
 - Validated on one 8-device node (141 GiB, torch 2.9.1+cu128): equivalence of FlexAttention vs SDPA, grouped GEMM vs
   the loop and CUDA vs CPU; a 40-update run with a resume; and the full evaluation (short tasks, RULER, FDA, SWDE).
-- Baseline configurations are admitted on all four tracks. Four residual plugins are admitted on d768-240tpp.
+- Baseline configurations are admitted on all four tracks. Four residual plugins (HC, mHC, SimpleHC and iHC) are admitted on both d768-240tpp and d1024-240tpp.
 - Measured baseline throughput, 8 devices: **d768 686k tokens/s (MFU 8.1%, 1.8 h)** and **d1024 536k tokens/s
   (MFU 11.5%, 4.4 h)**, both at micro-batch 8. Details in `references.json`.
-- **Published runs:** exported records in [`results/`](results/) with their audits in
-  [`evidence/audits/`](evidence/audits/), listed with every task score on the
-  [results page](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp).
-- **Pending:** the d1024-240tpp baseline run.
+- **Published runs:** five `d768-240tpp` runs (Baseline, HC, mHC, SimpleHC, iHC) and two `d1024-240tpp` runs
+  (Baseline, iHC), exported in [`results/`](results/) with audits in [`evidence/audits/`](evidence/audits/) and live
+  on the [d768](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp) and
+  [d1024](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d1024-240tpp) leaderboards.
+- **In progress:** remaining `d1024-240tpp` residual runs (mHC, HC, SimpleHC).
 - **Scaling:** the 300B-token stream covers far larger tracks. A third size or longer budgets are added as new tracks;
   each track keeps its own fingerprint.
