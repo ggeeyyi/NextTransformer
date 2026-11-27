@@ -64,7 +64,7 @@ AI agent 也可以在完全相同的规则下研究新架构。
 ## 结果
 
 <!-- generated:leaderboard -->
-<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-zh.svg" alt="全部 46 个运行在第 46,875 次更新时的 CORE，与 Dense Baseline 对比" width="100%"></a>
+<a href="https://interactive-active-ai.github.io/NextTransformer/#leaderboard"><img src=".github/assets/readme/results-zh.svg" alt="全部 47 个运行在第 46,875 次更新时的 CORE，与 Dense Baseline 对比" width="100%"></a>
 
 [完整排行榜](https://interactive-active-ai.github.io/NextTransformer/docs/zh-cn/results/leaderboard/) · [训练回放](https://interactive-active-ai.github.io/NextTransformer/#leaderboard)
 <!-- /generated:leaderboard -->
@@ -130,7 +130,7 @@ accelerate launch --config_file launch/accelerate.yaml \
 | <img src="https://img.shields.io/badge/Sparse-E5607E?style=flat-square" alt="稀疏"> | DSA · QSA · NSA · SeerAttention-style · MoBA |
 | <img src="https://img.shields.io/badge/Linear-3F7FD9?style=flat-square" alt="线性"> | DeltaNet · GSA + QK-norm · GLA · KDA · RetNet · ELU-Norm · GDN |
 | <img src="https://img.shields.io/badge/Hybrid-F07856?style=flat-square" alt="混合"> | GDN–MHA 3:1 · GDN–MHA 1:1 · GDN–SWA · DeltaNet–MHA · KDA–MLA-NoPE · GDN–QSA · MoBA–MHA |
-| <img src="https://img.shields.io/badge/Others-D99A2B?style=flat-square" alt="其他"> | SSSL · MQA · GQA · MLA-QK · MLA-NoPE-QK · Gated Attention · elementwise · Gated Attention · headwise · XSA · Exclusive Self Attention · Inkling REL · Static ShortConv · MLP output · Dynamic-KV ShortConv · MLP output |
+| <img src="https://img.shields.io/badge/Others-D99A2B?style=flat-square" alt="其他"> | SSSL · MQA · GQA · MLA-QK · MLA-NoPE-QK · Gated Attention · elementwise · Gated Attention · headwise · XSA · Exclusive Self Attention · Inkling REL · Static ShortConv · MLP output · Dynamic-KV ShortConv · MLP output · Hydra |
 <!-- /generated:model-zoo -->
 
 \* 结果即将发布。论文、调整和配置见[模型库](https://interactive-active-ai.github.io/NextTransformer/docs/zh-cn/methods/zoo/)。

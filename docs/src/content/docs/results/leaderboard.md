@@ -15,6 +15,7 @@ ordered by CORE. Arena entries (auto-research) rank on CORE only; their validati
 | Model | Family | Val BPB ↓ | Δ BPB | CORE ↑ | Δ CORE | Training GFLOPs / token |
 |---|---|---:|---:|---:|---:|---:|
 | **[Dense Baseline](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/dense_full.json)** | baseline | 0.6672 | — | 33.10 | — | 4.675 |
+| [Hydra](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/hydra.json) | others | 0.6577 | -0.0094 | 37.04 | +3.94 | 4.702 |
 | [MSAR](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/msar.json) | residual | 0.6610 | -0.0061 | 36.75 | +3.65 | 4.716 |
 | [AttnRes-Canon](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/attnres_full_canon_abcd.json) | residual | 0.6605 | -0.0067 | 35.99 | +2.90 | 4.695 |
 | [Manifold-Constrained Hyper-Connections · mHC](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/mhc.json) | residual | 0.6617 | -0.0055 | 35.33 | +2.23 | 4.674 |
