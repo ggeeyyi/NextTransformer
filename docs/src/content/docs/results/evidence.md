@@ -13,7 +13,7 @@ runs.
 |---|---|
 | `plugin-interface-20261031` | **Current.** The configurations of the built-in methods point to their proofs here |
 | `arena-v1-stage3-20261103` | Proof of the arena v1 entry AttnRes-Canon (`attnres_full_canon_abcd`), with its SSSL anchor; its configuration points here. `summary.json` also lists the Block AttnRes variant, which is not registered |
-| `ngram-canon-attnres-20261121` | Proof of the arena v1 entry Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D (`ngram_canon_attnres`), with its SSSL anchor; its configuration points here |
+| `ngram-canon-attnres-20261121` | Proof of the Arena v2 entry Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D (`ngram_canon_attnres`), with its SSSL anchor; its configuration points here |
 | `canon-depth-lab-20261121` | Proof of the arena v1 entry Canon depth mixing research (`canon_depth_lab`), with its SSSL anchor; its configuration points here |
 | `hydra-20261121` | Proof of the Arena v2 entry Hydra (`hydra`), with its SSSL anchor; its configuration points here |
 | `mhc-logsinkhorn-20261028` | Earlier set after mHC's log-space Sinkhorn-Knopp; counts equal the current set |

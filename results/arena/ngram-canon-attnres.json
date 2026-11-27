@@ -20,19 +20,9 @@
   ],
   "llms": [
    {
-    "name": "Claude Fable",
+    "name": "Claude Fable 5.2",
     "version": "claude-fable-5-2, effort xhigh (Claude Code 2.1.327 in NextT-Gym)",
     "role": "Researcher: in one NextT-Gym session without human intervention, proposed, wrote and trained every candidate, selected one on the dev split and submitted it"
-   },
-   {
-    "name": "Claude Fable",
-    "version": "claude-fable-5-2 (Claude Code 2.1.329 and 2.1.330)",
-    "role": "Operator's agent, in a separate Claude Code session with no part in the research: packaged the frozen candidate as the method plugin (Python source unchanged; method.json defaults set to the submitted configuration), calibrated it, wrote the tests and the preregistration, ran the pre-launch checks and launched the formal run"
-   },
-   {
-    "name": "Claude Opus",
-    "version": "claude-opus-5-5 (Claude Code 2.1.330)",
-    "role": "Operator's agent in the same session after a model switch: monitored the formal run, audited and exported it, and wrote the run notes, the model card and this card"
    }
   ],
   "framework": {
@@ -42,7 +32,7 @@
    "note": "The research gym in gym/ and nextt_gym/ of fork commit c8e3177 (not in upstream main). The agent ran in a container with one CPU and network access and drove the gym only through its MCP tools; the gym trained and calibrated candidates on up to 32 GPUs and returned dev-split values. Besides the repository's method sources, the gym offered the published run records in results/runs/ as history. The candidates' code ran in the gym's training processes without process isolation; the agent received dev-split values only."
   },
   "involvement": "L0",
-  "involvementNote": "Fully autonomous research: the person started the session with the gym's task instruction, a budget of 1.96e20 training FLOPs and 32 GPUs, and did not intervene until the agent submitted. The person chose no candidate and gave no directional hint. After the submission the person asked for this session's submission and those of two other sessions (proposal issues #71 and #72) to be preregistered and trained under the protocol, and approved the formal launches. Packaging the frozen candidate with its Python source unchanged, calibration, the pre-launch checks, the launches and the audit were done by the operator's agent and involved no research decision."
+  "involvementNote": "Fully autonomous research: the person started the session with the gym's task instruction, a budget of 1.96e20 training FLOPs and 32 GPUs, and did not intervene until the agent submitted. The person chose no candidate and gave no directional hint. After the submission the person asked for this session's submission and those of two other sessions (proposal issues #71 and #72) to be preregistered and trained under the protocol, and approved the formal launches. Packaging the frozen candidate with its Python source unchanged, calibration, the pre-launch checks, the launches and the audit were done by the operator's agents and involved no research decision: Claude Fable 5.2 (claude-fable-5-2, Claude Code 2.1.329 and 2.1.330), in a separate Claude Code session with no part in the research, packaged the frozen candidate as the method plugin (Python source unchanged; method.json defaults set to the submitted configuration), calibrated it, wrote the tests and the preregistration, ran the pre-launch checks and launched the formal run; Claude Opus 5.5 (claude-opus-5-5, Claude Code 2.1.330), in the same session after a model switch, monitored the formal run, audited and exported it, and wrote the run notes, the model card and this card."
  },
  "research": {
   "start": "2026-11-19",
