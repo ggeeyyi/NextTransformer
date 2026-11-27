@@ -1,12 +1,12 @@
 {
  "id": "canon-depth-lab",
- "name": "Canon depth mixing research",
+ "name": "Gated AttnRes-Canon",
  "methodId": "canon_depth_lab",
  "runIds": [
   "canon_depth_lab"
  ],
- "arenaProtocol": "arena-v1",
- "status": "complete",
+ "arenaProtocol": "arena-v2",
+ "status": "arena-only",
  "statusNote": "",
  "submitted": "2026-11-21",
  "verification": "self-reported",

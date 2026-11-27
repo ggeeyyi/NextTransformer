@@ -1,13 +1,13 @@
 ---
-title: Canon depth mixing research
+title: Gated AttnRes-Canon
 description: Arena v2 entry. AttnRes-Canon with a headwise attention output gate, two formal segments on 32 ranks, and the comparison with AttnRes-Canon and Gated Attention.
 ---
 
-Canon depth mixing research (`canon_depth_lab`) is the AttnRes-Canon trunk with a headwise sigmoid gate on every
+Gated AttnRes-Canon (`canon_depth_lab`) is the AttnRes-Canon trunk with a headwise sigmoid gate on every
 attention output. It is an
 [Arena v2 entry](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/canon-depth-lab.json):
 gpt-6-astra designed and selected it in one NextT-Gym research session that ran without human intervention
-(involvement L0). At 46,875 updates (49.152B tokens) and seed 42, it reached **35.9184 CORE ×100**. The gym offered
+(involvement L0). It is entered in the arena only (`arena-only`, Arena Protocol v2): the arena shows its scores, and it is not ranked on the leaderboard. At 46,875 updates (49.152B tokens) and seed 42, it reached **35.9184 CORE ×100**. The gym offered
 the agent the published results in `results/runs/` as history; the agent selected with dev-split values only, and
 never used the validation shard or CORE-22.
 
@@ -25,7 +25,7 @@ parameters**, of which the 23 gates hold 423,936 and the 138 Canon layers 1,271,
 | mHC | 6016 | 35.3278 | 0.661665 | 0.658908 | +2.23 / −0.00551 |
 | AttnRes-Canon | 6144 | 35.9921 | 0.660520 | 0.657754 | +2.90 / −0.00665 |
 | MSAR | 6144 | 36.7452 | 0.661044 | 0.658278 | +3.65 / −0.00613 |
-| Canon depth mixing research | 6144 | 35.9184 | 0.660721 | 0.657993 | +2.82 / −0.00645 |
+| Gated AttnRes-Canon | 6144 | 35.9184 | 0.660721 | 0.657993 | +2.82 / −0.00645 |
 
 Compared with AttnRes-Canon, the trunk it extends, CORE ×100 is 0.07 points lower. It improved or matched 10 of the
 22 CORE tasks. The largest gains were CommonsenseQA (+9.01 centered points), SQuAD (+5.78) and BIG-bench Dyck

@@ -2,7 +2,7 @@
  "id": "canon_depth_lab",
  "methodId": "canon_depth_lab",
  "cohort": "reference-v1",
- "name": "Canon depth mixing research",
+ "name": "Gated AttnRes-Canon",
  "status": "finished",
  "step": 46875,
  "val": [
