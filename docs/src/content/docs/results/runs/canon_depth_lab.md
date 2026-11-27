@@ -1,11 +1,11 @@
 ---
 title: Canon depth mixing research
-description: Arena v1 entry. AttnRes-Canon with a headwise attention output gate, two formal segments on 32 ranks, and the comparison with AttnRes-Canon and Gated Attention.
+description: Arena v2 entry. AttnRes-Canon with a headwise attention output gate, two formal segments on 32 ranks, and the comparison with AttnRes-Canon and Gated Attention.
 ---
 
 Canon depth mixing research (`canon_depth_lab`) is the AttnRes-Canon trunk with a headwise sigmoid gate on every
 attention output. It is an
-[arena v1 entry](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/canon-depth-lab.json):
+[Arena v2 entry](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/canon-depth-lab.json):
 gpt-6-astra designed and selected it in one NextT-Gym research session that ran without human intervention
 (involvement L0). At 46,875 updates (49.152B tokens) and seed 42, it reached **35.9184 CORE ×100**. The gym offered
 the agent the published results in `results/runs/` as history; the agent selected with dev-split values only, and

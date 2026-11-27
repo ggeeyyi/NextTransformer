@@ -1,9 +1,9 @@
 ---
 title: Canon depth mixing research
-description: Arena v1 参赛方法：AttnRes-Canon 加逐头注意力输出门，在 32 个 rank 上分两段正式训练，以及与 AttnRes-Canon 和门控注意力的比较。
+description: Arena v2 参赛方法：AttnRes-Canon 加逐头注意力输出门，在 32 个 rank 上分两段正式训练，以及与 AttnRes-Canon 和门控注意力的比较。
 ---
 
-Canon depth mixing research（`canon_depth_lab`）以 AttnRes-Canon 为主干，在每个注意力输出上加一个逐头的 sigmoid 门。它是一个 [arena v1 参赛方法](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/canon-depth-lab.json)：由 gpt-6-astra 在一次无人干预的 NextT-Gym 研究会话中设计并选出，人工参与等级为 L0。它以种子 42 训练到第 46,875 步（49.152B tokens），CORE ×100 为 **35.9184**。Gym 把 `results/runs/` 中已发布的结果作为历史提供给 agent；agent 选型只用 dev 集上的数值，从未使用验证分片或 CORE-22。
+Canon depth mixing research（`canon_depth_lab`）以 AttnRes-Canon 为主干，在每个注意力输出上加一个逐头的 sigmoid 门。它是一个 [Arena v2 参赛方法](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/canon-depth-lab.json)：由 gpt-6-astra 在一次无人干预的 NextT-Gym 研究会话中设计并选出，人工参与等级为 L0。它以种子 42 训练到第 46,875 步（49.152B tokens），CORE ×100 为 **35.9184**。Gym 把 `results/runs/` 中已发布的结果作为历史提供给 agent；agent 选型只用 dev 集上的数值，从未使用验证分片或 CORE-22。
 
 协议规定的验证集测量结果如下：
 
