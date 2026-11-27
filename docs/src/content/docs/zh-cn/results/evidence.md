@@ -11,9 +11,9 @@ description: 配置准入依据的算力凭证，以及正式运行结束后的�
 |---|---|
 | `plugin-interface-20261031` | 当前凭证集，内置方法的配置指向这里的对应凭证 |
 | `arena-v1-stage3-20261103` | arena v1 参赛方法 AttnRes-Canon（`attnres_full_canon_abcd`）的凭证及其 SSSL 锚点；它的配置指向这里。`summary.json` 中还列有未注册的 Block AttnRes 变体 |
-| `ngram-canon-attnres-20261121` | Arena v2 参赛方法 N-gram AttnRes-Canon（`ngram_canon_attnres`）的凭证及其 SSSL 锚点；它的配置指向这里 |
-| `canon-depth-lab-20261121` | Arena v2 参赛方法 Gated AttnRes-Canon（`canon_depth_lab`）的凭证及其 SSSL 锚点；它的配置指向这里 |
 | `hydra-20261121` | Arena v2 参赛方法 Hydra（`hydra`）的凭证及其 SSSL 锚点；它的配置指向这里 |
+| `canon-depth-lab-20261121` | Arena v2 参赛方法 Gated AttnRes-Canon（`canon_depth_lab`）的凭证及其 SSSL 锚点；它的配置指向这里 |
+| `ngram-canon-attnres-20261121` | Arena v2 参赛方法 N-gram AttnRes-Canon（`ngram_canon_attnres`）的凭证及其 SSSL 锚点；它的配置指向这里 |
 | `mhc-logsinkhorn-20261028` | mHC 改用对数域 Sinkhorn-Knopp 后的凭证集，计数与当前一致 |
 | `hybrid-kernels-20261026-release` | 已发布混合架构运行所用冻结源码的凭证集 |
 | `layout-20261024` | 软件包重组前的凭证集，模型哈希和计数与之后的版本一致 |
