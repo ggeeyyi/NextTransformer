@@ -3,11 +3,13 @@ import {getTrainingCompute,trainingComputeDelta,LEGACY_ACCOUNTING} from './lib/t
 import {ledgerLabel} from './lib/labels';
 import type {Run} from './lib/types';
 const number=(v:number)=>v.toLocaleString('en-US');
-export function ComputeValue({run,baseline,cursor}:{run?:Run;baseline?:Run;cursor?:number}){
+export function ComputeValue({run, baseline, cursor, baselineLabel = 'Dense'}: {
+ run?: Run; baseline?: Run; cursor?: number; baselineLabel?: string;
+}){
  const c=getTrainingCompute(run),delta=trainingComputeDelta(run,baseline);
  if(!c)return <span className="compute-value missing"><b>—</b><small>Not reported</small></span>;
  if(cursor!==undefined&&c.step>cursor)return <span className="compute-value missing"><b>—</b><small>Later checkpoint</small></span>;
- return <span className="compute-value"><b>{c.averageGflopsPerInputToken.toFixed(6)}</b><small>{c.final?'Full run':'Through step '+number(c.step)}{delta!==undefined&&run?.id!==baseline?.id?' · '+(delta>=0?'+':'')+delta.toFixed(2)+'% / Dense':''}</small></span>;
+ return <span className="compute-value"><b>{c.averageGflopsPerInputToken.toFixed(6)}</b><small>{c.final?'Full run':'Through step '+number(c.step)}{delta!==undefined&&run?.id!==baseline?.id?' · '+(delta>=0?'+':'')+delta.toFixed(2)+'% / '+baselineLabel:''}</small></span>;
 }
 export default function ComputeDetails({run,baseline,target}:{run?:Run;baseline?:Run;target?:number}){
  const c=getTrainingCompute(run),delta=trainingComputeDelta(run,baseline);

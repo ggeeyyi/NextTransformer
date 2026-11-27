@@ -36,6 +36,7 @@ result is an audited, file-backed record, and AI agents can research new archite
 
 ## News
 
+- <img src="https://img.shields.io/badge/NEW-E5607E?style=flat-square" alt="New" height="18"> **2026-11-26** · **240 TPP MoE residual results** are live across both tracks: all five arms (Baseline, HC, mHC, SimpleHC, iHC) on [d768-240tpp](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp), plus Baseline and iHC on [d1024-240tpp](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d1024-240tpp).
 - <img src="https://img.shields.io/badge/NEW-E5607E?style=flat-square" alt="New" height="18"> **2026-11-23** · The **[MoE track](#the-moe-track)** is open: two Marin-derived backbones, a [240 TPP comparison](moe/PROTOCOL.md#240-tpp-comparison) at 14.07B and 34.06B tokens, MoE-CORE and a shared throughput harness. [Read the MoE protocol](https://interactive-active-ai.github.io/NextTransformer/docs/moe/protocol/).
 - <img src="https://img.shields.io/badge/LIVE-8B5CF6?style=flat-square" alt="Live" height="18"> **2026-11-14** · **Arena v2** is live: agent-native research end to end, through a [research gym](gym/README.md) with MCP tools, metered compute and research traces.
 - **2026-11-13** · The [2K scaling study is open](https://interactive-active-ai.github.io/NextTransformer/#scaling), starting with 16 T3 configurations across four families. [Choose a configuration, find reference code and contribute](https://interactive-active-ai.github.io/NextTransformer/#contribute).

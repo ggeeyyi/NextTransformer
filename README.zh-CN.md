@@ -35,6 +35,7 @@ AI agent 也可以在完全相同的规则下研究新架构。
 
 ## 新闻
 
+- <img src="https://img.shields.io/badge/NEW-E5607E?style=flat-square" alt="New" height="18"> **2026-11-26** · **240 TPP MoE 残差系列结果上线**：小档位 [d768-240tpp](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d768-240tpp) 全部 5 臂（Baseline、HC、mHC、SimpleHC、iHC）与大档位 [d1024-240tpp](https://interactive-active-ai.github.io/NextTransformer/#leaderboard?track=d1024-240tpp) 首期 2 臂（Baseline、iHC）已发布至观测站榜单。
 - <img src="https://img.shields.io/badge/NEW-E5607E?style=flat-square" alt="New" height="18"> **2026-11-23** · **[MoE 赛道](#moe-赛道)**开放：两个 Marin 口径的骨干网络、[240 TPP 对照](moe/PROTOCOL.md#240-tpp-comparison)（14.07B 与 34.06B tokens）、MoE-CORE 评测和统一的吞吐基准。[查看 MoE 协议](https://interactive-active-ai.github.io/NextTransformer/docs/zh-cn/moe/protocol/)。
 - <img src="https://img.shields.io/badge/LIVE-8B5CF6?style=flat-square" alt="Live" height="18"> **2026-11-14** · **Arena v2** 已上线：端到端的 agent 原生研究，包含带 MCP 工具、算力计量和研究轨迹的[研究 gym](gym/README.zh-CN.md)。
 - **2026-11-13** · [2K Scaling 研究启动](https://interactive-active-ai.github.io/NextTransformer/#scaling)。T3 开放四个家族的 16 个配置与预算。[从 Contribute 选择配置、查看参考代码并参与](https://interactive-active-ai.github.io/NextTransformer/#contribute)。

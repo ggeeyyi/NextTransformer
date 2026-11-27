@@ -14,9 +14,9 @@ schedule, quantile-balanced routing, context, batch and updates.
 | **d768** | 8 × 768, GQA 6/1, 256 experts × 384 top-4 + shared 768 | 4,096 | 4.42B | 9.369 × 10⁸ | 2.00B / 213M |
 | **d1024** | 11 × 1024, GQA 8/2, 256 experts × 512 top-4 + shared 1024 | 4,096 | 8.43B | 1.695 × 10⁹ | 4.71B / 347M |
 
-The [240 TPP comparison](../protocol/#240-tpp-comparison) runs these backbones for longer. The d768
-track admits baseline, HC, mHC, SimpleHC and iHC at 14,073,462,784 input tokens. The d1024 track admits the
-baseline at 34,064,564,224 input tokens. Both use the same global batch as their May reference track.
+The [240 TPP comparison](../protocol/#240-tpp-comparison) runs these backbones for longer. Both the d768
+track (14,073,462,784 input tokens) and the d1024 track (34,064,564,224 input tokens) admit baseline, HC, mHC,
+SimpleHC and iHC, keeping the global batch of their May reference tracks.
 
 - **Data.** Dolma 3 HQ (300B tokens, shuffled and cleaned), tokenized with the dolma2 tokenizer. Shards are read in a
   fixed order.

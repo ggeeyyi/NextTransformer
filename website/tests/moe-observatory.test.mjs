@@ -39,6 +39,19 @@ test('MoE budgets admit models separately from ranked runs and retain the origin
   assert.equal(moeAddress('leaderboard'),'#leaderboard');
   assert.equal(moeAddress('results',large,'baseline'),'#results?track=d1024-240tpp&method=baseline');
 });
+test('MoE leaderboard compute uses audited full-run totals and never falls back to a configuration target', () => {
+  const files = sample();
+  const recordPath = path('results', small, 'baseline');
+  const record = files.results[recordPath];
+  const compute = () => buildMoeTracks(files)[0].baseline.run.trainingCompute;
+  const full = compute();
+  assert.equal(full.averageGflopsPerInputToken.toFixed(6), '0.936885');
+  assert.equal(full.trainingFlopsEstimate, record.training_flops);
+  assert.equal(full.source, recordPath);
+  assert.equal(full.final, true);
+  delete record.training_flops;
+  assert.equal(compute(), undefined);
+});
 test('a new published arm automatically joins its budget once its matching audit is present',()=>{
   const f=sample(), hc=f.configs[path('configs',small,'hc')];
   const record=structuredClone(f.results[path('results',small,'baseline')]);
