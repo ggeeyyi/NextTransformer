@@ -1,6 +1,6 @@
 # Arena v2：已经探索的内容
 
-截至 2026-11-05。本页记录 Arena v1 及其相关工作为 Arena v2 打下了哪些基础。还没做的工作见 [路线图](arena-v2-roadmap.zh-CN.md)；详细的工作流设计见 [arena-v2-agent-workflow.zh-CN.md](arena-v2-agent-workflow.zh-CN.md)；证据在 [`evidence/checks/arena-v1/`](../../evidence/checks/arena-v1/README.md) 及其旁边的各阶段目录里。英文版：[arena-v2-explored.md](arena-v2-explored.md)。
+截至 2026-11-05。本页记录 Arena v1 及其相关工作为 Arena v2 打下了哪些基础。还没做的工作见 [路线图](arena-v2-roadmap.zh-CN.md)；详细的工作流设计见 [arena-v2-agent-workflow.zh-CN.md](arena-v2-agent-workflow.zh-CN.md)；证据在 [`evidence/checks/arena-v1/`](https://github.com/ggeeyyi/NextTransformer/tree/25c553d9e03e43334c7fdf3171736b5a8bf42413/evidence/checks/arena-v1) 及其旁边的各阶段目录里。英文版：[arena-v2-explored.md](arena-v2-explored.md)。
 
 ## Arena v1：一次有人监督的研究过程（2026-10-30 至 2026-11-05）
 

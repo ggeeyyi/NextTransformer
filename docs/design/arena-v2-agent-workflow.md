@@ -35,7 +35,7 @@ score comes only from CORE-22 (decision D2).
 
 Arena v1 (2026-10-30 to 2026-11-05) was one supervised research episode. Claude was the researcher, working through the
 research gym's tools, and a person approved each stage's plan, rules and compute. Evidence:
-[`evidence/checks/arena-v1/`](../../evidence/checks/arena-v1/README.md).
+[`evidence/checks/arena-v1/`](https://github.com/ggeeyyi/NextTransformer/tree/25c553d9e03e43334c7fdf3171736b5a8bf42413/evidence/checks/arena-v1).
 
 | Stage | Question | Rule and outcome | Platform GPU-h |
 |---|---|---|---:|

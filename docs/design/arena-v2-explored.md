@@ -3,7 +3,7 @@
 Status as of 2026-11-05. This page records what Arena v1 and the work around it have established for Arena v2. The
 remaining work is in the [roadmap](arena-v2-roadmap.md). The detailed workflow design is in
 [arena-v2-agent-workflow.md](arena-v2-agent-workflow.md). Evidence is in
-[`evidence/checks/arena-v1/`](../../evidence/checks/arena-v1/README.md) and the stage directories beside it.
+[`evidence/checks/arena-v1/`](https://github.com/ggeeyyi/NextTransformer/tree/25c553d9e03e43334c7fdf3171736b5a8bf42413/evidence/checks/arena-v1) and the stage directories beside it.
 
 ## Arena v1: one supervised research episode (2026-10-30 to 2026-11-05)
 
