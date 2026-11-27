@@ -1,6 +1,6 @@
 {
  "id": "ngram_canon_attnres",
- "name": "Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D",
+ "name": "N-gram AttnRes-Canon",
  "family": "residual",
  "tagline": "AttnRes-Canon with Canon layers at more sites and wider kernels, and a hashed bigram memory added to the token embedding.",
  "description": "The AttnRes-Canon trunk (Full AttnRes, one group per block, with Canon layers A–D) with Canon layers at more sites and with wider kernels, and a hashed bigram memory. Each position looks up its (previous, current) token pair with two signed multiplicative hashes in two zero-initialized tables of 320,000 rows × 768; the concatenated lookups, scaled by 0.1, are added to the token embedding. New Canon layers filter every block output before it becomes a depth source and the embedding source (kernel 12), and the final depth read (kernel 8); the four original sites use kernel 8. Every addition starts as the identity, so the model starts as Full AttnRes. The tables hold 491,520,000 of the 1,850,401,032 parameters and the 163 Canon layers 2,998,272; calibrated to +0.710% of the shared budget at 23 layers / FFN 6144.",

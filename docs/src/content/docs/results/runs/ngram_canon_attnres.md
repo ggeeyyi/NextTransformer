@@ -1,18 +1,18 @@
 ---
-title: Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D
+title: N-gram AttnRes-Canon
 description: Arena v2 entry. AttnRes-Canon with a hashed bigram memory and Canon layers at more sites, two formal segments on 32 ranks, and the comparison with the Residual family.
 ---
 
-Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D (`ngram_canon_attnres`) is the AttnRes-Canon trunk with Canon
+N-gram AttnRes-Canon (`ngram_canon_attnres`) is the AttnRes-Canon trunk with Canon
 layers at more sites and with wider kernels, and a hashed bigram memory added to the token embedding. It is an
 [Arena v2 entry](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/ngram-canon-attnres.json):
 Claude Fable 5.2 designed and selected it in one NextT-Gym research session that ran without human intervention
-(involvement L0). At 46,875 updates (49.152B tokens) and seed 42, it reached **35.5114 CORE ×100**. The gym offered the
+(involvement L0). It is entered in the arena only (`arena-only`, Arena Protocol v2): the arena shows its scores, and it is not ranked on the leaderboard. At 46,875 updates (49.152B tokens) and seed 42, it reached **35.5114 CORE ×100**. The gym offered the
 agent the published results in `results/runs/` as history; the agent selected with dev-split values only, and never
 used the validation shard or CORE-22.
 
 The protocol's validation measurements are **0.658060 periodic validation BPB** and **0.655244 independent final
-validation BPB** (0.657481 on the training split), the lowest of the published runs. The model has 23 layers, FFN
+validation BPB** (0.657481 on the training split), lower than every published run except Hydra (0.654993). The model has 23 layers, FFN
 width 6144 and **1,850,401,032 parameters**, of which the two lookup tables hold 491,520,000 and the 163 Canon layers
 2,998,272.
 
@@ -25,7 +25,7 @@ width 6144 and **1,850,401,032 parameters**, of which the two lookup tables hold
 | mHC | 6016 | 35.3278 | 0.661665 | 0.658908 | +2.23 / −0.00551 |
 | AttnRes-Canon | 6144 | 35.9921 | 0.660520 | 0.657754 | +2.90 / −0.00665 |
 | MSAR | 6144 | 36.7452 | 0.661044 | 0.658278 | +3.65 / −0.00613 |
-| Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D | 6144 | 35.5114 | 0.658060 | 0.655244 | +2.42 / −0.00911 |
+| N-gram AttnRes-Canon | 6144 | 35.5114 | 0.658060 | 0.655244 | +2.42 / −0.00911 |
 
 Compared with AttnRes-Canon, the trunk it extends, CORE ×100 is 0.48 points lower. It improved or matched 13 of the
 22 CORE tasks. The largest gains were AGI Eval LSAT-AR (+7.61 centered points), BIG-bench CS Algorithms (+6.89) and

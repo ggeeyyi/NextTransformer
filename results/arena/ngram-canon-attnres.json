@@ -1,12 +1,12 @@
 {
  "id": "ngram-canon-attnres",
- "name": "Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D",
+ "name": "N-gram AttnRes-Canon",
  "methodId": "ngram_canon_attnres",
  "runIds": [
   "ngram_canon_attnres"
  ],
- "arenaProtocol": "arena-v1",
- "status": "complete",
+ "arenaProtocol": "arena-v2",
+ "status": "arena-only",
  "statusNote": "",
  "submitted": "2026-11-21",
  "verification": "self-reported",

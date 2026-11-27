@@ -15,11 +15,8 @@ ordered by CORE. Arena entries (auto-research) rank on CORE only; their validati
 | Model | Family | Val BPB ↓ | Δ BPB | CORE ↑ | Δ CORE | Training GFLOPs / token |
 |---|---|---:|---:|---:|---:|---:|
 | **[Dense Baseline](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/dense_full.json)** | baseline | 0.6672 | — | 33.10 | — | 4.675 |
-| [Hydra](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/hydra.json) | others | 0.6577 | -0.0094 | 37.04 | +3.94 | 4.702 |
 | [MSAR](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/msar.json) | residual | 0.6610 | -0.0061 | 36.75 | +3.65 | 4.716 |
 | [AttnRes-Canon](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/attnres_full_canon_abcd.json) | residual | 0.6605 | -0.0067 | 35.99 | +2.90 | 4.695 |
-| [Canon depth mixing research](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/canon_depth_lab.json) | others | 0.6607 | -0.0065 | 35.92 | +2.82 | 4.698 |
-| [Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/ngram_canon_attnres.json) | residual | 0.6581 | -0.0091 | 35.51 | +2.42 | 4.706 |
 | [Manifold-Constrained Hyper-Connections · mHC](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/mhc.json) | residual | 0.6617 | -0.0055 | 35.33 | +2.23 | 4.674 |
 | [SimpleHC](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/simplehc.json) | residual | 0.6628 | -0.0043 | 35.11 | +2.02 | 4.693 |
 | [Hyper-Connections · HC](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/runs/hc.json) | residual | 0.6644 | -0.0028 | 35.09 | +2.00 | 4.698 |

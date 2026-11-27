@@ -2,7 +2,7 @@
  "id": "ngram_canon_attnres",
  "methodId": "ngram_canon_attnres",
  "cohort": "reference-v1",
- "name": "Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D",
+ "name": "N-gram AttnRes-Canon",
  "status": "finished",
  "step": 46875,
  "val": [
