@@ -1,0 +1,69 @@
+{
+ "id": "attnres-canon-abcd",
+ "name": "Block AttnRes with Canon layers A-D",
+ "methodId": "attnres_canon_abcd",
+ "runIds": [],
+ "arenaProtocol": "arena-v1",
+ "status": "admitted",
+ "statusNote": "",
+ "submitted": "2026-11-03",
+ "verification": "self-reported",
+ "researcher": {
+  "people": [
+   {
+    "name": "ggeeyyi",
+    "handle": "ggeeyyi",
+    "role": "Operator: approved each stage's plan, its preregistered rules and its GPU budget, and set the stopping points; chose no candidate and wrote no method code"
+   }
+  ],
+  "llms": [
+   {
+    "name": "Claude Opus",
+    "version": "claude-opus-5-5",
+    "role": "Researcher and operator's agent: drafted the arena v1 plan and every stage's rules, proposed, wrote and verified every candidate in NextT-Gym, launched and monitored the runs, analyzed them, and ported the selected candidates to method plugins"
+   },
+   {
+    "name": "Codex",
+    "version": "gpt-6-astra (reasoning effort xhigh)",
+    "role": "Reviewed the Stage 3 code changes (plugins, metering, disclosure) before the GPU checks"
+   }
+  ],
+  "framework": {
+   "name": "NextT-Gym",
+   "version": null,
+   "url": null,
+   "note": "The research gym in nextt_gym/, driven through its MCP tools; runs on Koala, one 8-GPU job per run or segment"
+  },
+  "involvement": "L2",
+  "involvementNote": "The person approved each stage's plan and preregistered rules before its runs (proposals from the agent) and set the compute; the agent proposed, implemented and selected every candidate by the preregistered rule. A web search was used only to look up the Canon paper's citation while porting; the candidates came from the model's knowledge of the literature."
+ },
+ "research": {
+  "start": "2026-10-30",
+  "end": "2026-11-02",
+  "baseCommit": "6f2c422910274f003cabf432fec6c27c565d5258",
+  "candidatesTrained": 12,
+  "formalAttempts": 0,
+  "formalNote": "No formal run yet.",
+  "gpuHours": 701.72,
+  "hardware": "8 x H20 per run",
+  "computeNote": "Metered by NextT-Gym over 37 runs (33 trained at least one update): platform GPU-hours, pod time x GPUs as the cluster recorded it (queueing excluded). Scales: S x4, C x13, M x16. LLM tokens and API cost: not metered. The base commit belongs to the private development history; the code bundle of every run, with its commit and SHA-256, is listed in evidence/checks/arena-v1/bundles.json. Not included: the Stage 3 porting checks of 2026-11-03, about 42.1 platform GPU-hours (evidence/checks/arena-v1-stage3-20261103).",
+  "internet": true,
+  "selectionSignal": [
+   "dev-bpb"
+  ]
+ },
+ "novelty": {
+  "closestPrior": [
+   "Block AttnRes (attnres)",
+   "Canon layers (Physics of Language Models, Part 4.1)"
+  ],
+  "statement": "Block Attention Residuals (8 groups) and Canon layers at all four positions in one model. Canon-A/C act on the input that each sublayer reads over depth; Canon-B on q, k and v and Canon-D on the MLP hidden as in the Canon paper. Neither paper combines the two."
+ },
+ "artifacts": {
+  "checkpointUrl": null,
+  "logsUrl": null,
+  "traceUrl": null,
+  "historyUrl": null,
+  "codeUrl": null
+ }
+}

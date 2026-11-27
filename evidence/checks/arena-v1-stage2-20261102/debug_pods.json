@@ -1,0 +1,42 @@
+[
+ {
+  "job": "user-nextt-gym-s2r1check-230f7e59a0-debug-20261101-163141",
+  "gpus": 1,
+  "created": "2026-11-01T16:31:41+08:00",
+  "last_output": "2026-11-01T16:45:14+08:00",
+  "checks": "debug-s2r1-20261101",
+  "candidates": 6
+ },
+ {
+  "job": "user-nextt-gym-s2r2check-ad12dcf0c3-debug-20261101-202119",
+  "gpus": 1,
+  "created": "2026-11-01T20:21:19+08:00",
+  "last_output": "2026-11-01T20:40:15+08:00",
+  "checks": "debug-s2r2-20261101",
+  "candidates": 8
+ },
+ {
+  "job": "user-nextt-gym-s2moecheck-f73190a42b-debug-20261101-232229",
+  "gpus": 1,
+  "created": "2026-11-01T23:22:29+08:00",
+  "last_output": "2026-11-01T23:26:25+08:00",
+  "checks": "debug-s2r2b-20261101",
+  "candidates": 1
+ },
+ {
+  "job": "user-nextt-gym-s2moe16check-3d290d6fa8-debug-20261101-232908",
+  "gpus": 1,
+  "created": "2026-11-01T23:29:08+08:00",
+  "last_output": "2026-11-01T23:33:06+08:00",
+  "checks": "debug-s2r2c-20261101",
+  "candidates": 1
+ },
+ {
+  "job": "user-nextt-gym-s2r3check-2d76533a5f-debug-20261102-095911",
+  "gpus": 1,
+  "created": "2026-11-02T09:59:11+08:00",
+  "stopped": "2026-11-02T10:05:16+08:00",
+  "checks": "debug-s2r3-20261102",
+  "candidates": 1
+ }
+]

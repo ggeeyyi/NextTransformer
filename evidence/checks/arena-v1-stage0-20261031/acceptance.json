@@ -1,0 +1,214 @@
+{
+ "A1": {
+  "gdn": {
+   "common_steps": 52,
+   "step1_abs_diff": 0.0,
+   "window_steps": 22,
+   "window_mean_abs_diff": 0.003864209082993594,
+   "max_abs_diff": 0.0164857879281044,
+   "passed": true
+  },
+  "kda": {
+   "common_steps": 52,
+   "step1_abs_diff": 0.0,
+   "window_steps": 22,
+   "window_mean_abs_diff": 0.0033689026128162036,
+   "max_abs_diff": 0.015847615897655487,
+   "passed": true
+  }
+ },
+ "A2": {
+  "run_000022": {
+   "segments": 3,
+   "boundaries": [
+    230,
+    458
+   ],
+   "restarts": [],
+   "final_step": 512,
+   "logged_updates": 53,
+   "losses_around_boundaries": {
+    "230": {
+     "210": 3.373986631631851,
+     "220": 3.3385956659913063,
+     "230": 3.3579843267798424,
+     "240": 3.296772964298725,
+     "250": 3.275334194302559
+    },
+    "458": {
+     "440": 3.0484652295708656,
+     "450": 3.025984063744545,
+     "460": 2.9937183558940887,
+     "470": 3.0062836185097694
+    }
+   },
+   "problems": [],
+   "passed": true
+  },
+  "run_000024": {
+   "segments": 2,
+   "boundaries": [
+    250
+   ],
+   "restarts": [
+    {
+     "segment": 1,
+     "job_state": "Deleting",
+     "failed_at_step": 300,
+     "resumed_from": 250
+    }
+   ],
+   "final_step": 512,
+   "logged_updates": 53,
+   "losses_around_boundaries": {
+    "250": {
+     "230": 3.358229674398899,
+     "240": 3.308379352092743,
+     "250": 3.279901996254921,
+     "260": 3.1992813646793365,
+     "270": 3.2422141656279564
+    }
+   },
+   "problems": [],
+   "passed": true,
+   "replay": {
+    "resumed_from": 250,
+    "failed_at_step": 300,
+    "events": [
+     {
+      "event": "validation",
+      "step": 256,
+      "before": 0.9816494002384866,
+      "after": 0.9816403264688259,
+      "abs_diff": 9.073769660639108e-06
+     },
+     {
+      "event": "train",
+      "step": 260,
+      "before": 3.1991190761327744,
+      "after": 3.1992813646793365,
+      "abs_diff": 0.00016228854656219482
+     },
+     {
+      "event": "train",
+      "step": 270,
+      "before": 3.2391674369573593,
+      "after": 3.2422141656279564,
+      "abs_diff": 0.0030467286705970764
+     },
+     {
+      "event": "train",
+      "step": 280,
+      "before": 3.1878380179405212,
+      "after": 3.1872076243162155,
+      "abs_diff": 0.0006303936243057251
+     },
+     {
+      "event": "train",
+      "step": 290,
+      "before": 3.162424184381962,
+      "after": 3.1686256155371666,
+      "abs_diff": 0.006201431155204773
+     },
+     {
+      "event": "train",
+      "step": 300,
+      "before": 3.176070973277092,
+      "after": 3.1735769957304,
+      "abs_diff": 0.0024939775466918945
+     }
+    ],
+    "problems": [],
+    "passed": true
+   },
+   "agreement": {
+    "reference": "run_000022",
+    "common_steps": 53,
+    "step1_abs_diff": 0.0,
+    "window_mean_abs_diff": 0.0034847550771453166,
+    "max_abs_diff": 0.019068360328674316,
+    "dev_bpb": {
+     "0": {
+      "run": 3.1620597717118786,
+      "reference": 3.1620597717118786,
+      "diff": 0.0
+     },
+     "128": {
+      "run": 1.169386710778237,
+      "reference": 1.1673501939156148,
+      "diff": 0.002036516862622184
+     },
+     "256": {
+      "run": 0.9816403264688259,
+      "reference": 0.9789853414661381,
+      "diff": 0.002654985002687793
+     },
+     "384": {
+      "run": 0.9216625638320303,
+      "reference": 0.9222816852835114,
+      "diff": -0.0006191214514811305
+     },
+     "512": {
+      "run": 0.887221002265789,
+      "reference": 0.8878298885050931,
+      "diff": -0.0006088862393041072
+     }
+    }
+   }
+  }
+ },
+ "A3": {
+  "run_000021": {
+   "method": "gdn",
+   "per_update_flops": 4914882389683629,
+   "audited_per_update_flops": 4914882389683629,
+   "train_flops": 2516419783518018048,
+   "eval_tokens": 41943040,
+   "eval_flops": 65189491873139200,
+   "settled_flops": 2581609275391157248,
+   "reserved_flops": 2633241460898980392,
+   "settled_over_reserved": 0.9803921568627451,
+   "gym_gpu_hours": 7.5005648961021665,
+   "passed": true
+  },
+  "run_000022": {
+   "method": "dense_full",
+   "per_update_flops": 4901738059886504,
+   "audited_per_update_flops": 4901738059886504,
+   "train_flops": 2509689886661890048,
+   "eval_tokens": 41943040,
+   "eval_flops": 65051601266503720,
+   "settled_flops": 2574741487928393768,
+   "reserved_flops": 2626236317686961640,
+   "settled_over_reserved": 0.9803921568627451,
+   "gym_gpu_hours": 7.156102121689667,
+   "passed": true
+  },
+  "run_000023": {
+   "method": "kda",
+   "per_update_flops": 4920383344138811,
+   "audited_per_update_flops": 4920383344138811,
+   "train_flops": 2519236272199071232,
+   "eval_tokens": 41943040,
+   "eval_flops": 65266404673885120,
+   "settled_flops": 2584502676872956352,
+   "reserved_flops": 2636192730410415480,
+   "settled_over_reserved": 0.9803921568627451,
+   "gym_gpu_hours": 8.144941261704597,
+   "passed": true
+  },
+  "run_000024": {
+   "method": "dense_full",
+   "per_update_flops": 4901738059886504,
+   "audited_per_update_flops": 4901738059886504,
+   "train_flops": 2509689886661890048,
+   "eval_tokens": 41943040,
+   "eval_flops": 65051601266503720,
+   "settled_flops": 2574741487928393768,
+   "reserved_flops": 2626236317686961640,
+   "settled_over_reserved": 0.9803921568627451,
+   "gym_gpu_hours": 7.127708599409089,
+   "passed": true
+  }
+ }
+}

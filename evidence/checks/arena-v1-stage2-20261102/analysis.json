@@ -1,0 +1,328 @@
+{
+ "anchors": {
+  "dense_full": {
+   "run": "run_000038",
+   "dev_512": 0.887536914630292,
+   "dev_2000": 0.8013500401649126
+  },
+  "attnres": {
+   "run": "run_000039",
+   "dev_512": 0.8899541668678725,
+   "dev_2000": 0.8003100409814948
+  }
+ },
+ "repeat": {
+  "run": "run_000040",
+  "dev_512": 0.8880062099971376,
+  "dev_2000": 0.8017624974386043
+ },
+ "delta": 0.00041245727369165763,
+ "margin": 0.001,
+ "best_anchor": "attnres",
+ "threshold": 0.7993100409814948,
+ "screen_threshold": 0.03,
+ "candidates": {
+  "run_000041": {
+   "candidate": "attnres_gate",
+   "round": 1,
+   "parent": "attnres",
+   "change": "head-wise sigmoid gate on the attention output",
+   "state": "succeeded",
+   "dev_512": 0.8872817602274363,
+   "dev_2000": 0.8009114504345985,
+   "gap_512_vs_dense_full": -0.00025515440285572843,
+   "screen": "continues",
+   "vs_best_anchor_2000": 0.0006014094531037184,
+   "beats_best_anchor": false
+  },
+  "run_000042": {
+   "candidate": "attnres_canon",
+   "round": 1,
+   "parent": "attnres",
+   "change": "Canon-A/C causal depthwise convolutions on sublayer inputs",
+   "state": "succeeded",
+   "dev_512": 0.8893077515172523,
+   "dev_2000": 0.7997235851007918,
+   "gap_512_vs_dense_full": 0.0017708368869602253,
+   "screen": "continues",
+   "vs_best_anchor_2000": -0.0005864558807030518,
+   "beats_best_anchor": false
+  },
+  "run_000043": {
+   "candidate": "attnres_full",
+   "round": 1,
+   "parent": "attnres",
+   "change": "Full AttnRes: attnres_groups = layers (8 -> 23)",
+   "state": "succeeded",
+   "dev_512": 0.8889235318147444,
+   "dev_2000": 0.7995095893171165,
+   "gap_512_vs_dense_full": 0.0013866171844523212,
+   "screen": "continues",
+   "vs_best_anchor_2000": -0.0008004516643783655,
+   "beats_best_anchor": false
+  },
+  "run_000044": {
+   "candidate": "attnres_deep",
+   "round": 1,
+   "parent": "attnres",
+   "change": "27 layers, FFN 4608 (calibrated)",
+   "state": "succeeded",
+   "dev_512": 0.8975065194219297,
+   "dev_2000": 0.8029944975880402,
+   "gap_512_vs_dense_full": 0.009969604791637665,
+   "screen": "continues",
+   "vs_best_anchor_2000": 0.002684456606545371,
+   "beats_best_anchor": false
+  },
+  "run_000045": {
+   "candidate": "attnres_ve_all",
+   "round": 1,
+   "parent": "attnres",
+   "change": "value embeddings on every layer",
+   "state": "succeeded",
+   "dev_512": 0.8921996707933173,
+   "dev_2000": 0.8010149639988865,
+   "gap_512_vs_dense_full": 0.00466275616302525,
+   "screen": "continues",
+   "vs_best_anchor_2000": 0.0007049230173916676,
+   "beats_best_anchor": false
+  },
+  "run_000046": {
+   "candidate": "dense_full_gate",
+   "round": 1,
+   "parent": "dense_full",
+   "change": "head-wise gate on dense_full",
+   "state": "cancelled",
+   "dev_512": null,
+   "dev_2000": null,
+   "screen": "ended cancelled before update 512"
+  },
+  "run_000047": {
+   "candidate": "attnres_moe",
+   "round": 2,
+   "parent": "attnres",
+   "change": "8-expert top-2 MoE FFN",
+   "state": "succeeded",
+   "dev_512": 0.8954983853108058,
+   "dev_2000": 0.8066239328621178,
+   "gap_512_vs_dense_full": 0.007961470680513782,
+   "screen": "continues",
+   "vs_best_anchor_2000": 0.006313891880622924,
+   "beats_best_anchor": false
+  },
+  "run_000048": {
+   "candidate": "attnres_gate_canon",
+   "round": 2,
+   "parent": "attnres",
+   "change": "gate of attnres_gate added to attnres_canon",
+   "state": "succeeded",
+   "dev_512": 0.8861920367862784,
+   "dev_2000": 0.8002042045321738,
+   "gap_512_vs_dense_full": -0.0013448778440136033,
+   "screen": "continues",
+   "vs_best_anchor_2000": -0.00010583644932105063,
+   "beats_best_anchor": false
+  },
+  "run_000049": {
+   "candidate": "attnres_full_gate",
+   "round": 2,
+   "parent": "attnres",
+   "change": "gate of attnres_gate added to attnres_full",
+   "state": "succeeded",
+   "dev_512": 0.887501200272908,
+   "dev_2000": 0.7992963920251713,
+   "gap_512_vs_dense_full": -3.571435738403128e-05,
+   "screen": "continues",
+   "vs_best_anchor_2000": -0.0010136489563234985,
+   "beats_best_anchor": true
+  },
+  "run_000050": {
+   "candidate": "attnres_full_canon",
+   "round": 2,
+   "parent": "attnres",
+   "change": "Canon-A/C of attnres_canon added to attnres_full",
+   "state": "succeeded",
+   "dev_512": 0.887926506004439,
+   "dev_2000": 0.7984887539352218,
+   "gap_512_vs_dense_full": 0.0003895913741469581,
+   "screen": "continues",
+   "vs_best_anchor_2000": -0.0018212870462730457,
+   "beats_best_anchor": true
+  },
+  "run_000051": {
+   "candidate": "attnres_moe16",
+   "round": 2,
+   "parent": "attnres",
+   "change": "16-expert top-4 MoE FFN (micro batch 16; out of memory)",
+   "state": "cancelled",
+   "dev_512": null,
+   "dev_2000": null,
+   "screen": "ended cancelled before update 512"
+  },
+  "run_000052": {
+   "candidate": "attnres_canon_abcd",
+   "round": 2,
+   "parent": "attnres",
+   "change": "Canon-B on q, k, v and Canon-D on the MLP hidden added to attnres_canon",
+   "state": "succeeded",
+   "dev_512": 0.8881895727344388,
+   "dev_2000": 0.7981927312738147,
+   "gap_512_vs_dense_full": 0.0006526581041467194,
+   "screen": "continues",
+   "vs_best_anchor_2000": -0.002117309707680093,
+   "beats_best_anchor": true
+  },
+  "run_000053": {
+   "candidate": "attnres_moe16",
+   "round": 2,
+   "parent": "attnres",
+   "change": "16-expert top-4 MoE FFN (relaunch at micro batch 8)",
+   "state": "succeeded",
+   "dev_512": 0.8906561136888155,
+   "dev_2000": 0.8019466586676356,
+   "gap_512_vs_dense_full": 0.0031191990585234253,
+   "screen": "continues",
+   "vs_best_anchor_2000": 0.0016366176861407622,
+   "beats_best_anchor": false
+  },
+  "run_000054": {
+   "candidate": "attnres_full_canon_abcd",
+   "round": 3,
+   "parent": "attnres_canon_abcd",
+   "change": "Full AttnRes added to attnres_canon_abcd",
+   "state": "succeeded",
+   "dev_512": 0.8868129004015345,
+   "dev_2000": 0.7965129224440896,
+   "gap_512_vs_dense_full": -0.0007240142287575635,
+   "screen": "continues",
+   "vs_best_anchor_2000": -0.003797118537405275,
+   "beats_best_anchor": true
+  }
+ },
+ "rounds": {
+  "1": {
+   "runs": [
+    "run_000041",
+    "run_000042",
+    "run_000043",
+    "run_000044",
+    "run_000045",
+    "run_000046"
+   ],
+   "complete": true,
+   "winners": []
+  },
+  "2": {
+   "runs": [
+    "run_000047",
+    "run_000048",
+    "run_000049",
+    "run_000050",
+    "run_000051",
+    "run_000052",
+    "run_000053"
+   ],
+   "complete": true,
+   "winners": [
+    "run_000049",
+    "run_000050",
+    "run_000052"
+   ]
+  },
+  "3": {
+   "runs": [
+    "run_000054"
+   ],
+   "complete": true,
+   "winners": [
+    "run_000054"
+   ]
+  }
+ },
+ "ranking": [
+  {
+   "run": "run_000054",
+   "candidate": "attnres_full_canon_abcd",
+   "dev_2000": 0.7965129224440896,
+   "vs_best_anchor": -0.003797118537405275,
+   "beats": true
+  },
+  {
+   "run": "run_000052",
+   "candidate": "attnres_canon_abcd",
+   "dev_2000": 0.7981927312738147,
+   "vs_best_anchor": -0.002117309707680093,
+   "beats": true
+  },
+  {
+   "run": "run_000050",
+   "candidate": "attnres_full_canon",
+   "dev_2000": 0.7984887539352218,
+   "vs_best_anchor": -0.0018212870462730457,
+   "beats": true
+  },
+  {
+   "run": "run_000049",
+   "candidate": "attnres_full_gate",
+   "dev_2000": 0.7992963920251713,
+   "vs_best_anchor": -0.0010136489563234985,
+   "beats": true
+  },
+  {
+   "run": "run_000043",
+   "candidate": "attnres_full",
+   "dev_2000": 0.7995095893171165,
+   "vs_best_anchor": -0.0008004516643783655,
+   "beats": false
+  },
+  {
+   "run": "run_000042",
+   "candidate": "attnres_canon",
+   "dev_2000": 0.7997235851007918,
+   "vs_best_anchor": -0.0005864558807030518,
+   "beats": false
+  },
+  {
+   "run": "run_000048",
+   "candidate": "attnres_gate_canon",
+   "dev_2000": 0.8002042045321738,
+   "vs_best_anchor": -0.00010583644932105063,
+   "beats": false
+  },
+  {
+   "run": "run_000041",
+   "candidate": "attnres_gate",
+   "dev_2000": 0.8009114504345985,
+   "vs_best_anchor": 0.0006014094531037184,
+   "beats": false
+  },
+  {
+   "run": "run_000045",
+   "candidate": "attnres_ve_all",
+   "dev_2000": 0.8010149639988865,
+   "vs_best_anchor": 0.0007049230173916676,
+   "beats": false
+  },
+  {
+   "run": "run_000053",
+   "candidate": "attnres_moe16",
+   "dev_2000": 0.8019466586676356,
+   "vs_best_anchor": 0.0016366176861407622,
+   "beats": false
+  },
+  {
+   "run": "run_000044",
+   "candidate": "attnres_deep",
+   "dev_2000": 0.8029944975880402,
+   "vs_best_anchor": 0.002684456606545371,
+   "beats": false
+  },
+  {
+   "run": "run_000047",
+   "candidate": "attnres_moe",
+   "dev_2000": 0.8066239328621178,
+   "vs_best_anchor": 0.006313891880622924,
+   "beats": false
+  }
+ ]
+}

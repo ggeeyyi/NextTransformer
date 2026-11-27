@@ -1,0 +1,21 @@
+{
+ "state": "succeeded",
+ "segments": [
+  {
+   "n": 1,
+   "job": "user-nextt-gym-run-000047-6cbd9fa8f2-normal-20261101-233216",
+   "submitted": 1793547152.0402772,
+   "job_state": "Succeeded",
+   "status": [
+    "training_complete",
+    2000,
+    "9936524181076463504"
+   ],
+   "checkpoint": 2000,
+   "finished": 1793581656.8866982
+  }
+ ],
+ "phase": "training_complete",
+ "step": 2000,
+ "consumed_flops": "9936524181076463504"
+}

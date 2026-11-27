@@ -1,0 +1,4 @@
+# Extra dependencies of nextt_gym, installed into the project venv without touching the root lock:
+#   uv pip install --python .venv/bin/python -r nextt_gym/requirements.txt
+mcp>=2.3,<3
+tomli>=2; python_version < "3.11"

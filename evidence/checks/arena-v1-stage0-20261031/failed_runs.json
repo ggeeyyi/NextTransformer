@@ -1,0 +1,32 @@
+{
+ "run_000018": {
+  "attempt_id": "att_000013",
+  "status": "failed",
+  "consumed": {
+   "flops": 0.0,
+   "flops_exact": "0",
+   "gpu_hours": 0.0
+  },
+  "first_log_error": "[rank3]: FileExistsError: [Errno 17] File exists: 'DATA/shard_06541.parquet' -> 'WORKDIR/runs/RUN/run/dev_data/shard_06541.parquet'"
+ },
+ "run_000019": {
+  "attempt_id": "att_000002",
+  "status": "failed",
+  "consumed": {
+   "flops": 0.0,
+   "flops_exact": "0",
+   "gpu_hours": 0.0
+  },
+  "first_log_error": "[rank1]: FileExistsError: [Errno 17] File exists: 'DATA/shard_06541.parquet' -> 'WORKDIR/runs/RUN/run/dev_data/shard_06541.parquet'"
+ },
+ "run_000020": {
+  "attempt_id": "att_000015",
+  "status": "failed",
+  "consumed": {
+   "flops": 0.0,
+   "flops_exact": "0",
+   "gpu_hours": 0.0
+  },
+  "first_log_error": "[rank7]: FileExistsError: [Errno 17] File exists: 'DATA/shard_06541.parquet' -> 'WORKDIR/runs/RUN/run/dev_data/shard_06541.parquet'"
+ }
+}

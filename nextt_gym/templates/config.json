@@ -1,0 +1,23 @@
+{
+  "model": {
+    "vocab_size": 32768,
+    "sequence_len": 2048,
+    "width": 1536,
+    "heads": 12,
+    "n_layer": 24,
+    "mlp_width": 6144
+  },
+  "model_dim": 1536,
+  "model_dim_field": "width",
+  "aux_loss": false,
+  "tunable": {
+    "n_layer": {"min": 8, "max": 48, "step": 1},
+    "mlp_width": {"min": 4608, "max": 7680, "step": 128}
+  },
+  "audit": {"mode": "direct"},
+  "debug": {
+    "model": {"vocab_size": 64, "sequence_len": 32, "width": 48, "heads": 2, "n_layer": 2, "mlp_width": 192},
+    "vocab_size": 64,
+    "sequence_len": 32
+  }
+}

@@ -1,0 +1,20 @@
+{
+ "debug": {
+  "job": "user-nextt-stage3-check-8661904a97-debug-20261103-101929",
+  "record": null
+ },
+ "g2b-plugin": {
+  "job": "user-nextt-stage3-g2b-plugin-be4cb8518e-normal-20261103-103229",
+  "gpus": 8,
+  "pod_hours": 1.662,
+  "platform_gpu_hours": 13.296,
+  "status": "Succeeded"
+ },
+ "g2b-dense": {
+  "job": "user-nextt-stage3-g2b-dense-97d40dfd73-normal-20261103-103256",
+  "gpus": 8,
+  "pod_hours": 0.919,
+  "platform_gpu_hours": 7.349,
+  "status": "Succeeded"
+ }
+}

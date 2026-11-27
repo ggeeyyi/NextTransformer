@@ -1,0 +1,13 @@
+{
+  "step": 512,
+  "steps": 512,
+  "input_tokens": 536870912,
+  "consumed_flops": "2567104728561839144",
+  "consumed_train_flops": "2502102577206262784",
+  "consumed_eval_flops": "65002151355576360",
+  "eval_tokens": 41943040,
+  "reserved_flops": "2618446823133075928",
+  "stop_at_flops": "2618446823133075928",
+  "gpu_hours": 9.104381467233308,
+  "max_shard_index": 11
+}

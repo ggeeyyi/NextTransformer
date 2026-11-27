@@ -1,0 +1,35 @@
+{
+ "gpus": 1,
+ "micro_batch": 16,
+ "rule": "median GPU utilization of non-zero samples with the model loaded >= 80%",
+ "parts": [
+  {
+   "part": "formal trainer, attnres_full_canon_abcd, 12 smoke updates",
+   "seconds": 274,
+   "samples": 274,
+   "samples_with_model_loaded": 148,
+   "median_utilization_percent": 100.0,
+   "peak_memory_gib": 104.9,
+   "exit_code": 0
+  },
+  {
+   "part": "formal trainer, dense_full, 12 smoke updates",
+   "seconds": 111,
+   "samples": 111,
+   "samples_with_model_loaded": 81,
+   "median_utilization_percent": 100.0,
+   "peak_memory_gib": 74.6,
+   "exit_code": 0
+  },
+  {
+   "part": "gym trainer, attnres_full_canon_abcd, 12 synthetic updates",
+   "seconds": 75,
+   "samples": 73,
+   "samples_with_model_loaded": 45,
+   "median_utilization_percent": 100.0,
+   "peak_memory_gib": 100.9,
+   "exit_code": 0
+  }
+ ],
+ "passed": true
+}

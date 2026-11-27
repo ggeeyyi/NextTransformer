@@ -30,7 +30,7 @@ CORE-22 作为留出的测试集，在会话结束后报告。这一点与已合
 
 ## 2. 起点：Arena v1 的工作流
 
-Arena v1（2026-10-30 至 2026-11-05）是一次有人监督的研究过程：Claude 通过研究 gym 的工具担任研究者，由一位人员批准每个阶段的计划、规则和算力。证据见 [`evidence/checks/arena-v1/`](https://github.com/ggeeyyi/NextTransformer/tree/25c553d9e03e43334c7fdf3171736b5a8bf42413/evidence/checks/arena-v1)。
+Arena v1（2026-10-30 至 2026-11-05）是一次有人监督的研究过程：Claude 通过研究 gym 的工具担任研究者，由一位人员批准每个阶段的计划、规则和算力。证据见 [`evidence/checks/arena-v1/`](../../evidence/checks/arena-v1/README.md)。
 
 | 阶段 | 问题 | 规则与结果 | 平台 GPU 时 |
 |---|---|---|---:|
