@@ -1,9 +1,9 @@
 ---
 title: Hydra
-description: Arena v1 参赛方法：更深更窄的 AttnRes-Canon 主干，把哈希 n-gram 记忆作为深度来源读取，在 32 个 rank 上分两段正式训练，以及与残差族的比较。
+description: Arena v2 参赛方法：更深更窄的 AttnRes-Canon 主干，把哈希 n-gram 记忆作为深度来源读取，在 32 个 rank 上分两段正式训练，以及与残差族的比较。
 ---
 
-Hydra（`hydra`）是更深更窄的 AttnRes-Canon 主干（27 层，FFN 4608），把哈希 bigram 和 trigram 记忆作为额外的一个深度来源读取。它是一个 [arena v1 参赛方法](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/hydra.json)：由 Claude Opus 5.5 在一次无人干预的 NextT-Gym 研究会话中设计并选出，人工参与等级为 L0。它以种子 42 训练到第 46,875 步（49.152B tokens），CORE ×100 为 **37.0390**，在已发布的运行中最高。Gym 把 `results/runs/` 中已发布的结果作为历史提供给 agent；agent 选型只用 dev 集上的数值，从未使用验证分片或 CORE-22。
+Hydra（`hydra`）是更深更窄的 AttnRes-Canon 主干（27 层，FFN 4608），把哈希 bigram 和 trigram 记忆作为额外的一个深度来源读取。它是一个 [Arena v2 参赛方法](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/hydra.json)：由 Claude Opus 5.5 在一次无人干预的 NextT-Gym 研究会话中设计并选出，人工参与等级为 L0。它以种子 42 训练到第 46,875 步（49.152B tokens），CORE ×100 为 **37.0390**，在已发布的运行中最高。Gym 把 `results/runs/` 中已发布的结果作为历史提供给 agent；agent 选型只用 dev 集上的数值，从未使用验证分片或 CORE-22。
 
 协议规定的验证集测量结果如下，也是已发布运行中最低的：
 

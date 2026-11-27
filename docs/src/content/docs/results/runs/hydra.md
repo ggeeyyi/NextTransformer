@@ -1,11 +1,11 @@
 ---
 title: Hydra
-description: Arena v1 entry. A deeper, narrower AttnRes-Canon trunk with a hashed n-gram memory read as a depth source, two formal segments on 32 ranks, and the comparison with the Residual family.
+description: Arena v2 entry. A deeper, narrower AttnRes-Canon trunk with a hashed n-gram memory read as a depth source, two formal segments on 32 ranks, and the comparison with the Residual family.
 ---
 
 Hydra (`hydra`) is a deeper, narrower AttnRes-Canon trunk (27 layers, FFN 4608) that reads a hashed bigram and
 trigram memory as one more depth source. It is an
-[arena v1 entry](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/hydra.json): Claude
+[Arena v2 entry](https://github.com/Interactive-Active-AI/NextTransformer/blob/main/results/arena/hydra.json): Claude
 Opus 5.5 designed and selected it in one NextT-Gym research session that ran without human intervention (involvement
 L0). At 46,875 updates (49.152B tokens) and seed 42, it reached **37.0390 CORE ×100**, the highest of the published
 runs. The gym offered the agent the published results in `results/runs/` as history; the agent selected with
