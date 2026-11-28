@@ -2,6 +2,7 @@
 // Published records: every JSON file under results/ in the repository, bundled at build time.
 import { publishedRecords, type RunSummary } from './scaling-progress';
 import type {ArenaEntry,Method,Run} from './types';
+import type {ArenaSession} from './arena-sessions';
 import historicalCore from '../../../results/core-context.json';
 const runFiles=import.meta.glob('../../../results/runs/*.json',{eager:true,import:'default'}) as Record<string,Run>;
 const methodFiles=import.meta.glob('../../../results/methods/*.json',{eager:true,import:'default'}) as Record<string,Method>;
@@ -14,6 +15,9 @@ export const runs:Run[]=Object.values(runFiles).map(run=>{
 }).sort(byOrder);
 export const methods:Method[]=Object.values(methodFiles).sort(byOrder);
 export const arenaEntries:ArenaEntry[]=Object.values(arenaFiles).sort(byOrder);
+// Research sessions are larger and only the Arena view reads them, so they load on demand.
+const sessionFiles=import.meta.glob('../../../results/arena/sessions/*.json',{import:'default'}) as Record<string,()=>Promise<ArenaSession>>;
+export const loadArenaSessions=()=>Promise.all(Object.values(sessionFiles).map(load=>load())).then(list=>list.sort(byOrder));
 const latest=Math.max(0,...runs.map(r=>r.lastRecordedAt??0));
 export const updatedAt=latest?new Date(latest*1000).toISOString():'';
 export const SOURCE='Repository records · results/';

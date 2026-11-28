@@ -5,3 +5,4 @@ const order=(a,b)=>(a.order??Infinity)-(b.order??Infinity);
 export const runs=()=>read('runs/').sort(order);
 export const methods=()=>read('methods/').sort(order);
 export const arena=()=>read('arena/').sort(order);
+export const sessions=()=>read('arena/sessions/').sort(order);
