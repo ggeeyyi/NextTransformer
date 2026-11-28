@@ -6,7 +6,7 @@ export const LEVELS:Record<ArenaEntry['researcher']['involvement'],{name:string;
  L1:{name:'Operations only',note:'People fix environments, clusters or launches and make no research decision.'},
  L2:{name:'Human-guided',note:"People choose among the agent's proposals or give directional hints."},
  L3:{name:'Human-led',note:'People lead the idea or write method code; the agents assist.'}};
-export const STATUS:Record<ArenaEntry['status'],string>={admitted:'In training',complete:'Ranked entry',legacy:'Legacy example',retracted:'Retracted'};
+export const STATUS:Record<ArenaEntry['status'],string>={admitted:'In training',complete:'Ranked entry','arena-only':'Arena only',legacy:'Legacy example',retracted:'Retracted'};
 export const VERIFICATION:Record<ArenaEntry['verification'],string>={'self-reported':'Self-reported',reproduced:'Reproduced',maintainer:'Maintainer run'};
 export type Origin='all'|'human'|'agent';
 export type Ranks={core:Map<string,number>;val:Map<string,number>};
@@ -18,9 +18,17 @@ export const originOf=(methodId:string,entries:ArenaEntry[]):Exclude<Origin,'all
 // Auto-research entries under the arena rules rank on CORE only, a test the research never ran on its own candidates;
 // their validation BPB is shown but not ranked. Legacy and retracted cards keep the ordinary leaderboard treatment.
 export const coreOnly=(methodId:string,entries:ArenaEntry[])=>entries.some(e=>e.methodId===methodId&&(e.status==='admitted'||e.status==='complete'));
+// Arena-only entries (Arena Protocol v2) keep their published runs out of the leaderboard, the result charts and the
+// model atlas; only the arena shows them. Every other view takes `listed` runs and methods.
+export const arenaOnlyRuns=(entries:ArenaEntry[])=>new Set(entries.filter(e=>e.status==='arena-only').flatMap(e=>e.runIds));
+export function listed<R extends Pick<Run,'id'|'methodId'>,M extends Pick<Method,'id'>>(runs:R[],methods:M[],entries:ArenaEntry[]){
+ const hidden=arenaOnlyRuns(entries),shown=runs.filter(r=>!hidden.has(r.id)),kept=new Set(shown.map(r=>r.methodId));
+ const hiddenMethods=new Set(runs.filter(r=>hidden.has(r.id)&&!kept.has(r.methodId)).map(r=>r.methodId));
+ return {runs:shown,methods:methods.filter(m=>!hiddenMethods.has(m.id))};
+}
 export const researcherName=(entry:ArenaEntry)=>entry.researcher.llms.map(m=>m.name).join(' + ')+(entry.researcher.framework.name==='none'?'':' · '+entry.researcher.framework.name);
 const final=(run:Run|undefined,kind:'core'|'val')=>run?.[kind].find(p=>p.step===FINAL_STEP&&Number.isFinite(p.value))?.value;
-const statusOrder:ArenaEntry['status'][]=['complete','admitted','legacy','retracted'];
+const statusOrder:ArenaEntry['status'][]=['complete','arena-only','admitted','legacy','retracted'];
 
 // One row per entry: its latest named run, final measured scores, differences from the accepted
 // Dense baseline at the same step, and the run's main-leaderboard ranks. Ranks are supplied by the

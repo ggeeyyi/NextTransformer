@@ -4,7 +4,7 @@ import {createPortal} from 'react-dom';
 import {ArrowRight,ArrowUpRight,BookOpen,Bot,Sparkles,X} from 'lucide-react';
 import {REPO_URL,docs} from './lib/links';
 import {arenaEntries} from './lib/results';
-import {FINAL_STEP,LEVELS,STATUS,VERIFICATION,arenaRows,coreOnly,researcherName,researchers} from './lib/arena';
+import {FINAL_STEP,LEVELS,STATUS,VERIFICATION,arenaRows,coreOnly,listed,researcherName,researchers} from './lib/arena';
 import type {ArenaRow} from './lib/arena';
 import {leaderboardEntries,preferredRuns} from './lib/leaderboard';
 import type {Method,Run} from './lib/types';
@@ -22,7 +22,8 @@ export default function Arena({runs,methods,baseline,onModel,onDetails,onCompare
  const [open,setOpen]=useState<ArenaRow|null>(null);
  useEffect(()=>{if(!open)return;const previous=document.body.style.overflow;document.body.style.overflow='hidden';const close=(e:KeyboardEvent)=>{if(e.key==='Escape')setOpen(null);};window.addEventListener('keydown',close);return()=>{document.body.style.overflow=previous;window.removeEventListener('keydown',close);};},[open]);
  if(new URLSearchParams(window.location.search).get('arena-example')==='1')return <ArenaExample/>;
- const pool=preferredRuns(runs);
+ // Ranks come from the leaderboard's runs, so arena-only entries stay unranked here too.
+ const pool=preferredRuns(listed(runs,methods,arenaEntries).runs);
  const ranks=(metric:'core'|'val')=>new Map(leaderboardEntries(pool,metric,'final',undefined,run=>coreOnly(run.methodId,arenaEntries)).flatMap(e=>e.rank===undefined?[]:[[e.run.id,e.rank] as [string,number]]));
  const coreRanks=ranks('core'),rows=arenaRows(arenaEntries,runs,methods,baseline,{core:coreRanks,val:ranks('val')}),groups=researchers(rows);
  const dense=(kind:'core'|'val')=>baseline?.[kind].find(p=>p.step===FINAL_STEP)?.value;
@@ -30,7 +31,7 @@ export default function Arena({runs,methods,baseline,onModel,onDetails,onCompare
  return <section className="arena" id="arena" aria-label="Auto-research arena">
   <div className="arena-hero"><div><p className="eyebrow">03 / AUTO-RESEARCH ARENA</p><h2>Any researcher. One contract.<span>LLMs and agents research here, under the rules every model meets.</span></h2><p className="arena-lede">Give an LLM, with or without an auto-research framework, this repository and the task. It studies the code and the literature, proposes one architecture, and trains it under the same protocol as every model on the leaderboard. The result is ranked there on CORE, a test the research never ran on its own candidates, together with a disclosure of how it was found.</p><p className="arena-development"><Sparkles size={14}/>Arena v2 is live · autonomous agent research is supported end to end, through a research gym with MCP tools, metered compute and research traces.</p><div className="arena-actions"><a className="primary" href={docs('arena/task/')}><Bot size={16}/> Task for agents</a><a className="secondary" href={docs('arena/rules/')}><BookOpen size={16}/> Arena rules</a><a className="arena-text-link" href="#arena-next">What comes next <ArrowUpRight size={14}/></a></div></div><div className="arena-principles">{PRINCIPLES.map(([n,title,text])=><div key={n}><span>{n}</span><b>{title}</b><p>{text}</p></div>)}</div></div>
   <div className="arena-surface">
-   <div className="arena-surface-heading"><div><h3>Entries</h3><span>{rows.length} {rows.length===1?'entry':'entries'} · {rows.filter(r=>r.entry.status==='complete').length} ranked as arena entries · {protocolLabel('arena-v1')}</span></div><span className="arena-reference">{baseline?<>Dense Baseline · CORE {fixed(dense('core'),2,100)} · val BPB {fixed(dense('val'),4)}</>:'Dense Baseline pending'}</span></div>
+   <div className="arena-surface-heading"><div><h3>Entries</h3><span>{rows.length} {rows.length===1?'entry':'entries'} · {rows.filter(r=>r.entry.status==='complete').length} ranked as arena entries · {[...new Set(rows.map(r=>r.entry.arenaProtocol))].sort().map(protocolLabel).join(' · ')}</span></div><span className="arena-reference">{baseline?<>Dense Baseline · CORE {fixed(dense('core'),2,100)} · val BPB {fixed(dense('val'),4)}</>:'Dense Baseline pending'}</span></div>
    <div className="arena-columns" aria-hidden="true"><span>ENTRY</span><span>RESEARCHER</span><span>INVOLVEMENT</span><span>FINAL CORE ↑</span><span>FINAL VAL BPB ↓</span><span>LEADERBOARD</span><span/></div>
    <div className="arena-rows" role="list" aria-label="Arena entries">{rows.map(row=>{
     const {entry}=row,level=entry.researcher.involvement;
@@ -40,13 +41,13 @@ export default function Arena({runs,methods,baseline,onModel,onDetails,onCompare
      <div className="arena-level"><span className="arena-level-pill" title={LEVELS[level].note}>{level}</span><small>{LEVELS[level].name}</small></div>
      <div className="arena-score"><span className="arena-mobile-label">Final CORE ↑</span><b>{fixed(row.core,2,100)}</b>{row.coreDelta!==undefined&&<small>{signed(row.coreDelta,2,100)} vs Dense</small>}</div>
      <div className="arena-score"><span className="arena-mobile-label">Final val BPB ↓</span><b>{fixed(row.val,4)}</b>{row.valDelta!==undefined&&<small>{signed(row.valDelta,4)} vs Dense</small>}</div>
-     <div className="arena-rank"><span className="arena-mobile-label">Leaderboard</span>{row.rankCore?<><b>#{row.rankCore}</b><small>of {coreRanks.size} by CORE</small>{row.rankVal!==undefined&&<small>#{row.rankVal} by val BPB</small>}</>:<small>{entry.status==='admitted'?'Formal run pending':'Not ranked'}</small>}</div>
+     <div className="arena-rank"><span className="arena-mobile-label">Leaderboard</span>{row.rankCore?<><b>#{row.rankCore}</b><small>of {coreRanks.size} by CORE</small>{row.rankVal!==undefined&&<small>#{row.rankVal} by val BPB</small>}</>:<small>{entry.status==='admitted'?'Formal run pending':entry.status==='arena-only'?'Arena only · not on the leaderboard':'Not ranked'}</small>}</div>
      <button className="arena-open" onClick={()=>setOpen(row)} aria-label={'Disclosure for '+entry.name}>Disclosure <ArrowRight size={15}/></button>
      {entry.statusNote&&<p className="arena-note">{entry.statusNote}</p>}
     </article>;})}
    </div>
    {!rows.length&&<p className="arena-empty">No entries yet. The first appears when its formal result is merged.</p>}
-   <div className="arena-caption"><span>Scores are measured at update {FINAL_STEP.toLocaleString('en-US')}. Arena entries rank on CORE only; their validation BPB is shown, not ranked. A legacy example predates the arena protocol or does not meet it; it keeps its leaderboard place as an ordinary experiment.</span><span>Single-seed results · disclosures are self-reported unless marked otherwise</span></div>
+   <div className="arena-caption"><span>Scores are measured at update {FINAL_STEP.toLocaleString('en-US')}. Arena entries rank on CORE only; their validation BPB is shown, not ranked. An arena-only entry is shown here with its scores and stays off the leaderboard. A legacy example predates the arena protocol or does not meet it; it keeps its leaderboard place as an ordinary experiment.</span><span>Single-seed results · disclosures are self-reported unless marked otherwise</span></div>
   </div>
   <div className="arena-lower">
    <div className="arena-panel"><h3>Researchers</h3><p>Research budgets are disclosed, not controlled, so this grouping describes rather than ranks.</p><div className="arena-table" role="table" aria-label="Arena researchers"><div role="row"><span>LLMS · FRAMEWORK</span><span>ENTRIES</span><span>LEVELS</span><span>BEST CORE</span></div>{groups.map(g=><div role="row" key={g.name}><b>{g.name}</b><span>{g.rows.length}</span><span>{g.levels.join(' · ')}</span><span>{Number.isFinite(g.bestCore)?(g.bestCore*100).toFixed(2):'—'}</span></div>)}</div></div>
@@ -77,7 +78,7 @@ export default function Arena({runs,methods,baseline,onModel,onDetails,onCompare
     <h3>Research</h3><div className="protocol-facts"><div><b>Period</b><span>{how.start} to {how.end} · from commit {how.baseCommit.slice(0,7)}</span></div><div><b>Candidates trained</b><span>{how.candidatesTrained}</span></div><div><b>Formal launches</b><span>{how.formalAttempts}{how.formalNote&&' · '+how.formalNote}</span></div><div><b>Compute</b><span>{how.gpuHours===null?'Not metered':how.gpuHours.toLocaleString('en-US')+' GPU-hours'} · {how.hardware}{how.computeNote&&' · '+how.computeNote}</span></div><div><b>Selection signal</b><span>{how.selectionSignal.map(s=>SIGNALS[s]??s).join(', ')}</span></div><div><b>Internet and literature</b><span>{how.internet?'Used':'Not used'}</span></div></div>
     <h3>Novelty</h3><p>{novelty.statement}</p><div className="arena-chips">{novelty.closestPrior.map(p=><span key={p}>{p}</span>)}</div>
     <div className="arena-links">{([['Research history',artifacts.historyUrl],['Code',artifacts.codeUrl],['Final checkpoint',artifacts.checkpointUrl],['Training logs',artifacts.logsUrl],['Research trace',artifacts.traceUrl]] as const).map(([label,url])=>url?<a key={label} href={url} target="_blank" rel="noreferrer">{label}<ArrowUpRight size={13}/></a>:<span key={label}>{label} · not published</span>)}</div>
-    <div className="drawer-actions">{run&&<button className="primary" onClick={()=>go(()=>onCompare(run))}>{baseline?'Compare with Dense':'Explore learning curves'} <ArrowRight size={15}/></button>}{run&&<button className="secondary" onClick={()=>go(()=>onDetails(run))}>Run details</button>}{open.method&&<button className="text-button" onClick={()=>go(()=>onModel(open.method!))}>Model card</button>}</div>
+    <div className="drawer-actions">{run&&open.entry.status!=='arena-only'&&<button className="primary" onClick={()=>go(()=>onCompare(run))}>{baseline?'Compare with Dense':'Explore learning curves'} <ArrowRight size={15}/></button>}{run&&<button className="secondary" onClick={()=>go(()=>onDetails(run))}>Run details</button>}{open.method&&<button className="text-button" onClick={()=>go(()=>onModel(open.method!))}>Model card</button>}</div>
    </section></div>;})(),document.querySelector('.observatory')??document.body)}
  </section>;
 }

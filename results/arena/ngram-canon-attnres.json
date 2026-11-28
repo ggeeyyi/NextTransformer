@@ -1,0 +1,67 @@
+{
+ "id": "ngram-canon-attnres",
+ "name": "N-gram AttnRes-Canon",
+ "methodId": "ngram_canon_attnres",
+ "runIds": [
+  "ngram_canon_attnres"
+ ],
+ "arenaProtocol": "arena-v2",
+ "status": "arena-only",
+ "statusNote": "",
+ "submitted": "2026-11-21",
+ "verification": "self-reported",
+ "researcher": {
+  "people": [
+   {
+    "name": "ggeeyyi",
+    "handle": "ggeeyyi",
+    "role": "Operator: started the research session with the gym's task and its compute budget, then asked for the submitted candidate to be preregistered and trained; chose no candidate and wrote no method code"
+   }
+  ],
+  "llms": [
+   {
+    "name": "Claude Fable 5.2",
+    "version": "claude-fable-5-2, effort xhigh (Claude Code 2.1.327 in NextT-Gym)",
+    "role": "Researcher: in one NextT-Gym session without human intervention, proposed, wrote and trained every candidate, selected one on the dev split and submitted it"
+   }
+  ],
+  "framework": {
+   "name": "NextT-Gym",
+   "version": "c8e3177",
+   "url": "https://github.com/ggeeyyi/NextTransformer/tree/c8e3177645468134e26793d6577befd303e21925",
+   "note": "The research gym in gym/ and nextt_gym/ of fork commit c8e3177 (not in upstream main). The agent ran in a container with one CPU and network access and drove the gym only through its MCP tools; the gym trained and calibrated candidates on up to 32 GPUs and returned dev-split values. Besides the repository's method sources, the gym offered the published run records in results/runs/ as history. The candidates' code ran in the gym's training processes without process isolation; the agent received dev-split values only."
+  },
+  "involvement": "L0",
+  "involvementNote": "Fully autonomous research: the person started the session with the gym's task instruction, a budget of 1.96e20 training FLOPs and 32 GPUs, and did not intervene until the agent submitted. The person chose no candidate and gave no directional hint. After the submission the person asked for this session's submission and those of two other sessions (proposal issues #71 and #72) to be preregistered and trained under the protocol, and approved the formal launches. Packaging the frozen candidate with its Python source unchanged, calibration, the pre-launch checks, the launches and the audit were done by the operator's agents and involved no research decision: Claude Fable 5.2 (claude-fable-5-2, Claude Code 2.1.329 and 2.1.330), in a separate Claude Code session with no part in the research, packaged the frozen candidate as the method plugin (Python source unchanged; method.json defaults set to the submitted configuration), calibrated it, wrote the tests and the preregistration, ran the pre-launch checks and launched the formal run; Claude Opus 5.5 (claude-opus-5-5, Claude Code 2.1.330), in the same session after a model switch, monitored the formal run, audited and exported it, and wrote the run notes, the model card and this card."
+ },
+ "research": {
+  "start": "2026-11-19",
+  "end": "2026-11-20",
+  "baseCommit": "c8e3177645468134e26793d6577befd303e21925",
+  "candidatesTrained": 9,
+  "formalAttempts": 2,
+  "formalNote": "Two launches of the preregistered configuration (fork commit 57b3367, code bundle SHA-256 8289517a…), each on 32 H20 GPUs (4 nodes × 8), 32 ranks, micro-batch 16, no accumulation; neither failed. The first was a planned 44-hour segment: it logged updates up to 43,490 and stopped at its planned timeout; its newest complete checkpoint was 43,000. The second resumed from that checkpoint, re-ran updates 43,001–43,490 (the replayed events are archived and not counted) and finished at 46,875. Preregistration: proposal issue #70, filed on 2026-11-21 at 07:00 UTC, before the first launch at 08:03 UTC.",
+  "gpuHours": 2175.42,
+  "hardware": "Up to 32 H20 (4 nodes × 8) for the research; 32 H20 (4 nodes × 8) for the formal run",
+  "computeNote": "Research: 631.97 GPU-hours and 5.58e19 training FLOPs (28.5% of the session budget of 1.96e20), metered by NextT-Gym over 38 jobs (18 calibrations, 4 validations, 15 training jobs of which 2 were cancelled): platform GPU-hours, pod time × GPUs (queueing excluded). Nine distinct designs were trained beyond smoke tests, including the agent's own reproduction of AttnRes-Canon; the submitted candidate is the winning design re-registered with a rewritten hypothesis and trained for 32 updates as a check. Formal: 1,543.45 GPU-hours, pod time × 32 GPUs of the two segments as the cluster recorded it (158,424 s and 15,214 s). Not included: two bounded pre-launch checks on 32 GPUs, a four-node resume check on the dev split (1,160 s) and a two-update smoke run of the CORE evaluation path (295 s), 12.93 GPU-hours together. LLM tokens in the research session: 8.98e7 input (8.34e7 cached) and 3.4e5 output. The agent ran two web searches (the bigram hash embedding of the modded-nanogpt speedrun and nanochat) and read three arXiv papers (2601.07372, 2609.15126, 2610.13630).",
+  "internet": true,
+  "selectionSignal": [
+   "dev-bpb"
+  ]
+ },
+ "novelty": {
+  "closestPrior": [
+   "AttnRes-Canon (attnres_full_canon_abcd)",
+   "MSAR (msar)",
+   "Hashed n-gram embeddings (the modded-nanogpt bigram hash embedding; Engram)"
+  ],
+  "statement": "Combines a hashed bigram memory, added to the token embedding, with the AttnRes-Canon trunk, and moves Canon layers onto the depth sources: every block output and the embedding source pass through a causal convolution before any sublayer reads them over depth, and the final depth read has its own. MSAR also applies causal taps to depth sources, but keeps them as separate streams."
+ },
+ "artifacts": {
+  "checkpointUrl": "https://huggingface.co/GY2233/nextt-arena-ngram-canon-attnres/blob/main/model.pt",
+  "logsUrl": "https://huggingface.co/GY2233/nextt-arena-ngram-canon-attnres/tree/main/logs",
+  "traceUrl": null,
+  "historyUrl": null,
+  "codeUrl": "https://github.com/Interactive-Active-AI/NextTransformer/tree/main/nexttransformer/methods/ngram_canon_attnres"
+ }
+}

@@ -19,12 +19,17 @@ from nexttransformer.export_run import CARD_ALIASES, REPO, RESULTS
 from nexttransformer.models.registry import FAMILY
 from nexttransformer.protocol.spec import config_path
 
-VERSION = "arena-v1"
+# Arena protocol versions a card may name; new entries use the latest. arena-v2 adds the arena-only status.
+VERSIONS = ("arena-v1", "arena-v2")
+VERSION = VERSIONS[-1]
 TRAINING_PROTOCOL = "nextt-reference-50b-v1"
 # The last training shard in sorted order; a formal 49.152B stream reads from the first shard and never reaches it.
 DEV_SHARD = "shard_06541.parquet"
 LEVELS = ("L0", "L1", "L2", "L3")
-STATUSES = ("admitted", "complete", "legacy", "retracted")
+STATUSES = ("admitted", "complete", "arena-only", "legacy", "retracted")
+# Statuses whose entry has a complete, matched formal run. A complete entry ranks on the leaderboard; an arena-only
+# entry is shown in the arena with its scores, and its run stays off the leaderboard, the result charts and the README.
+FINISHED = ("complete", "arena-only")
 VERIFICATION = ("self-reported", "reproduced", "maintainer")
 SIGNALS = ("train-loss", "dev-bpb", "validation-bpb", "core", "other")
 RESERVED_SIGNALS = ("validation-bpb", "core")
@@ -65,11 +70,12 @@ def check_card(card, name):
     if problems: return problems
     who, how, status = card["researcher"], card["research"], card["status"]
     signals = how["selectionSignal"] if isinstance(how["selectionSignal"], list) else []
-    final = status in ("admitted", "complete")
+    final = status in ("admitted", *FINISHED)
     count = lambda v: isinstance(v, int) and not isinstance(v, bool) and v >= 0
     links = [v for v in card["artifacts"].values() if v is not None]
     rules = [
-        (card["arenaProtocol"] == VERSION, f"arenaProtocol is not {VERSION}"),
+        (card["arenaProtocol"] in VERSIONS, f"arenaProtocol is not one of {VERSIONS}"),
+        (status != "arena-only" or card["arenaProtocol"] != "arena-v1", "the arena-only status needs arena-v2"),
         (status in STATUSES, f"status {status!r} is not one of {STATUSES}"),
         (final or bool(card["statusNote"]), "a legacy or retracted entry needs statusNote"),
         (card["verification"] in VERIFICATION, f"verification is not one of {VERIFICATION}"),
@@ -97,10 +103,11 @@ def check_card(card, name):
          "novelty needs closestPrior and a statement"),
         (all(str(v).startswith("https://") for v in links), "artifact links must be HTTPS"),
     ]
-    if status == "complete":
-        rules += [(bool(card["runIds"]), "a complete entry names its run"),
+    if status in FINISHED:
+        entry = ("an " if status[0] in "aeiou" else "a ") + status + " entry"
+        rules += [(bool(card["runIds"]), f"{entry} names its run"),
                   (bool(card["artifacts"]["checkpointUrl"] and card["artifacts"]["logsUrl"]),
-                   "a complete entry links its final checkpoint and training logs")]
+                   f"{entry} links its final checkpoint and training logs")]
     return [f"{name}: {message}" for ok, message in rules if not ok]
 
 
@@ -127,12 +134,12 @@ def check(root=RESULTS):
             if run is None: problems.append(f"{name}: no run record with id {run_id}"); continue
             if run["methodId"] != method: problems.append(f"{name}: run {run_id} belongs to {run['methodId']}")
             named.append(run)
-        if status not in ("admitted", "complete"): continue
+        if status not in ("admitted", *FINISHED): continue
         if method not in FAMILY: problems.append(f"{name}: {method} is not registered in nexttransformer/models/registry.py"); continue
         path = config_path(method)
         if not path.exists(): problems.append(f"{name}: no admitted configuration {path.relative_to(REPO)}"); continue
         model_hash = json.loads(path.read_text()).get("model_hash")
-        for run in named if status == "complete" else ():
+        for run in named if status in FINISHED else ():
             proof = run.get("proof") or {}
             if (run.get("protocol"), run.get("status"), run.get("complete"), run.get("reportedAudit")) != \
                     (TRAINING_PROTOCOL, "finished", True, "matched"):
@@ -140,6 +147,12 @@ def check(root=RESULTS):
             if proof.get("model_hash") != model_hash:
                 problems.append(f"{name}: run {run['id']} was not trained from the admitted configuration")
     return problems
+
+
+def arena_only_runs(root=RESULTS):
+    """Ids of the runs that arena-only cards name: published, but left off the leaderboard and the result charts."""
+    cards = (json.loads(p.read_text()) for p in (root/"arena").glob("*.json"))
+    return {run for card in cards if card.get("status") == "arena-only" for run in card.get("runIds", [])}
 
 
 def is_disclosure_card(path):

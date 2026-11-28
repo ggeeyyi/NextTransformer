@@ -13,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from nexttransformer.export_run import CARD_ALIASES, summary  # noqa: E402
+from nexttransformer.arena import arena_only_runs  # noqa: E402
 
 DOCS = ROOT/"docs/src/content/docs"
 REPO_FILE = "https://github.com/Interactive-Active-AI/NextTransformer/blob/main/"
@@ -27,16 +28,24 @@ MOE_START, MOE_END = "<!-- generated:moe-results -->", "<!-- /generated:moe-resu
 def load(path): return json.loads(path.read_text())
 
 
+def arena_only_methods():
+    """Methods whose published runs all belong to arena-only entries: shown in the arena, not with the results."""
+    hidden, runs = arena_only_runs(), [load(p) for p in (ROOT/"results/runs").glob("*.json")]
+    return {r["methodId"] for r in runs if r["id"] in hidden} - {r["methodId"] for r in runs if r["id"] not in hidden}
+
+
 def zoo(chinese=False):
     cards = [load(p) for p in (ROOT/"results/methods").glob("*.json")]
-    published = {p.stem for p in (ROOT/"results/runs").glob("*.json")}
+    arena_only = arena_only_methods()
+    published = {p.stem for p in (ROOT/"results/runs").glob("*.json")} - arena_only
     rows = []
     for c in sorted(cards, key=lambda c: (FAMILIES.index(c["family"]), c.get("order", 99), c["id"])):
         paper = f"[{c['paperTitle']}]({c['paperUrl']})" if c.get("paperUrl") else c.get("paperTitle", "")
-        status = "published" if c["id"] in published else "coming soon" if c.get("status") == "pending" else "registered"
+        status = ("published" if c["id"] in published else "arena only" if c["id"] in arena_only
+                  else "coming soon" if c.get("status") == "pending" else "registered")
         family = FAMILY_ZH[c["family"]] if chinese else TITLE[c["family"]]
         if chinese:
-            status = {"published": "已发布", "coming soon": "待发布", "registered": "已注册"}[status]
+            status = {"published": "已发布", "arena only": "仅竞技场", "coming soon": "待发布", "registered": "已注册"}[status]
         rows.append(f"| {family} | {c['name']} (`{c['id']}`) | {paper} | {status} |")
     if chinese:
         return f"""---
@@ -44,7 +53,7 @@ title: 模型库
 description: 按模型族浏览已注册的架构、论文和结果状态。
 ---
 
-当前共有 {len(cards)} 张模型卡。各方法在同一骨干上校准至相同训练算力。在[观测站]({SITE}#atlas)选择模型可查看结构图、曲线和模型卡。“已注册”表示已有配置与模型卡，尚无公开运行结果。
+当前共有 {len(cards)} 张模型卡。各方法在同一骨干上校准至相同训练算力。在[观测站]({SITE}#atlas)选择模型可查看结构图、曲线和模型卡。“已注册”表示已有配置与模型卡，尚无公开运行结果；“仅竞技场”表示结果只在[竞技场]({SITE}#arena)展示，不进入排行榜。
 
 | 模型族 | 方法 | 论文 | 结果 |
 |---|---|---|---|
@@ -59,7 +68,8 @@ description: Every method in NextTransformer, by family.
 
 NextTransformer has {len(cards)} model cards in seven families. Every method runs in the same shell and is calibrated to
 the same training compute. Open a method in the [observatory]({SITE}#atlas) for its architecture diagram, curves and
-model card; "registered" methods have a card and a configuration but no published run.
+model card; "registered" methods have a card and a configuration but no published run, and "arena only" results are
+shown in the [arena]({SITE}#arena), not on the leaderboard.
 
 | Family | Method | Paper | Result |
 |---|---|---|---|
@@ -217,10 +227,10 @@ METHOD_LABELS = load(ROOT / "website/data/method-labels.json")
 def finished():
     """Finished runs with their card, final validation BPB and CORE (x100)."""
     cards = {c["id"]: c for c in (load(p) for p in (ROOT/"results/methods").glob("*.json"))}
-    rows = []
+    rows, hidden = [], arena_only_runs()
     for path in sorted((ROOT/"results/runs").glob("*.json")):
         r = load(path)
-        if r["status"] != "finished": continue
+        if r["status"] != "finished" or r["id"] in hidden: continue
         card = cards[CARD_ALIASES.get(r["methodId"], r["methodId"])]
         rows.append({"method": r["methodId"], "id": r["id"], "name": METHOD_LABELS.get(card["id"], card["name"]), "family": card["family"], "bpb": r["val"][-1]["value"],
                      "core": 100*r["core"][-1]["value"], "base": bool(r.get("baselineAcceptance"))})
@@ -352,7 +362,8 @@ def splice(text, block, start=START, end=END):
 
 
 def readme_sections(path, chinese):
-    cards = sorted((load(p) for p in (ROOT / "results/methods").glob("*.json")),
+    arena_only = arena_only_methods()
+    cards = sorted((card for card in (load(p) for p in (ROOT / "results/methods").glob("*.json")) if card["id"] not in arena_only),
                    key=lambda card: (card.get("order", 99), card["id"]))
     table = ["| 模型族 | 模型 |" if chinese else "| Family | Models |", "|---|---|"]
     for family in ("baseline", "residual", "looped", "sparse", "linear", "hybrid", "others"):

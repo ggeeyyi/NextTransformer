@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {LEVELS,arenaRows,coreOnly,originOf,provenance,researcherName,researchers} from '../app/lib/arena.ts';
+import {LEVELS,arenaOnlyRuns,arenaRows,coreOnly,listed,originOf,provenance,researcherName,researchers} from '../app/lib/arena.ts';
 import {fullDenseBaseline} from '../app/lib/baseline.ts';
 import {FINAL_STEP,leaderboardEntries,preferredRuns} from '../app/lib/leaderboard.ts';
 import {arena,methods,runs} from './results.mjs';
 
 const ranks=(pool,metric)=>new Map(leaderboardEntries(pool,metric,'final',undefined,run=>coreOnly(run.methodId,arena())).flatMap(e=>e.rank===undefined?[]:[[e.run.id,e.rank]]));
-const published=()=>{const all=runs(),pool=preferredRuns(all);return {all,pool,baseline:fullDenseBaseline(all),ranks:{core:ranks(pool,'core'),val:ranks(pool,'val')}};};
+// The arena ranks from the leaderboard's runs: arena-only runs are left out, as in arena.tsx.
+const published=()=>{const all=runs(),pool=preferredRuns(listed(all,methods(),arena()).runs);return {all,pool,baseline:fullDenseBaseline(all),ranks:{core:ranks(pool,'core'),val:ranks(pool,'val')}};};
 
 test('every published card names a model card and its runs, with a known involvement level',()=>{
  const cards=arena(),known=new Set(methods().map(m=>m.id)),ids=new Set(runs().map(r=>r.id));
@@ -15,7 +16,8 @@ test('every published card names a model card and its runs, with a known involve
   assert.ok(known.has(card.methodId),card.id);
   assert.ok(card.runIds.every(id=>ids.has(id)),card.id);
   assert.ok(card.researcher.involvement in LEVELS,card.id);
-  assert.equal(card.arenaProtocol,'arena-v1');
+  assert.ok(['arena-v1','arena-v2'].includes(card.arenaProtocol),card.id);
+  if(card.status==='arena-only')assert.equal(card.arenaProtocol,'arena-v2',card.id);
  }
 });
 
@@ -41,7 +43,7 @@ test('provenance marks arena methods only, and rows without a run stay unranked'
  assert.equal(row.run,undefined);
  assert.equal(row.rankCore,undefined);
  assert.equal(row.coreDelta,undefined);
- const order=['complete','admitted','legacy','retracted'],statuses=rows.map(x=>x.entry.status);
+ const order=['complete','arena-only','admitted','legacy','retracted'],statuses=rows.map(x=>x.entry.status);
  assert.deepEqual(statuses,[...statuses].sort((a,b)=>order.indexOf(a)-order.indexOf(b)));
  const groups=researchers(rows),legacy=groups.find(g=>g.rows.some(x=>x.entry.id==='circle-loop'));
  assert.equal(groups.reduce((n,g)=>n+g.rows.length,0),rows.length);
@@ -61,4 +63,20 @@ test('arena entries rank on CORE only and keep their measured validation BPB',()
  }
  assert.equal(coreOnly('circle',cards),false);
  assert.notEqual(r.val.get('circle'),undefined);
+});
+
+test('an arena-only entry shows its scores in the arena but leaves the leaderboard, the charts and the atlas',()=>{
+ const cards=arena(),template=cards.find(c=>c.status==='complete')??cards[0];
+ const entry={...template,id:'gdn-entry',methodId:'gdn',runIds:['gdn'],arenaProtocol:'arena-v2',status:'arena-only',statusNote:null};
+ const entries=[...cards,entry],all=runs(),shown=listed(all,methods(),entries);
+ assert.ok(arenaOnlyRuns(entries).has('gdn'));
+ assert.ok(!shown.runs.some(r=>r.id==='gdn')&&!shown.methods.some(m=>m.id==='gdn'));
+ assert.equal(shown.runs.length,all.length-1-[...arenaOnlyRuns(cards)].length);
+ const pool=preferredRuns(shown.runs),r={core:ranks(pool,'core'),val:ranks(pool,'val')};
+ const [row]=arenaRows([entry],all,methods(),fullDenseBaseline(all),r);
+ assert.equal(row.run.id,'gdn');
+ assert.equal(row.core,row.run.core.find(p=>p.step===FINAL_STEP).value);
+ assert.equal(row.rankCore,undefined);
+ for(const card of cards.filter(c=>c.status==='arena-only'))
+  assert.ok(card.runIds.every(id=>!shown.runs.some(x=>x.id===id)),card.id);
 });

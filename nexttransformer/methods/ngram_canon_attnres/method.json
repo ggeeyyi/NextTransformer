@@ -1,0 +1,39 @@
+{
+ "name": "ngram_canon_attnres",
+ "family": "residual",
+ "title": "Hashed n-gram memory + Full AttnRes + Canon-A/B/C/D",
+ "options": {
+  "canon_size": 8,
+  "canon_readout": true,
+  "canon_ve": true,
+  "canon_write": true,
+  "depth_heads": 1,
+  "depth_sources": "block",
+  "depth_bias": 0.0,
+  "softcap": 15.0,
+  "mlp_act": "relu2",
+  "ngram_rows": 320000,
+  "ngram_dim": 768,
+  "ngram_heads": 2,
+  "ngram_orders": [2],
+  "ngram_gain": 0.1,
+  "ngram_inject": "embed",
+  "ngram_value": "none",
+  "ngram_group": "embed",
+  "ngram_project": false,
+  "ngram_sign": true,
+  "depth_qkv": false,
+  "canon_write_size": 12,
+  "canon_embed": true
+ },
+ "debug_options": {
+  "ngram_rows": 997,
+  "ngram_dim": 24
+ },
+ "shell": {
+  "layers": 23,
+  "mlp_width": 6144,
+  "window_pattern": "L"
+ },
+ "layer_multiple": 1
+}

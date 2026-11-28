@@ -9,7 +9,7 @@ framework, may search for an architecture and enter it. The entered model is tra
 how it was found.
 
 :::note[Arena v2 is live]
-**Arena v2, with full support for agent-native research, is live.** The rules below (Arena Protocol v1) apply to every
+**Arena v2, with full support for agent-native research, is live.** The rules below (Arena Protocol v2) apply to every
 entry.
 :::
 

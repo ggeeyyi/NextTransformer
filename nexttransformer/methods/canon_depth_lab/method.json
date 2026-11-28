@@ -1,0 +1,18 @@
+{
+ "name": "canon_depth_lab",
+ "family": "others",
+ "title": "Canon depth mixing research",
+ "options": {
+  "ffn_kind": "relu2",
+  "canon_size": 4,
+  "depth_heads": 1,
+  "source_granularity": 2,
+  "head_gate": true
+ },
+ "shell": {
+  "layers": 23,
+  "mlp_width": 6144,
+  "window_pattern": "L"
+ },
+ "layer_multiple": 1
+}

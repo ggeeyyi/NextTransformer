@@ -236,13 +236,16 @@ def ledger_mark(accounting):
 
 
 def summary(root=RESULTS):
-    """Markdown table of the finished runs, for the README, with differences from the accepted Dense baseline."""
+    """Markdown table of the finished runs, for the README, with differences from the accepted Dense baseline.
+    Runs of arena-only entries stay off it (arena rules); the arena shows them."""
+    from nexttransformer.arena import arena_only_runs
+    hidden = arena_only_runs(root)
     cards = {json.loads(p.read_text())["id"]: json.loads(p.read_text()) for p in (root/"methods").glob("*.json")}
     records = [(path, json.loads(path.read_text())) for path in sorted((root/"runs").glob("*.json"))]
     base = next((r for _, r in records if r.get("baselineAcceptance")), None)
     rows = []
     for path, r in records:
-        if r["status"] != "finished": continue
+        if r["status"] != "finished" or r["id"] in hidden: continue
         card = cards[CARD_ALIASES.get(r["methodId"], r["methodId"])]
         bpb = r["val"][-1]["value"]  # periodic validation at the final update, as ranked on the site
         c = r.get("trainingCompute") or {}

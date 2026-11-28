@@ -33,6 +33,7 @@ GFLOPs per input token and the deviation from the SSSL anchor (4.67239832544785)
 | residual | `hc` | 23 | 6,144 | 1,356,235,700 | 4.698483 | +0.558% | joint |
 | residual | `mhc` | 23 | 6,016 | 1,353,550,818 | 4.674363 | +0.042% | joint |
 | residual | `msar` | 23 | 6,144 | 1,358,888,937 | 4.716253 | +0.939% | joint |
+| residual | `ngram_canon_attnres` | 23 | 6,144 | 1,850,401,032 | 4.705561 | +0.710% | joint |
 | residual | `residual_standard` | 23 | 6,144 | 1,355,810,568 | 4.674298 | +0.041% | joint |
 | residual | `simplehc` | 23 | 6,144 | 1,358,072,020 | 4.692986 | +0.441% | joint |
 | hybrid | `deltanet_hybrid` | 24 | 6,400 | 1,403,810,314 | 4.675326 | +0.063% | joint |
@@ -41,9 +42,11 @@ GFLOPs per input token and the deviation from the SSSL anchor (4.67239832544785)
 | hybrid | `kda_hybrid` | 24 | 6,016 | 793,542,986 | 4.692309 | +0.426% | joint |
 | hybrid | `moba_hybrid` | 25 | 6,016 | 1,452,935,068 | 4.659989 | -0.266% | joint |
 | hybrid | `qsa_hybrid` | 24 | 5,760 | 1,405,174,202 | 4.691637 | +0.412% | burnin, joint |
+| others | `canon_depth_lab` | 23 | 6,144 | 1,357,578,504 | 4.697832 | +0.544% | joint |
 | others | `dense` (SSSL) | 24 | 6,144 | 1,384,122,122 | 4.672398 | +0.000% | joint |
 | others | `gated_attention` | 21 | 6,272 | 1,306,658,420 | 4.641914 | -0.652% | joint |
 | others | `gated_attention_headwise` | 23 | 6,144 | 1,356,234,504 | 4.677384 | +0.107% | joint |
+| others | `hydra` | 27 | 4,608 | 1,780,828,720 | 4.702309 | +0.640% | joint |
 | others | `inkling_rel` | 22 | 6,272 | 1,293,026,934 | 4.629593 | -0.916% | joint |
 | others | `sconv_dynamic_out` | 23 | 6,144 | 1,359,767,304 | 4.700459 | +0.601% | joint |
 | others | `sconv_out` | 23 | 6,144 | 1,356,375,816 | 4.678336 | +0.127% | joint |

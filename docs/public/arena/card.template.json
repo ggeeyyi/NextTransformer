@@ -3,7 +3,7 @@
  "name": "My Entry",
  "methodId": "my_method",
  "runIds": [],
- "arenaProtocol": "arena-v1",
+ "arenaProtocol": "arena-v2",
  "status": "admitted",
  "statusNote": null,
  "submitted": "2026-01-01",

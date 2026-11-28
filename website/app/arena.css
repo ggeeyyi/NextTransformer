@@ -27,6 +27,7 @@
 .arena-row small { display:block; color:#6E7480; font-size:12px; line-height:1.6; margin-top:4px; font-variant-numeric:tabular-nums; }
 .arena-status { display:inline-flex; align-items:center; padding:2px 9px; border-radius:999px; font-size:11px; letter-spacing:.4px; font-weight:600; background:#F0F4F8; color:#526B85; white-space:nowrap; }
 .arena-status.complete { background:#EFF6FF; color:#405C7A; }
+.arena-status.arena-only { background:#EEF5F1; color:#4E6B5C; }
 .arena-status.admitted { background:#F2EEF8; color:#66517F; }
 .arena-status.legacy { background:#FFF1F5; color:#965C66; }
 .arena-status.retracted { background:#F3F4F6; color:#7A8288; text-decoration:line-through; }

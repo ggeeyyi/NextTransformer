@@ -157,3 +157,104 @@
     background-image: none;
   }
 }
+
+/* Phone layout for the observatory's research views. */
+@media (max-width: 600px) {
+  .observatory main,
+  .observatory .topbar {
+    padding-inline: clamp(12px, 3.5vw, 20px);
+  }
+
+  .observatory .topbar { gap: 6px; }
+  .observatory .brand-cluster,
+  .observatory .iaai-brand { gap: 6px; }
+  .observatory .brand b { font-size: 18px; }
+  .observatory .iaai-brand { padding-inline-start: 7px; }
+  .observatory .iaai-brand img { width: 26px; height: 26px; }
+  .observatory .iaai-brand b { font-size: 17px; }
+  .observatory .header-actions { gap: 4px; }
+  .observatory .header-actions :is(.repo-button, .primary) {
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+  }
+
+  .observatory .workbench-intro.observatory-hero {
+    margin-top: 8px;
+    padding: 18px 12px 14px;
+    gap: 16px;
+    border-radius: 16px;
+  }
+
+  .observatory-hero .hero-copy { padding: 0 2px; }
+  .observatory .observatory-hero h1 {
+    margin-top: 6px;
+    font-size: clamp(27px, 7vw, 33px);
+    text-wrap: balance;
+  }
+  .observatory .observatory-hero h1 em { margin-top: 3px; color: var(--blue); }
+  .observatory .observatory-hero .hero-description { margin-top: 9px; line-height: 1.45; }
+  .observatory .observatory-hero .intro-facts {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    gap: 4px 16px;
+    margin-top: 8px;
+  }
+  .observatory-hero .hero-actions { gap: 8px; margin-top: 12px; }
+  .observatory-hero .hero-actions button { min-height: 44px; padding: 8px; gap: 5px; font-size: 14px; }
+  .constellation-card { padding: 12px 10px; }
+
+  .observatory .leaderboard-toolbar { padding: 12px; gap: 8px; }
+  .observatory .leaderboard-toolbar button,
+  .observatory .chart-mode button,
+  .observatory .metric-switch button { min-height: 40px; }
+  .observatory .leaderboard-columns,
+  .observatory .leaderboard-row {
+    grid-template-columns: 22px minmax(0, 1fr) 84px;
+    column-gap: 8px;
+  }
+  .observatory .leaderboard-progress-chip { white-space: normal; }
+  .observatory .results-toolbar { align-items: stretch; }
+  .observatory .chart-mode { flex: 1 1 100%; }
+  .observatory .results-mobile-method select,
+  .observatory .search input,
+  .moe-picker select { font-size: 16px; }
+  .moe-picker { min-width: 0; max-width: 100%; }
+  .moe-picker select { min-width: 0; }
+
+  .experiment-modal > .primary {
+    max-width: 100%;
+    white-space: normal;
+  }
+  .observatory .submission-steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 520px) {
+  /* Keep every destination visible, including when the phone uses larger type. */
+  .observatory .tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    height: auto;
+    gap: 2px;
+    border-radius: 16px;
+  }
+  .observatory .tabs button {
+    justify-content: center;
+    height: auto;
+    min-height: 44px;
+    padding: 4px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.25;
+    white-space: normal;
+  }
+  html { scroll-padding-top: 120px; }
+}
+
+@media (pointer: coarse) and (orientation: landscape) and (max-width: 950px) {
+  .contribution-hero > div { flex-wrap: wrap; }
+}
