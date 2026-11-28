@@ -142,6 +142,8 @@ Quotation creates state but reserves no FLOPs. `run_experiment` reserves the quo
 Optional quote fields are `target_update`, `checkpoint_id`, `resource_profile_id`, `server_id` and `gpu_id`.
 `target_update` is an absolute step, not an additional step count. It defaults to 1 and must fit the profile's limit.
 For continuation, the target must exceed the checkpoint step.
+A profile may set `max_updates_per_job`, shown in `describe_space`: one training job then covers at most that many
+updates past its starting step, and later steps continue from the checkpoint it returns.
 Use the local server ID and an allocated GPU UUID or index string from `get_resources`.
 Omit placement fields to let Gym select an allocated idle card.
 

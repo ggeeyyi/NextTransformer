@@ -95,6 +95,7 @@ Agent 容器中的 `/run/gym-auth/credential.json` 提供 `endpoint`、`token` �
 - `submit_candidate`、`calibrate_candidate`、`validate_candidate`、`debug_candidate`、`run_experiment`、`cancel_job` 和 `finalize` 需要 `idempotency_key`（1–128 个字符）。相同输入重试时复用原键，输入改变时使用新键。
 - 报价不预留 FLOPs；`run_experiment` 才预留报价额度。
 - `target_update` 是绝对目标步数，默认 1，不能超过 profile 上限；续训时必须大于检查点步数。
+- profile 可以设置 `max_updates_per_job`（在 `describe_space` 中显示）：一次训练任务从起始步数起最多训练这么多步，之后的步数从它返回的检查点续训。
 - 资源 ID 从 `get_resources` 获取；省略资源选择参数时，Gym 自动选择已分配的空闲 GPU。
 - 实验查询默认读取公开实验；查询本会话需设置 `scope="session"`。
 
